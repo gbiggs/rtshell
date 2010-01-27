@@ -1,0 +1,222 @@
+#!/usr/bin/env python
+# -*- Python -*-
+# -*- coding: utf-8 -*-
+
+'''rtsshell
+
+Copyright (C) 2009-2010
+    Geoffrey Biggs
+    RT-Synthesis Research Group
+    Intelligent Systems Research Institute,
+    National Institute of Advanced Industrial Science and Technology (AIST),
+    Japan
+    All rights reserved.
+Licensed under the Eclipse Public License -v 1.0 (EPL)
+http://www.opensource.org/licenses/eclipse-1.0.txt
+
+File: rtresurrect.py
+
+Main program file for the rtresurrect tool.
+
+'''
+
+__version__ = '$Revision: $'
+# $Source$
+
+
+from optparse import OptionParser, OptionError
+from os import sep as pathsep
+from rtctree.path import parse_path
+from rtctree.tree import create_rtctree
+from rtsprofile.rts_profile import RtsProfile
+import sys
+
+from rtsshell import RTSSHELL_VERSION
+from rtsshell.actions import *
+from rtsshell.exceptions import RequiredActionFailedError
+from rtsshell.options import Options
+
+
+def check_required_component_actions(rtsprofile):
+    checks = []
+    # First perform a sanity check of the system.
+    # All required components must be present
+    for comp in [c for c in rtsprofile.components if c.is_required]:
+        checks.append(CheckForRequiredCompAct(pathsep + comp.path_uri,
+                                              comp.id, comp.instance_name))
+    return checks
+
+
+def get_data_conn_props(conn):
+    return {'dataport.dataflow_type': str(conn.data_flow_type),
+            'dataport.interface_type': str(conn.interface_type),
+            'dataport.subscription_type': str(conn.subscription_type),
+            'dataport.data_type': str(conn.data_type)}
+
+
+def data_connection_actions(rtsprofile):
+    # The ports on those components in any required connections must also be
+    # present.
+    checks = []
+    make_connections = []
+    for conn in rtsprofile.required_data_connections():
+        source_comp = rtsprofile.find_comp_by_target(conn.source_data_port)
+        source_path = pathsep + source_comp.path_uri
+        source_port = conn.source_data_port.port_name
+        prefix = source_comp.instance_name + '.'
+        if source_port.startswith(prefix):
+            source_port = source_port[len(prefix):]
+        dest_comp = rtsprofile.find_comp_by_target(conn.target_data_port)
+        dest_path = pathsep + dest_comp.path_uri
+        dest_port = conn.target_data_port.port_name
+        prefix = dest_comp.instance_name + '.'
+        if dest_port.startswith(prefix):
+            dest_port = dest_port[len(prefix):]
+        checks.append(CheckForPortAct(source_path, source_port))
+        checks.append(CheckForPortAct(dest_path, dest_port))
+        props = get_data_conn_props(conn)
+        make_connections.append(ConnectPortsAct(source_path, source_port,
+                                                dest_path, dest_port,
+                                                str(conn.name),
+                                                str(conn.connector_id), props))
+
+    # Add the other connections to the list
+    for conn in rtsprofile.optional_data_connections():
+        source_comp = rtsprofile.find_comp_by_target(conn.source_data_port)
+        source_path = pathsep + source_comp.path_uri
+        source_port = conn.source_data_port.port_name
+        prefix = source_comp.instance_name + '.'
+        if source_port.startswith(prefix):
+            source_port = source_port[len(prefix):]
+        dest_comp = rtsprofile.find_comp_by_target(conn.target_data_port)
+        dest_path = pathsep + dest_comp.path_uri
+        dest_port = conn.target_data_port.port_name
+        prefix = dest_comp.instance_name + '.'
+        if dest_port.startswith(prefix):
+            dest_port = dest_port[len(prefix):]
+        props = get_data_conn_props(conn)
+        make_connections.append(OptionalAction (ConnectPortsAct,
+            (source_path, source_port, dest_path, dest_port, str(conn.name),
+             str(conn.connector_id), props)))
+
+    return checks, make_connections
+
+
+def service_connection_actions(rtsprofile):
+    # The ports on those components in any required connections must also be
+    # present.
+    checks = []
+    make_connections = []
+    for conn in rtsprofile.required_service_connections():
+        source_comp = rtsprofile.find_comp_by_target(conn.source_service_port)
+        source_path = pathsep + source_comp.path_uri
+        source_port = conn.source_service_port.port_name
+        prefix = source_comp.instance_name + '.'
+        if source_port.startswith(prefix):
+            source_port = source_port[len(prefix):]
+        dest_comp = rtsprofile.find_comp_by_target(conn.target_service_port)
+        dest_path = pathsep + dest_comp.path_uri
+        dest_port =conn.target_service_port.port_name 
+        prefix = dest_comp.instance_name + '.'
+        if dest_port.startswith(prefix):
+            dest_port = dest_port[len(prefix):]
+        checks.append(CheckForPortAct(source_path, source_port))
+        checks.append(CheckForPortAct(dest_path, dest_port))
+        make_connections.append(ConnectPortsAct(source_path, source_port,
+            dest_path, dest_port, str(conn.name), str(conn.connector_id), {}))
+
+    # Add the other connections to the list
+    for conn in rtsprofile.optional_service_connections():
+        source_comp = rtsprofile.find_comp_by_target(conn.source_service_port)
+        source_path = pathsep + source_comp.path_uri
+        source_port = conn.source_service_port.port_name
+        prefix = source_comp.instance_name + '.'
+        if source_port.startswith(prefix):
+            source_port = source_port[len(prefix):]
+        dest_comp = rtsprofile.find_comp_by_target(conn.target_service_port)
+        dest_path = pathsep + dest_comp.path_uri
+        dest_port =conn.target_service_port.port_name 
+        prefix = dest_comp.instance_name + '.'
+        if dest_port.startswith(prefix):
+            dest_port = dest_port[len(prefix):]
+        make_connections.append(OptionalAction(ConnectPortsAct,
+            (source_path, source_port, dest_path, dest_port, str(conn.name),
+             str(conn.connector_id), {})))
+
+    return checks, make_connections
+
+
+def config_set_actions(rtsprofile):
+    set_active = []
+    # For each component, if there is an active set, add an action for it
+    for comp in rtsprofile.components:
+        if comp.active_configuration_set:
+            set_active.append(OptionalAction(SetActiveConfigSetAct,
+                    (pathsep + comp.path_uri, comp.active_configuration_set)))
+
+    set_values = []
+    for comp in rtsprofile.components:
+        for cs in comp.configuration_sets:
+            for p in cs.configuration_data:
+                set_values.append(OptionalAction(SetConfigParamValueAct,
+                        (pathsep + comp.path_uri, cs.id, p.name, p.data)))
+
+    return set_active + set_values
+
+
+def rebuild_system_actions(rtsprofile):
+    checks = check_required_component_actions(rtsprofile)
+    data_conn_checks, data_connections = data_connection_actions(rtsprofile)
+    svc_conn_checks, svc_connections = service_connection_actions(rtsprofile)
+    config_actions = config_set_actions(rtsprofile)
+
+    return checks + data_conn_checks + svc_conn_checks + data_connections + \
+            svc_connections + config_actions
+
+
+def main(argv):
+    usage = '''Usage: %prog [options] <RTSProfile specification file>
+Recreate an RT system using an RT system profile specified in XML or YAML.'''
+    parser = OptionParser(usage=usage, version=RTSSHELL_VERSION)
+    parser.add_option('--dry-run', dest='dry_run', action='store_true',
+            default=False,
+            help='Print what will be done but don't actually do anything. \
+[Default: %default]')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+            default=False, help='Verbose output. [Default: %default]')
+
+    try:
+        options, args = parser.parse_args()
+    except OptionError, e:
+        print >>sys.stderr, 'OptionError: ', e
+        return 1
+    Options().verbose = options.verbose
+
+    if not args:
+        print >>sys.stderr, usage
+        return 1
+
+    # Load the profile
+    rtsprofile = RtsProfile(xml_spec_file=args[0])
+    # Build a list of actions to perform that will reconstruct the system
+    actions = rebuild_system_actions(rtsprofile)
+    if options.dry_run:
+        for a in actions:
+            print a
+    else:
+        # Load the RTC Tree, using the paths from the profile
+        rtctree = create_rtctree(paths=[parse_path(pathsep + c.path_uri)[0] \
+                                        for c in rtsprofile.components])
+        try:
+            for a in actions:
+                a(rtctree)
+        except RequiredActionFailedError, e:
+            print e
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
+
+
+# vim: tw=79
+

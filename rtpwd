@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+# -*- Python -*-
+# -*- coding: utf-8 -*-
+
+'''rtcshell
+
+Copyright (C) 2009-2010
+    Geoffrey Biggs
+    RT-Synthesis Research Group
+    Intelligent Systems Research Institute,
+    National Institute of Advanced Industrial Science and Technology (AIST),
+    Japan
+    All rights reserved.
+Licensed under the Eclipse Public License -v 1.0 (EPL)
+http://www.opensource.org/licenses/eclipse-1.0.txt
+
+File: rtpwd
+
+Command to show the current value of the RTCSH_CWD environment variable.
+
+'''
+
+__version__ = '$Revision: $'
+# $Source$
+
+
+#!/usr/bin/env python
+# -*- Python -*-
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+
+
+ENV_VAR = 'RTCSH_CWD'
+
+
+def main(argv):
+    if len(argv) > 1 and (argv[1] == '--help' or argv[1] == '-h'):
+        print 'Print the name of the current rtcshell working directory.'
+        return 0
+    if ENV_VAR in os.environ:
+        print os.environ[ENV_VAR]
+    else:
+        print os.sep
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
+
+
+# vim: tw=79
+

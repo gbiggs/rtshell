@@ -194,8 +194,8 @@ implementation.'''
 
     # Build the full paths by checking the RTCSH_CWD environment variable.
     if 'RTCSH_CWD' in os.environ:
-        source_full_path = os.path.join(os.environ['RTCSH_CWD'], source_path)
-        dest_full_path = os.path.join(os.environ['RTCSH_CWD'], dest_path)
+        source_full_path = os.environ['RTCSH_CWD'] + '/' + source_path
+        dest_full_path = os.environ['RTCSH_CWD'] + '/' + dest_path
     else:
         source_full_path = source_path
         dest_full_path = dest_path

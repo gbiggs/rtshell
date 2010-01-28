@@ -83,26 +83,26 @@ def main(argv):
                 print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR, os.environ[ENV_VAR])
                 return 0
             else:
-                print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR, os.sep)
+                print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR, '/')
                 return 0
         elif cmd_path == '..' or cmd_path == '../':
             # Special case for '..': go up one directory
             if ENV_VAR in os.environ and os.environ[ENV_VAR] and \
-                    os.environ[ENV_VAR] != os.sep:
+                    os.environ[ENV_VAR] != '/':
                 print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR,
                         os.path.dirname(os.environ[ENV_VAR]))
                 return 0
             else:
-                print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR, os.sep)
+                print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR, '/')
                 return 0
 
         # Build the full path by checking the RTCSH_CWD environment variable.
         if ENV_VAR in os.environ and os.environ[ENV_VAR]:
-            full_path = os.path.join(os.environ[ENV_VAR], cmd_path)
-        elif cmd_path.startswith(os.path.sep):
+            full_path = os.environ[ENV_VAR] + '/' + cmd_path
+        elif cmd_path.startswith('/'):
             full_path = cmd_path
         else:
-            full_path = os.path.sep + cmd_path
+            full_path = '/' + cmd_path
 
         return cd(cmd_path, full_path)
 

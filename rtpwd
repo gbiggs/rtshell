@@ -42,7 +42,7 @@ def main(argv):
     if ENV_VAR in os.environ:
         print os.environ[ENV_VAR]
     else:
-        print os.sep
+        print '/'
     return 0
 
 

@@ -103,12 +103,12 @@ def base_main(argv, description, action):
 
     # Build the full path by checking the RTCSH_CWD environment variable.
     if 'RTCSH_CWD' in os.environ:
-        full_path = os.path.join(os.environ['RTCSH_CWD'], cmd_path)
+        full_path = os.environ['RTCSH_CWD'] + '/' + cmd_path
     else:
         full_path = cmd_path
     if not full_path:
         # If no path given, and the cwd is not set, then can't do anything.
-        print >>sys.stderr, '{0}: Cannot cat a directory.'.format(sys.argv)
+        print >>sys.stderr, '{0}: No component specified.'.format(sys.argv[0])
         return 1
 
     return alter_component_state(action, cmd_path, full_path, options)

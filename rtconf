@@ -250,7 +250,7 @@ set to activate.
 
     # Build the full path by checking the RTCSH_CWD environment variable.
     if 'RTCSH_CWD' in os.environ:
-        full_path = os.path.join(os.environ['RTCSH_CWD'], cmd_path)
+        full_path = os.environ['RTCSH_CWD'] + '/' + cmd_path
     else:
         full_path = cmd_path
     if not full_path:

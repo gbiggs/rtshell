@@ -24,21 +24,23 @@ __version__ = '$Revision: $'
 # $Source$
 
 
+from distutils.command.install_scripts import install_scripts
 from distutils.core import setup
+import os.path
 import sys
 
-scripts = ['rtact',
-           'rtcat',
-           'rtcon',
-           'rtconf',
-           'rtcwd.py',
-           'rtdeact',
-           'rtdis',
-           'rtfind',
-           'rtls',
-           'rtmgr',
-           'rtpwd',
-           'rtreset']
+base_scripts = ['rtact',
+                'rtcat',
+                'rtcon',
+                'rtconf',
+                'rtcwd.py',
+                'rtdeact',
+                'rtdis',
+                'rtfind',
+                'rtls',
+                'rtmgr',
+                'rtpwd',
+                'rtreset']
 if sys.platform == 'win32':
     batch_files = ['rtact.bat',
                    'rtcat.bat',
@@ -52,9 +54,21 @@ if sys.platform == 'win32':
                    'rtmgr.bat',
                    'rtpwd.bat',
                    'rtreset.bat']
-    scripts += batch_files
+    scripts = base_scripts + batch_files
 else:
-    scripts.append('rtcwd')
+    scripts = base_scripts + ['rtcwd']
+
+
+class InstallRename(install_scripts):
+    def run(self):
+        install_scripts.run(self)
+        if sys.platform == 'win32':
+            # Rename the installed scripts to add .py on the end for Windows
+            print 'Renaming scripts'
+            for s in base_scripts:
+                self.move_file(os.path.join(self.install_dir, s),
+                               os.path.join(self.install_dir, s + '.py'))
+
 
 setup(name='rtcshell',
       version='1.0.0',
@@ -77,7 +91,8 @@ setup(name='rtcshell',
           'Topic :: Utilities'
           ],
       packages=['rtcshell'],
-      scripts=scripts
+      scripts=scripts,
+      cmdclass={'install_scripts':InstallRename}
       )
 
 

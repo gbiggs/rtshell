@@ -72,8 +72,8 @@ specified in the RTSProfile specification.'''
     parser = OptionParser(usage=usage, version=RTSSHELL_VERSION)
     parser.add_option('--dry-run', dest='dry_run', action='store_true',
             default=False,
-            help='Print what will be done but don't actually do anything. \
-[Default: %default]')
+            help="Print what will be done but don't actually do anything. \
+[Default: %default]")
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False, help='Verbose output. [Default: %default]')
 

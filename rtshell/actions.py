@@ -131,13 +131,13 @@ class CheckForRequiredCompAct(RequiredAction):
         self._instance_name = instance_name
 
     def __str__(self):
-        return 'Check for required component '{0}', '{1}' at path {2}'.format(\
+        return 'Check for required component "{0}", "{1}" at path {2}'.format(\
                 self._id, self._instance_name, self._path_str)
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print 'Checking for required component {0} with ID '{1}' and \
-instance name '{2}''.format(self._path_str, self._id, self._instance_name)
+            print 'Checking for required component {0} with ID "{1}" and \
+instance name "{2}"'.format(self._path_str, self._id, self._instance_name)
         # Check there is a component at the specified path
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
@@ -183,7 +183,7 @@ class CheckForPortAct(RequiredAction):
         self._port_name = port_name
 
     def __str__(self):
-        return 'Check for required port '{0}' on component at path \
+        return 'Check for required port "{0}" on component at path \
 {1}'.format(self._port_name, self._path_str)
 
     def _execute(self, rtctree):
@@ -224,12 +224,12 @@ class SetActiveConfigSetAct(RequiredAction):
         self._set = str(set) # Cannot send unicode strings to CORBA
 
     def __str__(self):
-        return 'Set configuration set '{0}' active on component at path \
+        return 'Set configuration set "{0}" active on component at path \
 {1}'.format(self._set, self._path_str)
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print 'Setting configuration set '{0}' active on component \
+            print 'Setting configuration set "{0}" active on component \
 {1}'.format(self._set, self._path_str)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
@@ -265,13 +265,13 @@ class SetConfigParamValueAct(RequiredAction):
         self._new_value = str(new_value)
 
     def __str__(self):
-        return 'Set parameter '{0}' in set '{1}' on component at path '{2}' \
-to '{3}''.format(self._param, self._set, self._path_str, self._new_value)
+        return 'Set parameter "{0}" in set "{1}" on component at path "{2}" \
+to "{3}"'.format(self._param, self._set, self._path_str, self._new_value)
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print 'Setting parameter '{0}' in set '{1}' on component at path \
-'{2}' to '{3}''.format(self._param, self._set, self._path_str, self._new_value)
+            print 'Setting parameter "{0}" in set "{1}" on component at path \
+"{2}" to "{3}"'.format(self._param, self._set, self._path_str, self._new_value)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
             return False, 'Component missing: {0}'.format(self._path_str)

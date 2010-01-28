@@ -1,3 +1,4 @@
+@echo off
 rem Copyright (C) 2009-2010
 rem     Geoffrey Biggs
 rem     RT-Synthesis Research Group
@@ -8,6 +9,5 @@ rem     All rights reserved.
 rem Licensed under the Eclipse Public License -v 1.0 (EPL)
 rem http://www.opensource.org/licenses/eclipse-1.0.txt
 
-@echo off
-python rtstart.py %*
+rtstart.py %*
 

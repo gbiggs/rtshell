@@ -24,21 +24,37 @@ __version__ = '$Revision: $'
 # $Source$
 
 
+from distutils.command.install_scripts import install_scripts
 from distutils.core import setup
+import os.path
 import sys
 
-scripts = ['rtcryo',
-           'rtresurrect',
-           'rtstart',
-           'rtstop',
-           'rtteardown']
+base_scripts = ['rtcryo',
+                'rtresurrect',
+                'rtstart',
+                'rtstop',
+                'rtteardown']
 if sys.platform == 'win32':
     batch_files = ['rtcryo.bat',
                    'rtresurrect.bat',
                    'rtstart.bat',
                    'rtstop.bat',
                    'rtteardown']
-    scripts += batch_files
+    scripts =  base_scripts + batch_files
+else:
+    scripts = base_scripts
+
+
+class InstallRename(install_scripts):
+    def run(self):
+        install_scripts.run(self)
+        if sys.platform == 'win32':
+            # Rename the installed scripts to add .py on the end for Windows
+            print 'Renaming scripts'
+            for s in base_scripts:
+                self.move_file(os.path.join(self.install_dir, s),
+                               os.path.join(self.install_dir, s + '.py'))
+
 
 setup(name='rtsshell',
       version='1.0.0',
@@ -59,7 +75,8 @@ setup(name='rtsshell',
           'Topic :: Software Development',
           ],
       packages=['rtsshell'],
-      scripts=scripts
+      scripts=scripts,
+      cmdclass={'install_scripts':InstallRename}
       )
 
 

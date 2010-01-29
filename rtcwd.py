@@ -97,10 +97,13 @@ def main(argv):
                 return 0
 
         # Build the full path by checking the RTCSH_CWD environment variable.
-        if ENV_VAR in os.environ and os.environ[ENV_VAR]:
-            full_path = os.environ[ENV_VAR] + '/' + cmd_path
-        elif cmd_path.startswith('/'):
+        if cmd_path.startswith('/'):
             full_path = cmd_path
+        elif ENV_VAR in os.environ and os.environ[ENV_VAR]:
+            if os.environ[ENV_VAR].endswith('/'):
+                full_path = os.environ[ENV_VAR] + cmd_path
+            else:
+                full_path = os.environ[ENV_VAR] + '/' + cmd_path
         else:
             full_path = '/' + cmd_path
 

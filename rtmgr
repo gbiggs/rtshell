@@ -26,9 +26,6 @@ __version__ = '$Revision: $'
 
 from optparse import OptionParser, OptionError
 import os
-from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
-import sys
-
 from rtctree.exceptions import RtcTreeError, FailedToLoadModuleError, \
                                FailedToUnloadModuleError, \
                                FailedToCreateComponentError, \
@@ -37,6 +34,10 @@ from rtctree.tree import create_rtctree, InvalidServiceError, \
                          FailedToNarrowRootNamingError, \
                          NonRootPathError
 from rtctree.path import parse_path
+import sys
+
+from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
+from rtcshell.path import cmd_path_to_full_path
 
 
 def get_manager(cmd_path, full_path):
@@ -171,16 +172,7 @@ Delete a component instance from the manager, destroying it.
     else:
         print >>sys.stderr, usage
         return 1
-
-    # Build the full path by checking the RTCSH_CWD environment variable.
-    if 'RTCSH_CWD' in os.environ:
-        full_path = os.environ['RTCSH_CWD'] + '/' + cmd_path
-    else:
-        full_path = cmd_path
-    if not full_path:
-        # If no path given, can't do anythong
-        print >>sys.stderr, usage
-        return 1
+    full_path = cmd_path_to_full_path(cmd_path)
 
     if cmd == 'load':
         if len(args) != 2:

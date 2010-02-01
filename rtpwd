@@ -32,7 +32,7 @@ import os
 import sys
 
 
-ENV_VAR = 'RTCSH_CWD'
+from rtcshell.path import ENV_VAR
 
 
 def main(argv):

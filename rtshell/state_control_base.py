@@ -26,11 +26,12 @@ __version__ = '$Revision: $'
 
 from optparse import OptionParser, OptionError
 import os
+from rtctree.tree import create_rtctree, BadECIndexError
+from rtctree.path import parse_path
 import sys
 
 from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
-from rtctree.tree import create_rtctree, BadECIndexError
-from rtctree.path import parse_path
+from rtcshell.path import cmd_path_to_full_path
 
 
 def alter_component_state(action, cmd_path, full_path, options):
@@ -94,22 +95,15 @@ def base_main(argv, description, action):
         sys.exit(1)
 
     if not args:
-        cmd_path = ''
+        # If no path given then can't do anything.
+        print >>sys.stderr, '{0}: No component specified.'.format(sys.argv[0])
+        return 1
     elif len(args) == 1:
         cmd_path = args[0]
     else:
         print >>sys.stderr, usage
         return 1
-
-    # Build the full path by checking the RTCSH_CWD environment variable.
-    if 'RTCSH_CWD' in os.environ:
-        full_path = os.environ['RTCSH_CWD'] + '/' + cmd_path
-    else:
-        full_path = cmd_path
-    if not full_path:
-        # If no path given, and the cwd is not set, then can't do anything.
-        print >>sys.stderr, '{0}: No component specified.'.format(sys.argv[0])
-        return 1
+    full_path = cmd_path_to_full_path(cmd_path)
 
     return alter_component_state(action, cmd_path, full_path, options)
 

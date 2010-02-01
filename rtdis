@@ -30,14 +30,15 @@ __version__ = '$Revision: $'
 
 from optparse import OptionParser, OptionError
 import os
-import sys
-
-from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
 from rtctree.exceptions import RtcTreeError
 from rtctree.tree import create_rtctree
 from rtctree.path import parse_path
 from rtctree.utils import build_attr_string, get_num_columns_and_rows, \
                           get_terminal_size
+import sys
+
+from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
+from rtcshell.path import ENV_VAR, cmd_path_to_full_path
 
 
 def disconnect_all(cmd_path, full_path, options):
@@ -168,22 +169,14 @@ Ports are specified at the end of each path, preceeded by a colon (:).'''
     if len(args) == 1:
         # Disconnect all
         cmd_path = args[0]
-        if 'RTCSH_CWD' in os.environ:
-            full_path = os.environ['RTCSH_CWD'] + '/' + cmd_path
-        else:
-            full_path = cmd_path
-        return disconnect_all(cmd_path, full_path, options)
+        return disconnect_all(cmd_path, cmd_path_to_full_path(cmd_path),
+                              options)
     elif len(args) == 2:
         # Disconnect a pair of ports
         source_path = args[0]
         dest_path = args[1]
-        # Build the full paths by checking the RTCSH_CWD environment variable.
-        if 'RTCSH_CWD' in os.environ:
-            source_full_path = os.environ['RTCSH_CWD'] + '/' + source_path
-            dest_full_path = os.environ['RTCSH_CWD'] + '/' + dest_path
-        else:
-            source_full_path = source_path
-            dest_full_path = dest_path
+        source_full_path = cmd_path_to_full_path(source_path)
+        dest_full_path = cmd_path_to_full_path(dest_path)
         return disconnect_ports(source_path, source_full_path,
                              dest_path, dest_full_path,
                              options)

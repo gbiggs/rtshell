@@ -27,9 +27,6 @@ __version__ = '$Revision: $'
 from optparse import OptionParser, OptionError
 import os
 import re
-from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
-import sys
-
 from rtctree.exceptions import RtcTreeError
 from rtctree.tree import create_rtctree, InvalidServiceError, \
                          FailedToNarrowRootNamingError, \
@@ -37,6 +34,10 @@ from rtctree.tree import create_rtctree, InvalidServiceError, \
 from rtctree.path import parse_path
 from rtctree.utils import build_attr_string, get_num_columns_and_rows, \
                           get_terminal_size
+import sys
+
+from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
+from rtcshell.path import cmd_path_to_full_path
 
 
 def search(cmd_path, full_path, options):
@@ -162,15 +163,7 @@ e.g. "--type dmn".')
     else:
         print >>sys.stderr, usage
         return 1
-
-    # Build the full path by checking the RTCSH_CWD environment variable.
-    if 'RTCSH_CWD' in os.environ:
-        full_path = os.environ['RTCSH_CWD'] + '/' + cmd_path
-    else:
-        full_path = cmd_path
-    if not full_path:
-        # If no path given, and the cwd is not set, list the root dir
-        full_path = '/'
+    full_path = cmd_path_to_full_path(cmd_path)
 
     return search(cmd_path, full_path, options)
 

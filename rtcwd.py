@@ -27,14 +27,14 @@ __version__ = '$Revision: $'
 #!/usr/bin/env python
 
 import os
-import sys
-
 from rtctree.exceptions import RtcTreeError
 from rtctree.tree import create_rtctree
 from rtctree.path import parse_path
+import sys
+
+from rtcshell.path import ENV_VAR, cmd_path_to_full_path
 
 
-ENV_VAR='RTCSH_CWD'
 if sys.platform == 'win32':
     SET_CMD = 'set'
 else:
@@ -96,17 +96,7 @@ def main(argv):
                 print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR, '/')
                 return 0
 
-        # Build the full path by checking the RTCSH_CWD environment variable.
-        if cmd_path.startswith('/'):
-            full_path = cmd_path
-        elif ENV_VAR in os.environ and os.environ[ENV_VAR]:
-            if os.environ[ENV_VAR].endswith('/'):
-                full_path = os.environ[ENV_VAR] + cmd_path
-            else:
-                full_path = os.environ[ENV_VAR] + '/' + cmd_path
-        else:
-            full_path = '/' + cmd_path
-
+        full_path = cmd_path_to_full_path(cmd_path)
         return cd(cmd_path, full_path)
 
 

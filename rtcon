@@ -30,9 +30,6 @@ __version__ = '$Revision: $'
 
 from optparse import OptionParser, OptionError, OptionValueError
 import os
-import sys
-
-from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
 from rtctree.exceptions import RtcTreeError, FailedToConnectError, \
                                IncompatibleDataPortConnectionPropsError, \
                                WrongPortTypeError, \
@@ -42,6 +39,10 @@ from rtctree.tree import create_rtctree
 from rtctree.path import parse_path
 from rtctree.utils import build_attr_string, get_num_columns_and_rows, \
                           get_terminal_size
+import sys
+
+from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
+from rtcshell.path import cmd_path_to_full_path
 
 
 def connect_ports(source_cmd_path, source_full_path,
@@ -191,14 +192,8 @@ implementation.'''
     else:
         source_path = args[0]
         dest_path = args[1]
-
-    # Build the full paths by checking the RTCSH_CWD environment variable.
-    if 'RTCSH_CWD' in os.environ:
-        source_full_path = os.environ['RTCSH_CWD'] + '/' + source_path
-        dest_full_path = os.environ['RTCSH_CWD'] + '/' + dest_path
-    else:
-        source_full_path = source_path
-        dest_full_path = dest_path
+    source_full_path = cmd_path_to_full_path(source_path)
+    dest_full_path = cmd_path_to_full_path(dest_path)
 
     return connect_ports(source_path, source_full_path,
                          dest_path, dest_full_path,

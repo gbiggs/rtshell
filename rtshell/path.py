@@ -32,7 +32,7 @@ ENV_VAR='RTCSH_CWD'
 
 def cmd_path_to_full_path(cmd_path):
     '''Given a path from the user, returns a suitable full path based on the
-    value of $RTCSH_CWD.
+    value of the environment variable specified in ENV_VAR.
 
     '''
     if cmd_path.startswith('/'):
@@ -42,7 +42,7 @@ def cmd_path_to_full_path(cmd_path):
             return os.environ[ENV_VAR] + cmd_path
         else:
             return os.environ[ENV_VAR] + '/' + cmd_path
-    # If RTCSH_CWD is not set, assume the current working dir is the root dir
+    # If ENV_VAR is not set, assume the current working dir is the root dir
     return '/' + cmd_path
 
 

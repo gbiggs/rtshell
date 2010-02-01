@@ -16,7 +16,7 @@ http://www.opensource.org/licenses/eclipse-1.0.txt
 
 File: rtcwd.py
 
-Create a command to change the RTCSH_CWD environment variable.
+Create a command to change the current working directory environment variable.
 
 '''
 

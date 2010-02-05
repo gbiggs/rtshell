@@ -84,7 +84,7 @@ managers.'.format(sys.argv[0], cmd_path)
 
 
 def main(argv):
-    usage = '''Usage: %prog [options] <path> [command] [args]
+    usage = '''Usage: %prog [options] <path>
 Delete an object from a name server.
 
 This command is particularly useful to remove zombie registrations. However,

@@ -123,6 +123,7 @@ def format_component(object, use_colour=True, long=False, really_long=False):
                             'Polarity'.ljust(pad_length),
                             intf.polarity_as_string(add_colour=use_colour)))
                     indent -= 2
+            num_conns = len(port.connections)
             for conn in port.connections:
                 if really_long:
                     tag2 = '-'
@@ -132,6 +133,7 @@ def format_component(object, use_colour=True, long=False, really_long=False):
                 for name, p in conn.ports:
                     if not object.get_port_by_ref(p.object):
                         dest_ports.append(name)
+                        num_conns -= 1
                 if dest_ports:
                     result.append('{0}Connected to  {1}'.format(\
                             tag2.rjust(indent),
@@ -161,6 +163,13 @@ def format_component(object, use_colour=True, long=False, really_long=False):
                                     key.ljust(pad_length),
                                     conn.properties[key]))
                         indent -= 2
+            if num_conns > 0:
+                if num_conns > 1:
+                    plural = 's'
+                else:
+                    plural = ''
+                result.append('{0}({1} other connection{2})'.format(\
+                        ''.rjust(indent), num_conns, plural))
             indent -= 2
 
     return result

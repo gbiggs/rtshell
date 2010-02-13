@@ -78,13 +78,15 @@ by rtcshell.
 
 rtact       Activate a component.
 rtcat       List component information (profile, ports, state, etc).
-rtcwd       Change the current working directory in the RT tree.
 rtcon       Connect two ports together.
 rtconf      Display, set and activate configuration parameters and sets.
+rtcwd       Change the current working directory in the RT tree.
 rtdeact     Deactivate a component.
+rtdel       Delete a name from a name server. Use to remove zombies.
 rtdis       Disconnect a connection between to ports, or all connections from a
             port or component.
 rtfind      Find RTC tree entries matching given search criteria.
+rtinject    Inject data into an input port of a component.
 rtls        List the contents of the current working directory of the RT tree.
 rtmgr       Control managers to create and delete components.
 rtpwd       Print the current working directory of the RT tree.
@@ -536,4 +538,27 @@ Loaded shared libraries can be removed from the manager.
    Name: Linux
  Loaded modules:
  Loadable modules:
+
+# Use rtinject to inject a single value into an input port of a component.
+# Let's try using it on ConsoleOut.
+ $ rtinject ConsoleOut0.rtc:in "RTC.TimedLong({time}, 42)"
+# Looking at the output of the running ConsoleOut instance (with some lines
+# removed for clarity):
+ $ ./ConsoleOutComp
+ =================================================
+  Component Profile
+ [...]
+ Port0 (name): ConsoleOut0.in
+ [...]
+ Received: 42
+ TimeStamp: 1266053430[s] 578351020[ns]
+
+# If you have a zombie on one of your name servers, you will get constant
+# warnings about it. You can delete zombies or any other registered object
+# using rtdel.
+ $ rtls
+ ConsoleOut0.rtc
+ $ rtdel ConsoleOut0.rtc
+ $ rtls
+ $
 

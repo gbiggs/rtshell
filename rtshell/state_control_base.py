@@ -34,7 +34,7 @@ from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
 from rtcshell.path import cmd_path_to_full_path
 
 
-def alter_component_state(action, cmd_path, full_path, options):
+def alter_component_state(action, cmd_path, full_path, options, tree=None):
     path, port = parse_path(full_path)
     if port:
         # Can't cat a port
@@ -49,7 +49,8 @@ object.'.format(sys.argv[0], cmd_path)
 object'.format(sys.argv[0], cmd_path)
         return 1
 
-    tree = create_rtctree(paths=path)
+    if not tree:
+        tree = create_rtctree(paths=path)
     if not tree:
         return 1
 
@@ -73,7 +74,7 @@ object'.format(sys.argv[0], cmd_path)
     return 0
 
 
-def base_main(argv, description, action):
+def base_main(description, action, argv=None, tree=None):
     usage = '''Usage: %prog [options] <path>
 {0}
 
@@ -88,11 +89,13 @@ def base_main(argv, description, action):
             help='Index of the execution context to activate within. \
 [Default: %default]')
 
+    if argv:
+        sys.argv = argv
     try:
         options, args = parser.parse_args()
     except OptionError, e:
         print 'OptionError:', e
-        sys.exit(1)
+        return 1
 
     if not args:
         # If no path given then can't do anything.
@@ -105,7 +108,7 @@ def base_main(argv, description, action):
         return 1
     full_path = cmd_path_to_full_path(cmd_path)
 
-    return alter_component_state(action, cmd_path, full_path, options)
+    return alter_component_state(action, cmd_path, full_path, options, tree)
 
 
 # vim: tw=79

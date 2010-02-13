@@ -14,22 +14,29 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtconf
+File: rtact
 
-Command to manage component configuration.
+Implementation of the command to move a component to the activated state.
 
 '''
 
 __version__ = '$Revision: $'
 # $Source$
 
+
 import sys
 
-from rtcshell import rtconf
+from rtcshell.state_control_base import base_main
 
 
-if __name__ == '__main__':
-    sys.exit(rtconf.main())
+def activate_action(object, ec_index):
+    object.activate_in_ec(ec_index)
+    return 0
+
+
+def main(argv=None, tree=None):
+    return base_main('Activate a component.', activate_action, argv)
+
 
 # vim: tw=79
 

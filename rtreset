@@ -24,22 +24,13 @@ __version__ = '$Revision: $'
 # $Source$
 
 
-#!/usr/bin/env python
-# -*- Python -*-
-# -*- coding: utf-8 -*-
-
 import sys
 
-from rtcshell.state_control_base import base_main
-
-
-def reset_action(object, ec_index):
-    object.reset_in_ec(ec_index)
-    return 0
+from rtcshell import rtreset
 
 
 if __name__ == '__main__':
-    sys.exit(base_main(sys.argv, 'Reset a component.', reset_action))
+    sys.exit(rtreset.main())
 
 
 # vim: tw=79

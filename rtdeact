@@ -24,22 +24,13 @@ __version__ = '$Revision: $'
 # $Source$
 
 
-#!/usr/bin/env python
-# -*- Python -*-
-# -*- coding: utf-8 -*-
-
 import sys
 
-from rtcshell.state_control_base import base_main
-
-
-def deactivate_action(object, ec_index):
-    object.deactivate_in_ec(ec_index)
-    return 0
+from rtcshell import rtdeact
 
 
 if __name__ == '__main__':
-    sys.exit(base_main(sys.argv, 'Deactivate a component.', deactivate_action))
+    sys.exit(rtdeact.main())
 
 
 # vim: tw=79

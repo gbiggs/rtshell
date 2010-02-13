@@ -26,16 +26,11 @@ __version__ = '$Revision: $'
 
 import sys
 
-from rtcshell.state_control_base import base_main
-
-
-def activate_action(object, ec_index):
-    object.activate_in_ec(ec_index)
-    return 0
+from rtcshell import rtact
 
 
 if __name__ == '__main__':
-    sys.exit(base_main(sys.argv, 'Activate a component.', activate_action))
+    sys.exit(rtact.main())
 
 
 # vim: tw=79

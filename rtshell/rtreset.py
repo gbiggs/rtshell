@@ -14,22 +14,34 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtconf
+File: rtreset
 
-Command to manage component configuration.
+Implementation of the command to move a component from the error state to the
+inactive state.
 
 '''
 
 __version__ = '$Revision: $'
 # $Source$
 
+
+#!/usr/bin/env python
+# -*- Python -*-
+# -*- coding: utf-8 -*-
+
 import sys
 
-from rtcshell import rtconf
+from rtcshell.state_control_base import base_main
 
 
-if __name__ == '__main__':
-    sys.exit(rtconf.main())
+def reset_action(object, ec_index):
+    object.reset_in_ec(ec_index)
+    return 0
+
+
+def main(argv=None, tree=None):
+    return base_main('Reset a component.', reset_action, argv)
+
 
 # vim: tw=79
 

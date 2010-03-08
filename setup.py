@@ -59,8 +59,10 @@ if sys.platform == 'win32':
                    'rtpwd.bat',
                    'rtreset.bat']
     scripts = base_scripts + batch_files
+    data_files = []
 else:
     scripts = base_scripts + ['rtcwd']
+    data_files = [('share/rtcshell', ['bash_completion'])]
 
 
 class InstallRename(install_scripts):
@@ -95,7 +97,9 @@ setup(name='rtcshell',
           'Topic :: Utilities'
           ],
       packages=['rtcshell'],
+      #package_data={'rtcshell': ['bash_completion']},
       scripts=scripts,
+      data_files=data_files,
       cmdclass={'install_scripts':InstallRename}
       )
 

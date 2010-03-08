@@ -1,0 +1,336 @@
+#
+# Copyright © 2010, Keisuke Suzuki <k.suzuki@aist.go.jp>
+#
+# Overview :
+#  rtcshellにbashの補完機能を追加するbash-completionスクリプト
+#  コマンドオプションやディレクトリ、オブジェクト、ポート、パラメータ名を補完
+#  rtcshell 1.0.0 に対応
+#  rtsshell 1.0.0 に対応
+#
+# Usage :
+#
+#  $ source rtcshell-completion
+#
+#  Example 1 : ディレクトリ名補完
+#  $ rtcwd [TAB]
+#  $ rtcwd localhost/
+#  $ rtcwd localhost/[TAB]
+#  $ rtcwd localhost/foo.host_cxt/
+#  $ rtcwd localhost/foo.host_cxt/[TAB][TAB]
+#  foo.rtc  bar.rtc  manager.mgr
+#  $ rtcwd localhost/foo.host_cxt/[ENTER] 
+#
+#  Example 2 : パラメータ名補完 (only rtconf)
+#  $ rtconf foo.rtc set [TAB]
+#  param1  param2  param3
+#
+#  Example 3 : ポート名補完 (only rtcon rtdis)
+#  $ rtcon foo.rtc:[TAB]
+#  fooIn  barIn  fooOut  barOut
+#
+# ChangeLog :
+#  ver. 1.0 2010/02/01 rtsshell系コマンドへ対応
+#  ver. 0.8 2010/01/26 rtfindコマンドへ対応
+#  ver. 0.7 2010/01/24 rtmgrコマンドへ対応
+#  ver. 0.6 2010/01/17 下位層パスのオブジェクト名を補完
+#  ver. 0.5 2010/01/17 コマンドオプションの補完
+#  ver. 0.4 2010/01/16 ポート名、コンフィギュレーション名の補完 
+#  ver. 0.3 2010/01/16 オブジェクト名の補完
+#
+#
+
+# コマンドオプションの補完(別関数から呼ばれる)
+# Usage : _rtopts ${COMP_WORDS[COMP_CWORD]}
+#         _rtopts ${cur}
+#  現在入力中の値を引数にする
+_rtopts()
+{
+	local opts complist
+
+	# コマンドオプション
+	case ${COMP_WORDS[0]} in
+		# rtcshell系
+		rtact)	opts="--version -h --help -d --debug -e --exec_context="
+			;;
+		rtcat)	opts="--version -h --help -l --ll -d --debug"
+			;;
+		rtcwd)	opts=""
+			;;
+		rtcon)	opts="--version -h --help -d --debug -i --id= -n --name= -p --property="
+			;;
+		rtconf)	opts="--version -h --help -l -d --debug"
+			;;
+		rtdeact) opts="--version -h --help -d --debug -e --exec_context="
+			;;
+		rtdis)	opts="--version -h --help -d --debug"
+			;;
+		rtfind)	opts="--version -h --help -d --debug --maxdepth= --iname= --name= --type="
+			;;
+		rtls)	opts="--version -h --help -l -d --debug -r --recurse"
+			;;
+		rtmgr)	opts="--version -h --help -d --debug"
+			;;
+		rtreset) opts="--version -h --help -d --debug -e --exec_context="
+			;;
+		# rtsshell系
+		rtstart)	opts="--version -h --help --dry-run -v --verbose"
+				;;
+		rtstop)		opts="--version -h --help --dry-run -v --verbose"
+				;;
+		rtteardown)	opts="--version -h --help --dry-run -v --verbose"
+				;;
+		rtcryo)		opts="--version -h --help -a --abstract= -n --system-name= -o --output= -v --system-version= -e --vendor= --verbose"
+				;;
+		rtresurrect)	opts="--version -h --help --dry-run -v --verbose"
+				;;
+		*)	;;
+	esac
+	
+	complist=$(compgen -W "${opts} ${nospaceopts}" -- $1 )
+
+	# =がある場合は補完後のスペースを入れない
+	if [[ ${complist} == *= ]] ; then
+		compopt -o nospace
+	fi
+
+        # オプションの補完
+	COMPREPLY=( ${complist} )
+	return 0
+
+}
+
+# オブジェクト名の補完（別関数から呼ばれる）
+# Usage : _rtobj ${COMP_WORDS[COMP_CWORD]}
+#         _rtobj ${cur}
+#  現在入力中の値を引数にする
+_rtobj()
+{
+	local objs obj target_dir target_abs target_objs
+
+	target_objs=""
+
+	# 補完候補のディレクトリ
+	target_dir=`echo $1 | sed -e 's/\/[^\/]*$/\//g'`
+	
+	if [[ ${target_dir} != */ ]] ; then
+		target_dir=""
+	fi
+
+	# 補完候補
+	objs=`rtls ${target_dir} 2> /dev/null | col | sed 's/00m//g'` # col 以降はカラー文字コードを取り除くため
+	
+	# 絶対バスとターゲットディレクトリの挿入(補完候補にリストするため)
+	target_objs=""
+	for obj in ${objs} ; do
+		target_objs="${target_objs} ${target_dir}${obj}"
+	done
+
+	target_objs=( $(compgen -W "${target_objs}" -- $1 ) )
+
+	# 補完後のスペースを入れない(nospace)パターンを検索
+	if [[ ${#target_objs[@]} == 1 ]] ; then
+		# 補完ターゲットがディレクトリまたはポート名の場合nospace
+		if [[ ${target_objs[0]} == */ ]] || [[ ${target_objs[0]} == *:  ]] ; then
+      	          compopt -o nospace
+		# rtcon rtdisコマンドで補完ターゲットがオブジェクト名の場合、:を足してnospace
+   		elif [[  ${COMP_WORDS[0]} == rtcon || ${COMP_WORDS[0]} == rtdis ]] ; then
+			target_objs[0]="${target_objs[0]}:"
+			compopt -o nospace
+		fi
+	fi
+        
+	# オブジェクト名の補完 
+        COMPREPLY=( ${target_objs[@]} )
+}
+
+# rtls系の補完
+_rtls()
+{
+	local cur prev
+	COMPREPLY=()
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+	# オプションの補完
+	if [[ ${cur} == -* ]] ; then
+		_rtopts ${cur}
+		return 0
+	fi
+
+	# オブジェクト名の補完 
+	_rtobj ${cur}
+	return 0
+}
+
+# rtcon系の補完
+_rtcon()
+{
+        local cur prev preprev colonopt
+        COMPREPLY=()
+        cur="${COMP_WORDS[COMP_CWORD]}"
+        prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+        # オプションの補完
+        if [[ ${cur} == -* ]] ; then
+                _rtopts ${cur}
+                return 0
+        fi
+
+	# : はスペースと同じように引数の区切り文字として扱われるので注意
+	# ポート名の補完 1
+	if [[ ${cur} == : ]] ; then
+		colonopt=$(rtcat ${prev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }')
+		COMPREPLY=( ${colonopt} )
+		return 0
+	fi
+
+	# ポート名の補完 2
+	if [[ ${prev} == : ]] ; then
+		preprev="${COMP_WORDS[COMP_CWORD-2]}"
+		colonopt=`rtcat ${preprev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }'`
+		COMPREPLY=( $(compgen -W "${colonopt}" -- ${cur}) )
+                return 0
+	fi
+
+        # オブジェクト名の補完 
+	_rtobj ${cur}
+	return 0
+
+}
+
+# rtconfの補完
+_rtconf()
+{
+        local cur prev confopts setopt
+        COMPREPLY=()
+        cur="${COMP_WORDS[COMP_CWORD]}"
+        prev="${COMP_WORDS[COMP_CWORD-1]}"
+	
+	confopts="set list act"
+
+        # オプションの補完
+        if [[ ${cur} == -* ]] ; then
+                _rtopts ${cur}
+                return 0
+        fi
+
+	# rtconf用オプションの補完
+	# とりあえず前引数がオブジェクトであるか判定するのに*.rtc と *.mgrを使う
+	if [[ ${prev} == *.rtc ]] || [[ ${prev} == *.mgr ]] ; then
+		COMPREPLY=( $(compgen -W "${confopts}" -- ${cur}) )
+		return 0
+	fi
+
+	# rtconf用オプション指定時の補完
+	case "${prev}" in
+		set)	setopt=$(rtconf ${COMP_WORDS[COMP_CWORD-2]} -l 2> /dev/null | grep "^ " | awk '{ print $1 }')
+			COMPREPLY=( $(compgen -W "${setopt}" -- ${cur}) )
+			
+			return 0
+		        ;;
+	        list)
+			return 0
+			;;
+
+		act)
+			return 0
+			;;
+
+		*)
+		        ;;
+	esac
+
+	# オブジェクト名の補完 
+	_rtobj ${cur}
+	return 0
+
+}
+
+# rtmgrの補完
+_rtmgr()
+{
+	local cur prev mgropts setopt
+        COMPREPLY=()
+        cur="${COMP_WORDS[COMP_CWORD]}"
+        prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+        mgropts="load unload create delete"
+
+        # オプションの補完
+        if [[ ${cur} == -* ]] ; then
+                _rtopts ${cur}
+                return 0
+        fi
+
+        # rtmgr用オプションの補完
+	# 前引数が.mgrと.soの場合
+	if [[ ${prev} == *.mgr ]] || [[ ${prev} == *.so ]]; then
+                COMPREPLY=( $(compgen -W "${mgropts}" -- ${cur}) )
+                return 0
+        fi
+
+        # rtmgr用オプション指定時の補完
+        case "${prev}" in
+		load)	# ファイル名補完 complete -A file
+			return 0
+                        ;;
+                unload)	# ファイル名補完 complete -A file
+                        return 0
+                        ;;
+
+                create)	COMPREPLY=() # 補完なし
+                        return 0
+                        ;;
+                delete)	_rtobj ${cur} # オブジェクト名の補完
+                        return 0
+                        ;;
+
+                *)
+                        ;;
+        esac
+
+        # ファイル名の補完 complete -A file 
+        return 0
+
+
+}
+
+# rtsshell系の補完
+_rtsshell(){
+	local cur prev
+        COMPREPLY=()
+        cur="${COMP_WORDS[COMP_CWORD]}"
+        prev="${COMP_WORDS[COMP_CWORD-1]}"
+        
+	# オプションの補完
+        if [[ ${cur} == -* ]] ; then
+                _rtopts ${cur}
+                return 0
+	fi
+        
+	# ファイル名の補完 complete -A file  
+	return 0
+}
+
+complete -F _rtls rtls
+complete -F _rtls rtact
+complete -F _rtls rtcat
+complete -F _rtls rtcwd
+complete -F _rtls rtdeact
+complete -F _rtls rtreset
+complete -F _rtls rtfind
+
+complete -F _rtcon rtcon
+complete -F _rtcon rtdis
+
+complete -F _rtconf rtconf
+
+complete -F _rtmgr -A file rtmgr
+
+complete -F _rtsshell -A file rtstart
+complete -F _rtsshell -A file rtstop
+complete -F _rtsshell -A file rtteardown
+complete -F _rtsshell -A file rtresurrect
+complete -F _rtsshell -A file rtcryo
+
+

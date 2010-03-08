@@ -49,11 +49,7 @@ distribution:
 
     $ python setup.py install
 
- c. In Linux/OSX, source the rtcwd alias. The best way to do this is to copy
-    the function definition from the file 'rtcwd' into your .bashrc file.
-    On Windows, use the rtcwd.bat file.
-
- d. If necessary, set environment variables. These should be set by default,
+ c. If necessary, set environment variables. These should be set by default,
     but if not you will need to set them yourself. On Windows, you will need to
     ensure that your Python site-packages directory is in the PYTHONPATH
     variable and the Python scripts directory is in the PATH variable.
@@ -65,9 +61,21 @@ distribution:
 setup.py (see #2), but saves opening a command prompt. You may still need to
 add paths to your environment variables
 
-Optional: OpenRTM-aist installs a utility called 'rtcd'. If you use rtcwd more
-often than this utility, you can rename 'rtcd' to something else and then
-rename 'rtcwd' to 'rtcd'. I find this much faster to use.
+Post-install
+------------
+
+If you are using a bash-compatible shell, source the bash_completion script.
+You can find it in ${prefix}/share/rtcshell/. This will allow you to use
+tab-completion with the commands.
+
+In Linux/OSX, source the rtcwd alias. The best way to do this is to add a line
+to your shell's startup file that sources it. For example, if you are using a
+bash shell and installed rtcshell to /usr/local, add the following line to the
+.bashrc file in your home directory:
+
+ source /usr/local/bin/rtcwd
+
+On Windows, simply use the rtcwd.bat file directly.
 
 Commands
 --------

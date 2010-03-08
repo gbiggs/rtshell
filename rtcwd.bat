@@ -9,7 +9,7 @@ rem     All rights reserved.
 rem Licensed under the Eclipse Public License -v 1.0 (EPL)
 rem http://www.opensource.org/licenses/eclipse-1.0.txt
 
-rtcwd.py > settmp.bat
+rtcwd.py %* > settmp.bat
 settmp
 del settmp.bat
 

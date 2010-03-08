@@ -37,8 +37,20 @@ from rtcshell.path import ENV_VAR, cmd_path_to_full_path
 
 if sys.platform == 'win32':
     SET_CMD = 'set'
+    EQUALS = '='
+    QUOTE = ''
+elif 'SHELL' in os.environ and 'csh' in os.environ['SHELL']:
+    SET_CMD = 'setenv'
+    EQUALS = ' '
+    QUOTE = '"'
 else:
     SET_CMD = 'export'
+    EQUALS = '='
+    QUOTE = '"'
+
+
+def make_cmd_line(path):
+    return '{0} {1}{2}{3}{4}{3}'.format(SET_CMD, ENV_VAR, EQUALS, QUOTE, path)
 
 
 def cd(cmd_path, full_path):
@@ -65,13 +77,14 @@ object'.format(cmd_path)
         print >>sys.stderr, 'rtcd: {0}: Not a directory'.format(cmd_path)
         return 1
 
-    print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR, full_path)
+    print make_cmd_line(full_path)
+    return 0
 
 
 def main(argv):
     if len(argv) < 2:
         # Change to the root dir
-        print '{0} {1}="/"'.format(SET_CMD, ENV_VAR)
+        print '{0} {1}{3}{2}/{2}'.format(SET_CMD, ENV_VAR, QUOTE, EQUALS)
         return 0
     else:
         # Take the first argument only
@@ -80,20 +93,19 @@ def main(argv):
         if cmd_path == '.' or cmd_path == './':
             # Special case for '.': do nothing
             if ENV_VAR in os.environ:
-                print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR, os.environ[ENV_VAR])
+                print make_cmd_line(os.environ[ENV_VAR])
                 return 0
             else:
-                print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR, '/')
+                print make_cmd_line('/')
                 return 0
         elif cmd_path == '..' or cmd_path == '../':
             # Special case for '..': go up one directory
             if ENV_VAR in os.environ and os.environ[ENV_VAR] and \
                     os.environ[ENV_VAR] != '/':
-                print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR,
-                        os.path.dirname(os.environ[ENV_VAR]))
+                print make_cmd_line(os.environ[ENV_VAR])
                 return 0
             else:
-                print '{0} {1}="{2}"'.format(SET_CMD, ENV_VAR, '/')
+                print make_cmd_line('/')
                 return 0
 
         full_path = cmd_path_to_full_path(cmd_path)

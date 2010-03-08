@@ -144,7 +144,7 @@ any checks. You should not give access to this command to untrusted people.
 [Default: %default]')
 
     if argv:
-        sys.argv = argv
+        sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
     except OptionError, e:

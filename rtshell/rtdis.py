@@ -159,7 +159,7 @@ Ports are specified at the end of each path, preceeded by a colon (:).'''
 [Default: %default]')
 
     if argv:
-        sys.argv = argv
+        sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
     except OptionError, e:

@@ -90,7 +90,7 @@ def base_main(description, action, argv=None, tree=None):
 [Default: %default]')
 
     if argv:
-        sys.argv = argv
+        sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
     except OptionError, e:

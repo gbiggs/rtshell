@@ -314,7 +314,7 @@ Name
             default=False, help='List recursively. [Default: %default]')
 
     if argv:
-        sys.argv = argv
+        sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
     except OptionError, e:

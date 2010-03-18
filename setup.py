@@ -20,7 +20,6 @@ rtcshell install script.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 
@@ -41,6 +40,7 @@ base_scripts = ['rtact',
                 'rtinject',
                 'rtls',
                 'rtmgr',
+                'rtprint',
                 'rtpwd',
                 'rtreset']
 if sys.platform == 'win32':
@@ -56,6 +56,7 @@ if sys.platform == 'win32':
                    'rtinject.bat',
                    'rtls.bat',
                    'rtmgr.bat',
+                   'rtprint.bat',
                    'rtpwd.bat',
                    'rtreset.bat']
     scripts = base_scripts + batch_files
@@ -97,7 +98,6 @@ setup(name='rtcshell',
           'Topic :: Utilities'
           ],
       packages=['rtcshell'],
-      #package_data={'rtcshell': ['bash_completion']},
       scripts=scripts,
       data_files=data_files,
       cmdclass={'install_scripts':InstallRename}

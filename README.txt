@@ -97,6 +97,7 @@ rtfind      Find RTC tree entries matching given search criteria.
 rtinject    Inject data into an input port of a component.
 rtls        List the contents of the current working directory of the RT tree.
 rtmgr       Control managers to create and delete components.
+rtprint     Print the data being transmitted by a port to the console.
 rtpwd       Print the current working directory of the RT tree.
 rtreset     Reset a component.
 

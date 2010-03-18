@@ -20,7 +20,6 @@ Functions for dealing with input paths.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

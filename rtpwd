@@ -21,7 +21,6 @@ variable.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

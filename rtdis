@@ -20,7 +20,6 @@ Command to disconnect ports.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

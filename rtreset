@@ -20,7 +20,6 @@ Command to move a component from the error state to the inactive state.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

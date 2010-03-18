@@ -20,7 +20,6 @@ Command to manage component configuration.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 import sys

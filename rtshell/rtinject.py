@@ -14,14 +14,13 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtinject
+File: rtinject.py
 
 Implementation of the command to inject a single shot of data into an input
 port of a component.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

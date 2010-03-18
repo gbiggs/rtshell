@@ -20,7 +20,6 @@ Command to display component information.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

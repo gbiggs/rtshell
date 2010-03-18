@@ -20,7 +20,6 @@ Command to connect two ports.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

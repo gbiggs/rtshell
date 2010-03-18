@@ -20,7 +20,6 @@ Command to move a component to the activated state.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

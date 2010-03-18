@@ -20,7 +20,6 @@ Inject a single shot of data into an input port of a component.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

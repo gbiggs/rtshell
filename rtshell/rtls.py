@@ -20,7 +20,6 @@ Implementation of the command to list naming contexts.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

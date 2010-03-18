@@ -19,7 +19,6 @@ Commands for managing RT Components and RTM-based systems from a shell.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

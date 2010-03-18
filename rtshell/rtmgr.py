@@ -14,13 +14,12 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtmgr
+File: rtmgr.py
 
 Implementation of the command for controlling managers.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

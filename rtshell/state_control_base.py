@@ -20,7 +20,6 @@ Base for the scripts that change component state.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

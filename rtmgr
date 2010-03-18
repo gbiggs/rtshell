@@ -20,7 +20,6 @@ Command for controlling managers.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 

@@ -20,7 +20,6 @@ Command to find components, managers, etc.
 
 '''
 
-__version__ = '$Revision: $'
 # $Source$
 
 import sys

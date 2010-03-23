@@ -92,8 +92,8 @@ type.'.format(sys.argv[0])
     return_code, profile = port.object.connect(profile)
     port.reparse_connections()
     if return_code != RTC.RTC_OK:
-        print >>sys.stderr, '{0}: Failed to create local connection.'.format(\
-                sys.argv[0])
+        print >>sys.stderr, '{0}: Failed to create local connection. Check \
+your data type matches the port.'.format(sys.argv[0])
         return 1
     # Get the connection's IOR and narrow it to an InPortCdr object
     conn = port.get_connection_by_name(path[-1] + '.inject_conn')

@@ -102,7 +102,10 @@ def main(argv):
             # Special case for '..': go up one directory
             if ENV_VAR in os.environ and os.environ[ENV_VAR] and \
                     os.environ[ENV_VAR] != '/':
-                print make_cmd_line(os.environ[ENV_VAR])
+                parent = os.environ[ENV_VAR][:os.environ[ENV_VAR].rstrip('/').rfind('/')]
+                if not parent:
+                    parent = '/'
+                print make_cmd_line(parent)
                 return 0
             else:
                 print make_cmd_line('/')

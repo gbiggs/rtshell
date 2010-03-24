@@ -45,10 +45,11 @@ def format_component(object, use_colour=True, long=False, really_long=False):
     profile_items = [('Category', object.category),
                      ('Description', object.description),
                      ('Instance name', object.instance_name),
-                     ('Parent', object.parent_object),
                      ('Type name', object.type_name),
                      ('Vendor', object.vendor),
                      ('Version', object.version)]
+    if object.parent:
+        profile_items.append(('Parent', object.parent_object))
     pad_length = max([len(item[0]) for item in profile_items]) + 2
     for item in profile_items:
         result.append('{0}{1}{2}'.format(''.ljust(indent),
@@ -57,6 +58,7 @@ def format_component(object, use_colour=True, long=False, really_long=False):
 
     if object.properties:
         result.append('{0}Extra properties:'.format(''.ljust(indent)))
+        indent += 2
         extra_props = object.properties
         keys = extra_props.keys()
         keys.sort()
@@ -65,6 +67,7 @@ def format_component(object, use_colour=True, long=False, really_long=False):
             result.append('{0}{1}{2}'.format(''.ljust(indent),
                                              key.ljust(pad_length),
                                              extra_props[key]))
+        indent -= 2
 
     for ec in object.owned_ecs:
         if long:
@@ -79,8 +82,37 @@ def format_component(object, use_colour=True, long=False, really_long=False):
                 'Kind'.ljust(padding),
                 ec.kind_as_string(add_colour=use_colour)))
             result.append('{0}{1}{2}'.format(''.ljust(indent),
-                'Rate'.ljust(padding),
-                ec.rate))
+                'Rate'.ljust(padding), ec.rate))
+            if ec.owner_name:
+                result.append('{0}{1}{2}'.format(''.ljust(indent),
+                    'Owner'.ljust(padding), ec.owner_name))
+            if ec.participant_names:
+                if really_long:
+                        result.append('{0}{1}'.format('-'.rjust(indent),
+                            'Participants'.ljust(padding)))
+                        indent += 2
+                        for pn in ec.participant_names:
+                            result.append('{0}{1}'.format(''.ljust(indent),
+                                pn))
+                        indent -= 2
+                else:
+                    result.append('{0}{1}'.format('+'.rjust(indent),
+                        'Participants'.ljust(padding)))
+            if ec.properties:
+                if really_long:
+                    result.append('{0}{1}'.format('-'.rjust(indent),
+                        'Extra properties'.ljust(padding)))
+                    indent += 2
+                    keys = ec.properties.keys()
+                    keys.sort()
+                    pad_length = max([len(key) for key in keys]) + 2
+                    for key in keys:
+                        result.append('{0}{1}{2}'.format(''.ljust(indent),
+                             key.ljust(pad_length), ec.properties[key]))
+                    indent -= 2
+                else:
+                    result.appent('{0}{1}'.format('+'.rjust(indent),
+                        'Extra properties'.ljust(padding)))
             indent -= 2
         else:
             result.append('{0}Execution Context {1}'.format(\

@@ -225,7 +225,13 @@ def listen_to_port(cmd_path, full_path,
     result = activate_listener(options, manager.getORB())
     if result:
         return result
-    raw_input('Press any key to stop.\n')
+    try:
+        while True:
+            raw_input('')
+    except KeyboardInterrupt:
+        pass
+    except EOFError:
+        pass
     manager.shutdown()
     manager.join()
 

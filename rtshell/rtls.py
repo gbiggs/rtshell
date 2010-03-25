@@ -309,7 +309,7 @@ Name
     parser.add_option('-d', '--debug', dest='debug', action='store_true',
             default=False, help='Print debugging information. \
 [Default: %default]')
-    parser.add_option('-r', '--recurse', dest='recurse', action='store_true',
+    parser.add_option('-R', '--recurse', dest='recurse', action='store_true',
             default=False, help='List recursively. [Default: %default]')
 
     if argv:

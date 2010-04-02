@@ -134,6 +134,32 @@ RTCTREE_NAMESERVERS   A list of name server addresses, separated by semi-
 RTCSH_CWD               The current working directory in the tree.
 
 
+Shell completion
+----------------
+
+If you are using a Bash-compatible shell, you can use the included completion
+script to make using the commands easier. The script is installed in
+${prefix}/share/rtcshell. Run the following command to load it:
+
+ $ source bash_completion
+
+You can add this to your ~/.bashrc file to have it loaded in every new shell
+instance. Here are some examples of completion.
+
+ $ rtcwd [TAB]
+ $ rtcwd localhost/
+ $ rtcwd localhost/[TAB]
+ $ rtcwd localhost/kenroke.host_cxt/
+ $ rtcwd localhost/kenroke.host_cxt/[TAB][TAB]
+ ConsoleIn0.rtc  ConfigSample0.rtc  manager.mgr  Sensor0.rtc
+ $ rtcwd localhost/kenroke.host_cxt/[ENTER]
+ $ rtconf ConfigSample0.rtc set [TAB]
+ double_param0  double_param1  int_param0     int_param1     str_param0
+ str_param1     vector_param0
+ $ rtcon Sensor0.rtc:[TAB]
+ in   out
+
+
 Tutorial
 --------
 
@@ -550,7 +576,7 @@ Loaded shared libraries can be removed from the manager.
 
 # Use rtinject to inject a single value into an input port of a component.
 # Let's try using it on ConsoleOut.
- $ rtinject ConsoleOut0.rtc:in "RTC.TimedLong({time}, 42)"
+ $ rtinject ConsoleOut0.rtc:in 'RTC.TimedLong({time}, 42)'
 # Looking at the output of the running ConsoleOut instance (with some lines
 # removed for clarity):
  $ ./ConsoleOutComp
@@ -561,6 +587,11 @@ Loaded shared libraries can be removed from the manager.
  [...]
  Received: 42
  TimeStamp: 1266053430[s] 578351020[ns]
+
+# The opposite of injecting data is printing it. Use rtprint to show what data
+# is being send over an output port of a component.
+ $ rtprint ConsoleIn0.rtc:out
+ [0.025029968] 42
 
 # If you have a zombie on one of your name servers, you will get constant
 # warnings about it. You can delete zombies or any other registered object

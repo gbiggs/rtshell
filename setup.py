@@ -78,7 +78,7 @@ class InstallRename(install_scripts):
 
 
 setup(name='rtcshell',
-      version='1.0.0',
+      version='2.0.0',
       description='Shell commands for managing RT-Middleware.',
       author='Geoffrey Biggs',
       author_email='git@killbots.net',

@@ -1,0 +1,82 @@
+# rtsshell Bash completion
+#
+# Copyright (C) 2009-2010
+#     Keisuke Suzuki
+#     RT-Synthesis Research Group
+#     Intelligent Systems Research Institute,
+#     National Institute of Advanced Industrial Science and Technology (AIST),
+#     Japan
+#     All rights reserved.
+# Licensed under the Eclipse Public License -v 1.0 (EPL)
+# http://www.opensource.org/licenses/eclipse-1.0.txt
+
+
+# Overview
+#
+# Adds tab-completion functionality to rtsshell. Can complete command options.
+#
+# rtsshellにbashの補完機能を追加するbash-completionスクリプト。
+#
+# Usage
+#
+#  $ source ${prefix}/share/rtsshell/bash_completion
+
+
+# Command option completion
+# Usage : _rtopts ${COMP_WORDS[COMP_CWORD]}
+#         _rtopts ${cur}
+# Receives the currently-being-entered word.
+_rtopts()
+{
+    local opts complist
+
+    case ${COMP_WORDS[0]} in
+        rtstart)    opts="--version -h --help --dry-run -v --verbose"
+                    ;;
+        rtstop)     opts="--version -h --help --dry-run -v --verbose"
+                    ;;
+        rtteardown) opts="--version -h --help --dry-run -v --verbose"
+                    ;;
+        rtcryo)     opts="--version -h --help -a --abstract= -n --system-name= -o --output= -v --system-version= -e --vendor= --verbose"
+                    ;;
+        rtresurrect)    opts="--version -h --help --dry-run -v --verbose"
+                    ;;
+        rtprint)    opts="--version -h --help -d --debug"
+                    ;;
+        rtinject)   opts="--version -h --help -d --debug"
+                    ;;
+        *)          ;;
+    esac
+
+    complist=$(compgen -W "${opts} ${nospaceopts}" -- $1)
+
+    # If there is an = then don't add a space
+    if [[ ${complist} == *= ]] ; then
+        compopt -o nospace
+    fi
+
+    COMPREPLY=(${complist})
+    return 0
+
+}
+
+_rtsshell(){
+    local cur prev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [[ ${cur} == -* ]] ; then
+        _rtopts ${cur}
+        return 0
+    fi
+
+    return 0
+}
+
+complete -F _rtsshell -A file rtstart
+complete -F _rtsshell -A file rtstop
+complete -F _rtsshell -A file rtteardown
+complete -F _rtsshell -A file rtresurrect
+complete -F _rtsshell -A file rtcryo
+

@@ -43,6 +43,7 @@ if sys.platform == 'win32':
     scripts =  base_scripts + batch_files
 else:
     scripts = base_scripts
+    data_files = [('share/rtsshell', ['bash_completion'])]
 
 
 class InstallRename(install_scripts):
@@ -76,6 +77,7 @@ setup(name='rtsshell',
           ],
       packages=['rtsshell'],
       scripts=scripts,
+      data_files=data_files,
       cmdclass={'install_scripts':InstallRename}
       )
 

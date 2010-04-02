@@ -58,7 +58,7 @@ class InstallRename(install_scripts):
 
 
 setup(name='rtsshell',
-      version='1.0.0',
+      version='2.0.0',
       description='Collection of tools for managing complete RT Systems.',
       long_description='Collection of tools for managing complete RT Systems.',
       author='Geoffrey Biggs',

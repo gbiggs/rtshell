@@ -83,6 +83,7 @@ To preview what actions will be taken before performing them, use the --dry-run
 option. This will cause the actions to be printed, but not performed, so you
 can check that they are correct.
 
+
 Usage - rtstart
 -------------------
 
@@ -94,6 +95,7 @@ a format understood by the rtsprofile library (typically XML or YAML):
 To preview what actions will be taken before performing them, use the --dry-run
 option. This will cause the actions to be printed, but not performed, so you
 can check that they are correct.
+
 
 Usage - rtstop
 -------------------
@@ -107,6 +109,7 @@ To preview what actions will be taken before performing them, use the --dry-run
 option. This will cause the actions to be printed, but not performed, so you
 can check that they are correct.
 
+
 Usage - rtteardown
 ------------------
 
@@ -119,6 +122,7 @@ To preview what actions will be taken before performing them, use the --dry-run
 option. This will cause the actions to be printed, but not performed, so you
 can check that they are correct.
 
+
 Usage - rtcryo
 --------------
 
@@ -129,4 +133,17 @@ Run rtcryo.py, passing it the name of the file to save the system to:
 rtcryo will examine the RTCTree that it creates in order to find the system to
 save. See the rtctree documentation for details on how that library finds
 components.
+
+
+Shell completion
+----------------
+
+If you are using a Bash-compatible shell, you can use the included completion
+script to make using the commands easier. The script is installed in
+${prefix}/share/rtsshell. Run the following command to load it:
+
+ $ source bash_completion
+
+You can add this to your ~/.bashrc file to have it loaded in every new shell
+instance.
 

@@ -602,3 +602,21 @@ Loaded shared libraries can be removed from the manager.
  $ rtls
  $
 
+
+Changelog
+---------
+
+2.0
+- Fixes for Windows
+- Fixed problems handling paths referencing parent directories
+- New command: rtdel
+- New command: rtinject
+- New command: rtprint
+- rtcat: Print the number of unknown connections
+- Major refactoring: all commands can now be imported and called from Python
+  scripts easily
+- New Bash completion script (thanks to Keisuke Suzuki)
+- Support csh in rtcwd
+- rtcat: Print new information available from rtctree for execution contexts
+- rtls: Change recurse option from -r to -R to match ls
+

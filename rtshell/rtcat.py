@@ -111,7 +111,7 @@ def format_component(object, use_colour=True, long=False, really_long=False):
                              key.ljust(pad_length), ec.properties[key]))
                     indent -= 2
                 else:
-                    result.appent('{0}{1}'.format('+'.rjust(indent),
+                    result.append('{0}{1}'.format('+'.rjust(indent),
                         'Extra properties'.ljust(padding)))
             indent -= 2
         else:

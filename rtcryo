@@ -192,7 +192,7 @@ be used.'''
             type='string', default='RTSystem',
             help='Name of the RT System. [Default: %default]')
     parser.add_option('-o', '--output', dest='output', action='store',
-            type='string', default='rtsytem.xml',
+            type='string', default='rtsystem.xml',
             help='Output file name. [Default: %default]')
     parser.add_option('-v', '--system-version', dest='version', action='store',
             type='string', default='0',
@@ -212,6 +212,7 @@ be used.'''
 
     # Load the RTC Tree
     rtctree = create_rtctree(servers=args)
+    print rtctree
     if not rtctree:
         print >>sys.stderr, '{0}: {1}: Empty tree.'.format(sys.argv[0], args)
         return 1

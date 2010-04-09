@@ -47,6 +47,39 @@ index = 0
 port_type = None
 
 
+def get_our_listener(options, tree=None, orb=None):
+    if not tree:
+        tree = create_rtctree(paths=['/', 'localhost'], orb=orb)
+    if not tree:
+        return 1, None
+
+    listener_name = listener_reg_name(index)
+    def get_result(node, args):
+        return node
+    def is_our_listener(node):
+        if node.name == listener_name:
+            return True
+    matches = tree.iterate(get_result, filter=['is_component', is_our_listener])
+    if not matches or len(matches) != 1:
+        print >>sys.stderr, '{0}: Could not find listener component.'.format(\
+                sys.argv[0])
+        return 1, None
+    return 0, matches[0]
+
+
+def get_our_listener_port(options, tree=None, orb=None):
+    result, comp = get_our_listener(options, tree=tree, orb=orb)
+    if result:
+        return result, None
+
+    port_obj = comp.get_port_by_name('input')
+    if not port_obj:
+        print >>sys.stderr, '{0}: Cannot access {0}:input: No such \
+port'.format(sys.argv[0], listener_name)
+        return 1, None
+    return 0, port_obj
+
+
 def get_comp_obj(cmd_path, path, options, tree=None, orb=None):
     if not tree:
         tree = create_rtctree(paths=path, orb=orb)
@@ -154,7 +187,8 @@ class Listener(OpenRTM_aist.DataFlowComponentBase):
     def onStartup(self, ec_id):
         try:
             self.inport_data = self._port_type(RTC.Time(0, 0), None)
-            self.inport = OpenRTM_aist.InPort('input', self.inport_data, OpenRTM_aist.RingBuffer (8))
+            self.inport = OpenRTM_aist.InPort('input', self.inport_data,
+                    OpenRTM_aist.RingBuffer (8))
             self.registerInPort('input', self.inport)
         except:
             print_exception(*sys.exc_info ())
@@ -176,7 +210,8 @@ class Listener(OpenRTM_aist.DataFlowComponentBase):
 def ListenerInit(manager):
     profile = OpenRTM_aist.Properties(defaults_str=listener_spec(index))
     manager.registerFactory(profile, Listener, OpenRTM_aist.Delete)
-    comp = manager.createComponent(listener_name(index))
+    comp = manager.createComponent('{0}'.format(\
+            listener_name(index)))
 
 
 def create_listener_comp(port_string):
@@ -198,9 +233,8 @@ def connect_listener(cmd_path, path, port, options, orb):
     result, source_port = get_port_obj(cmd_path, path, port, options, orb=orb)
     if result:
         return result
-    listener_name = listener_reg_name(index)
-    result, dest_port = get_port_obj(listener_name,
-            ['/', 'localhost', listener_name], 'input', options, orb=orb)
+
+    result, dest_port = get_our_listener_port(options, orb=orb)
     if result:
         return result
 
@@ -228,9 +262,9 @@ match.'.format(sys.argv[0])
 
 
 def activate_listener(options, orb):
-    listener_name = listener_reg_name(index)
-    result, (tree, comp) = get_comp_obj(listener_name,
-            ['/', 'localhost', listener_name], options, orb=orb)
+    result, comp = get_our_listener(options, orb=orb)
+    if result:
+        return result
     comp.activate_in_ec(0)
 
 

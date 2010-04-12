@@ -261,7 +261,11 @@ directory.'.format(sys.argv[0], address)
             recurse_root = tree.get_node(path)
             recurse_root_path = recurse_root.full_path
             def get_name(node, args):
-                return node.full_path.lstrip(recurse_root_path)
+                if node.full_path.startswith(recurse_root_path):
+                    result = node.full_path[len(recurse_root_path):]
+                else:
+                    result = node.full_path
+                return result.lstrip('/')
             dir_names = ['.'] + recurse_root.iterate(get_name,
                     args=options.long, filter=['is_directory'])[1:]
             listings = recurse_root.iterate(list_directory,

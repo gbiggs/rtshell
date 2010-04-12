@@ -111,7 +111,7 @@ def format_component(object, use_colour=True, long=False, really_long=False):
                              key.ljust(pad_length), ec.properties[key]))
                     indent -= 2
                 else:
-                    result.appent('{0}{1}'.format('+'.rjust(indent),
+                    result.append('{0}{1}'.format('+'.rjust(indent),
                         'Extra properties'.ljust(padding)))
             indent -= 2
         else:
@@ -158,7 +158,12 @@ def format_component(object, use_colour=True, long=False, really_long=False):
                     tag2 = '+'
                 dest_ports = []
                 for name, p in conn.ports:
-                    if not object.get_port_by_ref(p.object):
+                    # Handle the case of unknown port owners
+                    if not p:
+                        dest_ports.append(name)
+                        num_conns -= 1
+                    # Filter out ports belonging to this object
+                    elif not object.get_port_by_ref(p.object):
                         dest_ports.append(name)
                         num_conns -= 1
                 if dest_ports:

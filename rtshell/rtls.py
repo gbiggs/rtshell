@@ -211,7 +211,7 @@ def list_directory(dir_node, long=False):
             else:
                 items.append((build_attr_string(['faint', 'white'],
                                                 use_colour) + \
-                              entry.name + '/' + \
+                              entry.name + \
                               build_attr_string(['reset']),
                              entry.name))
         return format_items_list(items)

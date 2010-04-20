@@ -25,7 +25,6 @@ __version__ = '$Revision: $'
 
 
 from itertools import chain
-from operator import attrgetter
 from optparse import OptionParser, OptionError
 from os import sep as pathsep
 from rtctree.path import parse_path

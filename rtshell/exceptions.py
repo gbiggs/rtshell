@@ -38,5 +38,10 @@ class NoSuchOptionError(RtsShellError):
     pass
 
 
+class PrecedingTimeoutError(RtsShellError):
+    '''The time limit on a preceding condition being met has elapsed.'''
+    pass
+
+
 # vim: tw=79
 

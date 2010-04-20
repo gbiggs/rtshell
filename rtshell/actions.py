@@ -23,7 +23,7 @@ __version__ = '$Revision: $'
 # $Source$
 
 
-from rtctree.exceptions import NoSuchConfSetError, NoSuchConfParamError
+from rtctree.exceptions import NoSuchConfSetError, NoSuchConfParamError, \
 from rtctree.path import parse_path
 from rtsshell.exceptions import RequiredActionFailedError
 from rtsshell.options import Options
@@ -152,15 +152,54 @@ class ConditionedAction(Action):
     '''
     def __init__(self, action, seq_id=-1):
         super(ConditionedAction, self).__init__()
+        self._executed = False
         self._seq_id = seq_id
+        self._timeout = 0
+        self._wait_time = 0
         self._wrapped_action = action
 
     def __str__(self):
+        result = '['
+        if self.seq_id > 0:
+            result += 'Sequence: {0}'.format(self.seq_id)
+        
         if self.seq_id < 0:
             return str(self._wrapped_action)
         else:
             return '[Sequence: {0}] '.format(self.seq_id) + \
                     str(self._wrapped_action)
+
+    @property
+    def executed(self):
+        '''True if the wrapped action has been executed.'''
+        return self._executed
+
+    def satisfied(self, elapsed_time, rtctree):
+        '''Check if the conditions are satisfied yet.
+
+        Checks the following conditions:
+        - wait_time: checked against elapsed_time
+        - timeout: checked against elapsed_time
+        - preceding_actions: checked against previous actions
+        - preceding_statuses: checked against rtctree
+
+        May raise @ref PrecedingTimeoutError if a time out has occured.
+
+        '''
+        if self.timeout > elapsed_time:
+            raise PrecedingTimeoutError
+        if self.wait_time > elapsed_time:
+            return True
+        return False
+
+    @property
+    def wait_time(self):
+        '''The time to wait before executing the action, in milliseconds.'''
+        return self._wait_time
+
+    @wait_time.setter
+    def wait_time(self, wait_time):
+        self._wait_time = wait_time
 
     @property
     def seq_id(self):
@@ -171,7 +210,21 @@ class ConditionedAction(Action):
     def seq_id(self, seq_id):
         self._seq_id = seq_id
 
+    @property
+    def timeout(self):
+        '''The timeout on waiting for a preceding action to occur/complete.
+
+        In milliseconds.
+
+        '''
+        return self._timeout
+
+    @timeout.setter
+    def timeout(self, timeout):
+        self._timeout = timeout
+
     def _execute(self, rtctree):
+        self._executed = True
         return self._wrapped_action._execute(rtctree)
 
 

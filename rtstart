@@ -37,6 +37,7 @@ from rtsshell import RTSSHELL_VERSION
 from rtsshell.actions import *
 from rtsshell.exceptions import RequiredActionFailedError
 from rtsshell.options import Options
+from rtsshell.plan import make_plan, print_plan, execute_plan
 
 
 def check_required_component_actions(rtsprofile):
@@ -66,45 +67,6 @@ def activate_actions(rtsprofile):
                                              comp.instance_name, ec.id))
 
     return checks, activates
-
-
-def get_action_condition(rtsprofile, action):
-    if rtsprofile.activation.targets:
-        for c in rtsprofile.activation.targets:
-            target = c.target_component
-            if target.id == action.ec_id and \
-               target.component_id == action.comp_id and \
-               target.instance_name == action.instance_name:
-                return c
-    return None
-
-
-def condition_action(rtsprofile, action):
-    c = get_action_condition(rtsprofile, action)
-    if not c:
-        return ConditionedAction(action)
-    result = ConditionedAction(action, c.sequence)
-    return result
-
-
-def condition_actions(rtsprofile, actions):
-    result = [condition_action(rtsprofile, a) for a in actions]
-    result.sort(key=attrgetter('seq_id'))
-    return result
-
-
-def make_plan(rtsprofile, actions):
-    return condition_actions(rtsprofile, actions)
-
-
-def print_plan(plan):
-    for p in plan:
-        print p
-
-
-def execute_plan(rtctree, plan):
-    for a in plan:
-        a(rtctree)
 
 
 def main(argv):

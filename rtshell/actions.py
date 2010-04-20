@@ -40,25 +40,47 @@ class Action(object):
     action. It must return True for success or False for failure, and a very
     brief error message.
 
+    All actions must be provided with one or more result callback objects.
+    These will be called in the order they are set after performing the action
+    and passed the result of the action's _execute method. Its job is to take
+    appropriate measures based on the outcome of the action. Typically, the
+    first should perform a verification that the result meets necessary
+    criteria, such as a required action succeeding. If no callbacks are
+    provided, a default (@ref BaseCallback) will be inserted.
+
     Action objects must implement the __str__ method. They should print out a
     description of what they will do. This description should include details
-    specific to that instance of the action (for example, 'Will activate
-    component 'ConsoleIn0.rtc'').
+    specific to that instance of the action (for example, "Will activate
+    component 'ConsoleIn0.rtc'").
 
     '''
 
-    def __init__(self):
-        pass
+    def __init__(self, callbacks=[]):
+        super(Action, self).__init__()
+        self._callbacks = callbacks
 
     def __call__(self, rtctree):
         result, err = self._execute(rtctree)
-        if not result:
-            print 'Action failed.'
-        if err:
-            print err
+        if not self._callbacks:
+            c = BaseCallback()
+            c(result, err)
+        else:
+            for c in self._callbacks:
+                c(result, err)
 
     def __str__(self):
         return 'Base action'
+
+    def add_callback(self, callback):
+        self._callbacks.append(callback)
+
+    def _action_string(self, action_desc):
+        if self._callbacks:
+            action_desc += ' ({0}'.format(self._callbacks[0])
+            for c in self._callbacks[1:]:
+                action_desc += ', {0}'.format(c)
+            action_desc += ')'
+        return action_desc
 
     def _execute(self, rtctree):
         '''Base for action execution method.
@@ -71,49 +93,92 @@ class Action(object):
 
 
 ###############################################################################
-## Required action function object base
+## Base callback
 
-class RequiredAction(Action):
-    '''Base class for action function objects that must succeed.
+class BaseCallback(object):
+    '''Base class for callback objects.
 
-    Action objects that inherit from this class will raise an error if they
-    fail. The error will be @ref RequiredActionFailedError.
+    Callback objects must implement the __call__ method, and receive two
+    values:
+    - A boolean indicating success or failure of the action.
+    - An error message to optionally be printed on failure. None if no message.
 
     '''
     def __init__(self):
-        super(RequiredAction, self).__init__()
+        super(BaseCallback, self).__init__()
 
-    def __call__(self, rtctree):
-        result, err = self._execute(rtctree)
-        if not result:
-            raise RequiredActionFailedError(err)
+    def __call__(self, result, err_msg):
+        if err_msg:
+            if not result:
+                print 'Action failed: ' + err_msg
+        else:
+            if not result:
+                print 'Action failed.'
+
+    def __str__(self):
+        return ''
 
 
 ###############################################################################
-## Decorator to turn a required action into an optional action
+## Required action callback
 
-class OptionalAction(Action):
-    '''Decorator to turn a required action into an optional action.
+class RequiredActionCB(BaseCallback):
+    '''Callback for a required action.
 
-    If the wrapped action fails, its failure will be ignored.
+    Checks the action result and raises @ref RequiredActionFailedError if the
+    action failed.
 
     '''
-    def __init__(self, action_type, args):
-        super(OptionalAction, self).__init__()
-        self._wrapped_action = action_type(*args)
+    def __init__(self):
+        super(RequiredActionCB, self).__init__()
+
+    def __call__(self, result, err_msg):
+        if not result:
+            raise RequiredActionFailedError(err_msg)
 
     def __str__(self):
-        return '(Optional) ' + str(self._wrapped_action)
+        return 'Required'
+
+
+###############################################################################
+## Decorator to add a condition to an action
+
+class ConditionedAction(Action):
+    '''Decorator to add a condition on an action's execution.
+
+    The default is to have a "run before everything else" condition, indicated
+    by a negative sequence ID.
+
+    '''
+    def __init__(self, action, seq_id=-1):
+        super(ConditionedAction, self).__init__()
+        self._seq_id = seq_id
+        self._wrapped_action = action
+
+    def __str__(self):
+        if self.seq_id < 0:
+            return str(self._wrapped_action)
+        else:
+            return '[Sequence: {0}] '.format(self.seq_id) + \
+                    str(self._wrapped_action)
+
+    @property
+    def seq_id(self):
+        '''The sequence number of this action.'''
+        return self._seq_id
+
+    @seq_id.setter
+    def seq_id(self, seq_id):
+        self._seq_id = seq_id
 
     def _execute(self, rtctree):
-        result, err = self._wrapped_action._execute(rtctree)
-        return True, err
+        return self._wrapped_action._execute(rtctree)
 
 
 ###############################################################################
 ## Check if a required component is present
 
-class CheckForRequiredCompAct(RequiredAction):
+class CheckForRequiredCompAct(Action):
     '''Check for a required component in the RTC Tree.
 
     This action checks the rtctree to see if a component is present at a
@@ -123,16 +188,17 @@ class CheckForRequiredCompAct(RequiredAction):
     fail. Otherwise, it will succeed.
 
     '''
-    def __init__(self, path_str, id, instance_name):
-        super(CheckForRequiredCompAct, self).__init__()
+    def __init__(self, path_str, id, instance_name, callbacks=[]):
+        super(CheckForRequiredCompAct, self).__init__(callbacks=callbacks)
         self._path_str = path_str
         self._path = parse_path(path_str)[0]
         self._id = id
         self._instance_name = instance_name
 
     def __str__(self):
-        return 'Check for required component "{0}", "{1}" at path {2}'.format(\
-                self._id, self._instance_name, self._path_str)
+        return self._action_string('Check for required component \
+"{0}", "{1}" at path {2}'.format(self._id, self._instance_name,
+                self._path_str))
 
     def _execute(self, rtctree):
         if Options().verbose:
@@ -161,7 +227,7 @@ instance name "{2}"'.format(self._path_str, self._id, self._instance_name)
 ###############################################################################
 ## Check if a port exists on a component
 
-class CheckForPortAct(RequiredAction):
+class CheckForPortAct(Action):
     '''Check for a port on a component in the RTC Tree.
 
     This action checks the rtctree to see if a component is present at a
@@ -176,15 +242,15 @@ class CheckForPortAct(RequiredAction):
     CheckForRequiredCompAct.
 
     '''
-    def __init__(self, path_str, port_name):
-        super(CheckForPortAct, self).__init__()
+    def __init__(self, path_str, port_name, callbacks=[]):
+        super(CheckForPortAct, self).__init__(callbacks=callbacks)
         self._path_str = path_str
         self._path = parse_path(path_str)[0]
         self._port_name = port_name
 
     def __str__(self):
-        return 'Check for required port "{0}" on component at path \
-{1}'.format(self._port_name, self._path_str)
+        return self._action_string('Check for required port "{0}" on \
+component at path {1}'.format(self._port_name, self._path_str))
 
     def _execute(self, rtctree):
         if Options().verbose:
@@ -205,7 +271,7 @@ class CheckForPortAct(RequiredAction):
 ###############################################################################
 ## Set the active configuration set of a component
 
-class SetActiveConfigSetAct(RequiredAction):
+class SetActiveConfigSetAct(Action):
     '''Set the active configuration set of a component.
 
     This action sets the active configuration set of a component to the
@@ -217,15 +283,15 @@ class SetActiveConfigSetAct(RequiredAction):
     CheckForRequiredCompAct.
 
     '''
-    def __init__(self, path_str, set):
-        super(SetActiveConfigSetAct, self).__init__()
+    def __init__(self, path_str, set, callbacks=[]):
+        super(SetActiveConfigSetAct, self).__init__(callbacks=callbacks)
         self._path_str = path_str
         self._path = parse_path(path_str)[0]
         self._set = str(set) # Cannot send unicode strings to CORBA
 
     def __str__(self):
-        return 'Set configuration set "{0}" active on component at path \
-{1}'.format(self._set, self._path_str)
+        return self._action_string('Set configuration set "{0}" active on \
+component at path {1}'.format(self._set, self._path_str))
 
     def _execute(self, rtctree):
         if Options().verbose:
@@ -244,7 +310,7 @@ class SetActiveConfigSetAct(RequiredAction):
 ###############################################################################
 ## Set a configuration parameter in a configuration set
 
-class SetConfigParamValueAct(RequiredAction):
+class SetConfigParamValueAct(Action):
     '''Change the value of a configuration parameter in a set.
 
     This action sets the value of the given configuration parameter in the
@@ -256,8 +322,8 @@ class SetConfigParamValueAct(RequiredAction):
     CheckForRequiredCompAct.
 
     '''
-    def __init__(self, path_str, set, parameter, new_value):
-        super(SetConfigParamValueAct, self).__init__()
+    def __init__(self, path_str, set, parameter, new_value, callbacks=[]):
+        super(SetConfigParamValueAct, self).__init__(callbacks=callbacks)
         self._path_str = path_str
         self._path = parse_path(path_str)[0]
         self._set = str(set) # Cannot send unicode strings to CORBA
@@ -265,8 +331,9 @@ class SetConfigParamValueAct(RequiredAction):
         self._new_value = str(new_value)
 
     def __str__(self):
-        return 'Set parameter "{0}" in set "{1}" on component at path "{2}" \
-to "{3}"'.format(self._param, self._set, self._path_str, self._new_value)
+        return self._action_string('Set parameter "{0}" in set "{1}" on \
+component at path "{2}" to "{3}"'.format(self._param, self._set,
+                self._path_str, self._new_value))
 
     def _execute(self, rtctree):
         if Options().verbose:
@@ -288,7 +355,7 @@ to "{3}"'.format(self._param, self._set, self._path_str, self._new_value)
 ###############################################################################
 ## Connect two ports
 
-class ConnectPortsAct(RequiredAction):
+class ConnectPortsAct(Action):
     '''Connect two ports together.
 
     This action connects two ports together using the provided connection
@@ -298,8 +365,8 @@ class ConnectPortsAct(RequiredAction):
 
     '''
     def __init__(self, source_path, source_port, dest_path, dest_port,
-                 name, id, properties):
-        super(ConnectPortsAct, self).__init__()
+                 name, id, properties, callbacks=[]):
+        super(ConnectPortsAct, self).__init__(callbacks=callbacks)
         self._source_path_str = source_path
         self._source_path = parse_path(source_path)[0]
         self._source_port = source_port
@@ -311,10 +378,10 @@ class ConnectPortsAct(RequiredAction):
         self._properties = properties.copy()
 
     def __str__(self):
-        return 'Connect {0}:{1} to {2}:{3} with properties {4}'.format(\
-                self._source_path_str, self._source_port,
+        return self._action_string('Connect {0}:{1} to {2}:{3} with \
+properties {4}'.format(self._source_path_str, self._source_port,
                 self._dest_path_str, self._dest_port,
-                self._properties)
+                self._properties))
 
     def _execute(self, rtctree):
         if Options().verbose:
@@ -346,7 +413,7 @@ class ConnectPortsAct(RequiredAction):
 ###############################################################################
 ## Disconnect two data ports
 
-class DisconnectPortsAct(RequiredAction):
+class DisconnectPortsAct(Action):
     '''Disconnect two ports.
 
     This action disconnects two ports. It will fail if either the components or
@@ -354,8 +421,9 @@ class DisconnectPortsAct(RequiredAction):
     at the specified paths are the correct components.
 
     '''
-    def __init__(self, source_path, source_port, dest_path, dest_port):
-        super(DisconnectPortsAct, self).__init__()
+    def __init__(self, source_path, source_port, dest_path, dest_port,
+                 callbacks=[]):
+        super(DisconnectPortsAct, self).__init__(callbacks=callbacks)
         self._source_path_str = source_path
         self._source_path = parse_path(source_path)[0]
         self._source_port = source_port
@@ -364,8 +432,9 @@ class DisconnectPortsAct(RequiredAction):
         self._dest_port = dest_port
 
     def __str__(self):
-        return 'Disconnect {0}:{1} from {2}:{3}'.format(self._source_path_str,
-                self._source_port, self._dest_path_str, self._dest_port)
+        return self._action_string('Disconnect {0}:{1} from {2}:{3}'.format(\
+                self._source_path_str, self._source_port, self._dest_path_str,
+                self._dest_port))
 
     def _execute(self, rtctree):
         if Options().verbose:
@@ -399,33 +468,83 @@ class DisconnectPortsAct(RequiredAction):
 
 
 ###############################################################################
-## Activate a component
+## State change base action
 
-class ActivateCompAct(RequiredAction):
-    '''Activate a component.
+class StateChangeAct(Action):
+    '''Base action for actions that change a component's state.
 
-    This action changes the status of a component to active.
+    Actions that inherit from this should provide three members:
+    - self._action_str: A string describing the action for use in str(). e.g.
+      "Activate".
+    - self._verbose_str: A similar string for use in the verbose output. e.g.
+      "Activating".
+    - self._action_impl: A function to be called by self._execute to perform
+      the action. It will be passed two arguments; the first is the component
+      node from rtctree, the second is the index of the execution context
+      involved. This should return (True, None) or False and an error string.
 
     '''
-    def __init__(self, path_str, ec_id):
-        super(ActivateCompAct, self).__init__()
+    def __init__(self, path_str, comp_id, instance_name, ec_id, callbacks=[]):
+        super(StateChangeAct, self).__init__(callbacks=callbacks)
         self._path_str = path_str
+        self._comp_id = comp_id
+        self._instance_name = instance_name
         self._path = parse_path(path_str)[0]
         self._ec_id = ec_id
 
     def __str__(self):
-        return 'Activate {0} in execution context {1}'.format(self._path_str,
-                                                              self._ec_id)
+        return self._action_string('{0} {1} in execution context {2}'.format(\
+                self._action_str, self._path_str, self._ec_id))
+
+    @property
+    def path(self):
+        '''Full path of the target component.'''
+        return self._path_str
+
+    @property
+    def comp_id(self):
+        '''Identification string of the component.'''
+        return self._comp_id
+
+    @property
+    def instance_name(self):
+        '''Instance name of the target component.'''
+        return self._instance_name
+
+    @property
+    def ec_id(self):
+        '''Target execution context ID.'''
+        return self._ec_id
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print 'Activating {0} in {1}'.format(self._path_str, self._ec_id)
+            print '{0} {1} in {2}'.format(self._verbose_str, self._path_str,
+                                          self._ec_id)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
             return False, 'Component missing: {0}'.format(self._path_str)
         ec_index = comp.get_ec_index(int(self._ec_id))
         if ec_index < 0:
             return False, 'Invalid execution context: {0}'.format(self._ec_id)
+        return self._action_impl(comp, ec_index)
+
+
+###############################################################################
+## Activate a component
+
+class ActivateCompAct(StateChangeAct):
+    '''Activate a component.
+
+    This action changes the status of a component to active.
+
+    '''
+    def __init__(self, path_str, comp_id, instance_name, ec_id, callbacks=[]):
+        super(ActivateCompAct, self).__init__(path_str, comp_id, instance_name,
+                ec_id, callbacks=callbacks)
+        self._action_str = 'Activate'
+        self._verbose_str = 'Activating'
+
+    def _action_impl(self, comp, ec_index):
         comp.activate_in_ec(ec_index)
         return True, None
 
@@ -433,31 +552,19 @@ class ActivateCompAct(RequiredAction):
 ###############################################################################
 ## Deactivate a component
 
-class DeactivateCompAct(RequiredAction):
+class DeactivateCompAct(StateChangeAct):
     '''Deactivate a component.
 
     This action changes the status of a component to inactive.
 
     '''
-    def __init__(self, path_str, ec_id):
-        super(DeactivateCompAct, self).__init__()
-        self._path_str = path_str
-        self._path = parse_path(path_str)[0]
-        self._ec_id = ec_id
+    def __init__(self, path_str, comp_id, instance_name, ec_id, callbacks=[]):
+        super(DeactivateCompAct, self).__init__(path_str, comp_id,
+                instance_name, ec_id, callbacks=callbacks)
+        self._action_str = 'Deactivate'
+        self._verbose_str = 'Deactivating'
 
-    def __str__(self):
-        return 'Deactivate {0} in execution context {1}'.format(self._path_str,
-                                                                self._ec_id)
-
-    def _execute(self, rtctree):
-        if Options().verbose:
-            print 'Deactivating {0} in {1}'.format(self._path_str, self._ec_id)
-        comp = rtctree.get_node(self._path)
-        if not comp or not comp.is_component:
-            return False, 'Component missing: {0}'.format(self._path_str)
-        ec_index = comp.get_ec_index(int(self._ec_id))
-        if ec_index < 0:
-            return False, 'Invalid execution context: {0}'.format(self._ec_id)
+    def _action_impl(self, comp, ec_index):
         comp.deactivate_in_ec(ec_index)
         return True, None
 
@@ -465,31 +572,19 @@ class DeactivateCompAct(RequiredAction):
 ###############################################################################
 ## Reset a component
 
-class ResetCompAct(RequiredAction):
+class ResetCompAct(StateChangeAct):
     '''Reset a component.
 
     This action changes the status of a component to inactive from error.
 
     '''
-    def __init__(self, path_str, ec_id):
-        super(ResetCompAct, self).__init__()
-        self._path_str = path_str
-        self._path = parse_path(path_str)[0]
-        self._ec_id = ec_id
+    def __init__(self, path_str, comp_id, instance_name, ec_id, callbacks=[]):
+        super(ResetCompAct, self).__init__(path_str, comp_id, instance_name,
+                ec_id, callbacks=callbacks)
+        self._action_str = 'Reset'
+        self._verbose_str = 'Resetting'
 
-    def __str__(self):
-        return 'Reset {0} in execution context {1}'.format(self._path_str,
-                                                           self._ec_id)
-
-    def _execute(self, rtctree):
-        if Options().verbose:
-            print 'Resetting {0} in {1}'.format(self._path_str, self._ec_id)
-        comp = rtctree.get_node(self._path)
-        if not comp or not comp.is_component:
-            return False, 'Component missing: {0}'.format(self._path_str)
-        ec_index = comp.get_ec_index(int(self._ec_id))
-        if ec_index < 0:
-            return False, 'Invalid execution context: {0}'.format(self._ec_id)
+    def _action_impl(self, comp, ec_index):
         comp.reset_in_ec(ec_index)
         return True, None
 

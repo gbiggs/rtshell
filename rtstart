@@ -24,6 +24,8 @@ __version__ = '$Revision: $'
 # $Source$
 
 
+from itertools import chain
+from operator import attrgetter
 from optparse import OptionParser, OptionError
 from os import sep as pathsep
 from rtctree.path import parse_path
@@ -43,7 +45,8 @@ def check_required_component_actions(rtsprofile):
     # All required components must be present
     for comp in [c for c in rtsprofile.components if c.is_required]:
         checks.append(CheckForRequiredCompAct(pathsep + comp.path_uri,
-                                              comp.id, comp.instance_name))
+                                              comp.id, comp.instance_name,
+                                              callbacks=[RequiredActionCB()]))
     return checks
 
 
@@ -53,14 +56,55 @@ def activate_actions(rtsprofile):
     activates = []
     for comp in [c for c in rtsprofile.components if c.is_required]:
         for ec in comp.execution_contexts:
-            activates.append(ActivateCompAct(pathsep + comp.path_uri, ec.id))
+            activates.append(ActivateCompAct(pathsep + comp.path_uri,
+                    comp.id, comp.instance_name, ec.id,
+                    callbacks=[RequiredActionCB()]))
 
     for comp in [c for c in rtsprofile.components if not c.is_required]:
         for ec in comp.execution_contexts:
-            activates.append(OptionalAction(ActivateCompAct,
-                    (pathsep + comp.path_uri, ec.id)))
+            activates.append(ActivateCompAct(pathsep + comp.path_uri, comp.id,
+                                             comp.instance_name, ec.id))
 
-    return checks + activates
+    return checks, activates
+
+
+def get_action_condition(rtsprofile, action):
+    if rtsprofile.activation.targets:
+        for c in rtsprofile.activation.targets:
+            target = c.target_component
+            if target.id == action.ec_id and \
+               target.component_id == action.comp_id and \
+               target.instance_name == action.instance_name:
+                return c
+    return None
+
+
+def condition_action(rtsprofile, action):
+    c = get_action_condition(rtsprofile, action)
+    if not c:
+        return ConditionedAction(action)
+    result = ConditionedAction(action, c.sequence)
+    return result
+
+
+def condition_actions(rtsprofile, actions):
+    result = [condition_action(rtsprofile, a) for a in actions]
+    result.sort(key=attrgetter('seq_id'))
+    return result
+
+
+def make_plan(rtsprofile, actions):
+    return condition_actions(rtsprofile, actions)
+
+
+def print_plan(plan):
+    for p in plan:
+        print p
+
+
+def execute_plan(rtctree, plan):
+    for a in plan:
+        a(rtctree)
 
 
 def main(argv):
@@ -90,18 +134,21 @@ specified in the RTSProfile specification.'''
 
     # Load the profile
     rtsprofile = RtsProfile(xml_spec_file=args[0])
-    # Build a list of actions to perform that will destroy the system
-    actions = activate_actions(rtsprofile)
+    # Build a list of actions to perform that will start the system
+    checks, activates = activate_actions(rtsprofile)
+    plan = make_plan(rtsprofile, activates)
     if options.dry_run:
-        for a in actions:
+        for a in checks:
             print a
+        print_plan(plan)
     else:
         # Load the RTC Tree, using the paths from the profile
         rtctree = create_rtctree(paths=[parse_path(pathsep + c.path_uri)[0] \
                                         for c in rtsprofile.components])
         try:
-            for a in actions:
+            for a in checks:
                 a(rtctree)
+            execute_plan(rtctree, plan)
         except RequiredActionFailedError, e:
             print e
 

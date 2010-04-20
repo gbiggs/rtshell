@@ -52,8 +52,8 @@ def disconnect_actions(rtsprofile):
         prefix = dest_comp.instance_name + '.'
         if dest_port.startswith(prefix):
             dest_port = dest_port[len(prefix):]
-        disconnects.append(OptionalAction(DisconnectPortsAct,
-                (source_path, source_port, dest_path, dest_port)))
+        disconnects.append(DisconnectPortsAct(source_path, source_port,
+                                              dest_path, dest_port))
 
     for conn in rtsprofile.service_port_connectors:
         source_comp = rtsprofile.find_comp_by_target(conn.source_service_port)
@@ -68,8 +68,8 @@ def disconnect_actions(rtsprofile):
         prefix = dest_comp.instance_name + '.'
         if dest_port.startswith(prefix):
             dest_port = dest_port[len(prefix):]
-        disconnects.append(OptionalAction(DisconnectPortsAct,
-                (source_path, source_port, dest_path, dest_port)))
+        disconnects.append(DisconnectPortsAct(source_path, source_port,
+                                              dest_path, dest_port))
     return disconnects
 
 

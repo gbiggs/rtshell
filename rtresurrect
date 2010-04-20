@@ -43,7 +43,8 @@ def check_required_component_actions(rtsprofile):
     # All required components must be present
     for comp in [c for c in rtsprofile.components if c.is_required]:
         checks.append(CheckForRequiredCompAct(pathsep + comp.path_uri,
-                                              comp.id, comp.instance_name))
+                                              comp.id, comp.instance_name,
+                                              callbacks=[RequiredActionCB()]))
     return checks
 
 
@@ -72,13 +73,14 @@ def data_connection_actions(rtsprofile):
         prefix = dest_comp.instance_name + '.'
         if dest_port.startswith(prefix):
             dest_port = dest_port[len(prefix):]
-        checks.append(CheckForPortAct(source_path, source_port))
-        checks.append(CheckForPortAct(dest_path, dest_port))
+        checks.append(CheckForPortAct(source_path, source_port,
+                                      callbacks=[RequiredActionCB()]))
+        checks.append(CheckForPortAct(dest_path, dest_port,
+                                      callbacks=[RequiredActionCB()]))
         props = get_data_conn_props(conn)
         make_connections.append(ConnectPortsAct(source_path, source_port,
-                                                dest_path, dest_port,
-                                                str(conn.name),
-                                                str(conn.connector_id), props))
+                dest_path, dest_port, str(conn.name), str(conn.connector_id),
+                props, callbacks=[RequiredActionCB()]))
 
     # Add the other connections to the list
     for conn in rtsprofile.optional_data_connections():
@@ -95,9 +97,9 @@ def data_connection_actions(rtsprofile):
         if dest_port.startswith(prefix):
             dest_port = dest_port[len(prefix):]
         props = get_data_conn_props(conn)
-        make_connections.append(OptionalAction (ConnectPortsAct,
-            (source_path, source_port, dest_path, dest_port, str(conn.name),
-             str(conn.connector_id), props)))
+        make_connections.append(ConnectPortsAct(source_path, source_port,
+                dest_path, dest_port, str(conn.name), str(conn.connector_id),
+                props))
 
     return checks, make_connections
 
@@ -120,10 +122,13 @@ def service_connection_actions(rtsprofile):
         prefix = dest_comp.instance_name + '.'
         if dest_port.startswith(prefix):
             dest_port = dest_port[len(prefix):]
-        checks.append(CheckForPortAct(source_path, source_port))
-        checks.append(CheckForPortAct(dest_path, dest_port))
+        checks.append(CheckForPortAct(source_path, source_port,
+                                      callbacks=[RequiredActionCB()]))
+        checks.append(CheckForPortAct(dest_path, dest_port,
+                                      callbacks=[RequiredActionCB()]))
         make_connections.append(ConnectPortsAct(source_path, source_port,
-            dest_path, dest_port, str(conn.name), str(conn.connector_id), {}))
+            dest_path, dest_port, str(conn.name), str(conn.connector_id), {},
+            callbacks=[RequiredActionCB()]))
 
     # Add the other connections to the list
     for conn in rtsprofile.optional_service_connections():
@@ -139,9 +144,9 @@ def service_connection_actions(rtsprofile):
         prefix = dest_comp.instance_name + '.'
         if dest_port.startswith(prefix):
             dest_port = dest_port[len(prefix):]
-        make_connections.append(OptionalAction(ConnectPortsAct,
-            (source_path, source_port, dest_path, dest_port, str(conn.name),
-             str(conn.connector_id), {})))
+        make_connections.append(ConnectPortsAct(source_path, source_port,
+                dest_path, dest_port, str(conn.name), str(conn.connector_id),
+                {}))
 
     return checks, make_connections
 
@@ -151,15 +156,15 @@ def config_set_actions(rtsprofile):
     # For each component, if there is an active set, add an action for it
     for comp in rtsprofile.components:
         if comp.active_configuration_set:
-            set_active.append(OptionalAction(SetActiveConfigSetAct,
-                    (pathsep + comp.path_uri, comp.active_configuration_set)))
+            set_active.append(SetActiveConfigSetAct(pathsep + comp.path_uri,
+                    comp.active_configuration_set))
 
     set_values = []
     for comp in rtsprofile.components:
         for cs in comp.configuration_sets:
             for p in cs.configuration_data:
-                set_values.append(OptionalAction(SetConfigParamValueAct,
-                        (pathsep + comp.path_uri, cs.id, p.name, p.data)))
+                set_values.append(SetConfigParamValueAct(pathsep + comp.path_uri,
+                        cs.id, p.name, p.data))
 
     return set_active + set_values
 

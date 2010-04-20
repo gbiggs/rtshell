@@ -212,7 +212,6 @@ be used.'''
 
     # Load the RTC Tree
     rtctree = create_rtctree(servers=args)
-    print rtctree
     if not rtctree:
         print >>sys.stderr, '{0}: {1}: Empty tree.'.format(sys.argv[0], args)
         return 1

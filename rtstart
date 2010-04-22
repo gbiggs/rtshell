@@ -36,7 +36,7 @@ from rtsshell import RTSSHELL_VERSION
 from rtsshell.actions import *
 from rtsshell.exceptions import RequiredActionFailedError
 from rtsshell.options import Options
-from rtsshell.plan import make_plan, print_plan, execute_plan
+from rtsshell.plan import Plan
 
 
 def check_required_component_actions(rtsprofile):
@@ -97,11 +97,12 @@ specified in the RTSProfile specification.'''
     rtsprofile = RtsProfile(xml_spec_file=args[0])
     # Build a list of actions to perform that will start the system
     checks, activates = activate_actions(rtsprofile)
-    plan = make_plan(rtsprofile, activates)
+    plan = Plan()
+    plan.make(rtsprofile, activates)
     if options.dry_run:
         for a in checks:
             print a
-        print_plan(plan)
+        print plan
     else:
         # Load the RTC Tree, using the paths from the profile
         rtctree = create_rtctree(paths=[parse_path(pathsep + c.path_uri)[0] \

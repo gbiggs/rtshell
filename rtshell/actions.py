@@ -23,7 +23,7 @@ __version__ = '$Revision: $'
 # $Source$
 
 
-from rtctree.exceptions import NoSuchConfSetError, NoSuchConfParamError, \
+from rtctree.exceptions import NoSuchConfSetError, NoSuchConfParamError
 from rtctree.path import parse_path
 from rtsshell.exceptions import RequiredActionFailedError
 from rtsshell.options import Options

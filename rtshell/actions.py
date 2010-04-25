@@ -59,7 +59,7 @@ class Action(object):
         super(Action, self).__init__()
         self._callbacks = callbacks
 
-    def __call__(self, rtctree):
+    def __call__(self, rtctree=None):
         result, err = self._execute(rtctree)
         if not self._callbacks:
             c = BaseCallback()
@@ -73,6 +73,14 @@ class Action(object):
 
     def add_callback(self, callback):
         self._callbacks.append(callback)
+
+    @property
+    def optional(self):
+        '''Is this action optional?'''
+        for cb in self._callbacks:
+            if cb.__class__ == RequiredActionCB:
+                return True
+        return False
 
     def _action_string(self, action_desc):
         if self._callbacks:
@@ -138,94 +146,6 @@ class RequiredActionCB(BaseCallback):
 
     def __str__(self):
         return 'Required'
-
-
-###############################################################################
-## Decorator to add a condition to an action
-
-class ConditionedAction(Action):
-    '''Decorator to add a condition on an action's execution.
-
-    The default is to have a "run before everything else" condition, indicated
-    by a negative sequence ID.
-
-    '''
-    def __init__(self, action, seq_id=-1):
-        super(ConditionedAction, self).__init__()
-        self._executed = False
-        self._seq_id = seq_id
-        self._timeout = 0
-        self._wait_time = 0
-        self._wrapped_action = action
-
-    def __str__(self):
-        result = '['
-        if self.seq_id > 0:
-            result += 'Sequence: {0}'.format(self.seq_id)
-        
-        if self.seq_id < 0:
-            return str(self._wrapped_action)
-        else:
-            return '[Sequence: {0}] '.format(self.seq_id) + \
-                    str(self._wrapped_action)
-
-    @property
-    def executed(self):
-        '''True if the wrapped action has been executed.'''
-        return self._executed
-
-    def satisfied(self, elapsed_time, rtctree):
-        '''Check if the conditions are satisfied yet.
-
-        Checks the following conditions:
-        - wait_time: checked against elapsed_time
-        - timeout: checked against elapsed_time
-        - preceding_actions: checked against previous actions
-        - preceding_statuses: checked against rtctree
-
-        May raise @ref PrecedingTimeoutError if a time out has occured.
-
-        '''
-        if self.timeout > elapsed_time:
-            raise PrecedingTimeoutError
-        if self.wait_time > elapsed_time:
-            return True
-        return False
-
-    @property
-    def wait_time(self):
-        '''The time to wait before executing the action, in milliseconds.'''
-        return self._wait_time
-
-    @wait_time.setter
-    def wait_time(self, wait_time):
-        self._wait_time = wait_time
-
-    @property
-    def seq_id(self):
-        '''The sequence number of this action.'''
-        return self._seq_id
-
-    @seq_id.setter
-    def seq_id(self, seq_id):
-        self._seq_id = seq_id
-
-    @property
-    def timeout(self):
-        '''The timeout on waiting for a preceding action to occur/complete.
-
-        In milliseconds.
-
-        '''
-        return self._timeout
-
-    @timeout.setter
-    def timeout(self, timeout):
-        self._timeout = timeout
-
-    def _execute(self, rtctree):
-        self._executed = True
-        return self._wrapped_action._execute(rtctree)
 
 
 ###############################################################################
@@ -550,14 +470,14 @@ class StateChangeAct(Action):
                 self._action_str, self._path_str, self._ec_id))
 
     @property
-    def path(self):
-        '''Full path of the target component.'''
-        return self._path_str
-
-    @property
     def comp_id(self):
         '''Identification string of the component.'''
         return self._comp_id
+
+    @property
+    def ec_id(self):
+        '''Target execution context ID.'''
+        return self._ec_id
 
     @property
     def instance_name(self):
@@ -565,9 +485,9 @@ class StateChangeAct(Action):
         return self._instance_name
 
     @property
-    def ec_id(self):
-        '''Target execution context ID.'''
-        return self._ec_id
+    def path(self):
+        '''Full path of the target component.'''
+        return self._path_str
 
     def _execute(self, rtctree):
         if Options().verbose:

@@ -110,7 +110,7 @@ specified in the RTSProfile specification.'''
         try:
             for a in checks:
                 a(rtctree)
-            execute_plan(rtctree, plan)
+            plan.execute(rtctree)
         except RequiredActionFailedError, e:
             print e
 

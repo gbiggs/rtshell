@@ -265,6 +265,7 @@ complete -F _rtls rtcwd
 complete -F _rtls rtdeact
 complete -F _rtls rtreset
 complete -F _rtls rtfind
+complete -F _rtls rtdel
 
 complete -F _rtcon rtcon
 complete -F _rtcon rtdis

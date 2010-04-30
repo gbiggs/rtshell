@@ -619,4 +619,5 @@ Changelog
 - Support csh in rtcwd
 - rtcat: Print new information available from rtctree for execution contexts
 - rtls: Change recurse option from -r to -R to match ls
+- rtls: Handle unknown objects; display them like dead files
 

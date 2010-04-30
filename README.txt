@@ -18,8 +18,8 @@ file.
 rtstart and rtstop are command-line tools for starting and stopping entire RT
 Systems. They use an RTSProfile file to determine what components to start or
 stop, the order to start or stop them in, and any preconditions for starting
-and stopping the components (for example, starting one component five seconds
-after another has completed activation).
+and stopping the components (for example, starting one component after another
+has completed activation).
 
 This software is developed at the National Institute of Advanced Industrial
 Science and Technology. Approval number H22PRO-1088. The development was
@@ -32,7 +32,7 @@ Technologies.  This software is licensed under the Eclipse Public License -v
 Requirements
 ------------
 
-These tools require the rtctree and rtsprofile libraries.
+These tools require the rtctree-2.0 and rtsprofile-2.0 libraries.
 
 These tools use the new string formatting operations that were introduced in
 Python 2.6. It will not function with an earlier version of Python. It has not

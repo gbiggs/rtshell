@@ -1,4 +1,4 @@
-rtresurrect, rtteardown, rtcryo
+rtresurrect, rtteardown, rtcryo, rtstart, rtstop
 ===============================================================================
 
 rtresurrect is a command-line tool for restoring an RT system as described
@@ -135,6 +135,58 @@ save. See the rtctree documentation for details on how that library finds
 components.
 
 
+State-change plans
+------------------
+
+The RTSProfile specification includes facilities for managing the change of
+state of an RT System. It is possible to control the order in which components
+are altered, and specify dependencies between components that prevent one
+component starting before another that it may require has started.
+
+rtstart and rtstop use this information when they start and stop systems.
+rtstart uses the information contained in an "Activation" block. rtstop uses
+the information contained in a "Deactivation" block. When executed, they will
+build and execute a plan for changing the state of the entire system. They will
+not exit until the plan completes or an error occurs.
+
+Appending the --dry-run option will display the plan but not execute it. The
+output looks similar to that shown below.
+
+{1} Activate /localhost/ConfigSample0.rtc in execution context 0 (Required)
+{2} [Order 1] Activate /localhost/Motor0.rtc in execution context 0 (Required)
+{4} [Order 3/Wait 5000ms] Activate /localhost/Controller0.rtc in execution
+        context 0 (Required)
+{3} [Order 2/Sync to Motor0, Order 5/Sync to Controller0] Activate
+        /localhost/Sensor0.rtc in execution context 0 (Required)
+{5} [Order 4/After ConfigSample0's action] Activate /localhost/ConsoleIn0.rtc
+        in execution context 0 (Required)
+
+The number in braces at the beginning of each line is the action ID. These are
+also displayed during execution and allow easy identification of individual
+actions.
+
+Following this there may be a value in square brackets. This indicates any
+pre-conditions on the action being executed:
+
+"Order" pre-conditions are simple sequencing. When no other conditions are
+    present, actions will be executed in order of their sequence number.
+
+"Wait" pre-conditions indicate that the specified time must pass before the
+    action will be executed.
+
+"Sync" pre-conditions prevent the action executing until the specified
+    component has reached the target state. A timeout can be set on this
+    occurring, to account for errors.
+
+"After" pre-conditions are similar to "Sync" pre-conditions. The difference is
+    that they wait for the specified action to be performed on the other
+    component first; in other words, the action will be executed after the
+    other component's action, but before confirmation that it has reached the
+    target state.
+
+The remainder of the line is a description of the action to perform.
+
+
 Shell completion
 ----------------
 
@@ -147,3 +199,10 @@ ${prefix}/share/rtsshell. Run the following command to load it:
 You can add this to your ~/.bashrc file to have it loaded in every new shell
 instance.
 
+
+Changelog
+---------
+
+2.0:
+- Added bash-completion script.
+- Added planning capability.

@@ -27,6 +27,7 @@ __version__ = '$Revision: $'
 from datetime import datetime
 from optparse import OptionParser, OptionError
 from os import sep as pathsep
+from os.path import splitext
 from rtctree.tree import create_rtctree
 from rtctree.path import parse_path
 from rtsprofile import RTSPROFILE_SPEC_VERSION
@@ -183,7 +184,11 @@ Record a running RT System in an RTSProfile specification.
 
 Any name servers specified on the command line will be used to build the
 RTCTree. If no name servers are specified, the RTCTree's default behaviour will
-be used.'''
+be used.
+
+The output format will be determined automatically from the file extension.
+If the file has no extension, the input format is assumed to be XML.
+The output format can be over-ridden with the --xml or --yaml options.'''
     parser = OptionParser(usage=usage, version=RTSSHELL_VERSION)
     parser.add_option('-a', '--abstract', dest='abstract', action='store',
             type='string', default='RT System created by rtcryo.',
@@ -192,14 +197,19 @@ be used.'''
             type='string', default='RTSystem',
             help='Name of the RT System. [Default: %default]')
     parser.add_option('-o', '--output', dest='output', action='store',
-            type='string', default='rtsystem.xml',
-            help='Output file name. [Default: %default]')
+            type='string', default='rtsystem.',
+            help='Output file name. If the default is used, an appropriate \
+extension will be automatically appended. [Default: rtsystem.[xml|yaml]]')
     parser.add_option('-v', '--system-version', dest='version', action='store',
             type='string', default='0',
             help='Version of the RT System. [Default: %default]')
     parser.add_option('-e', '--vendor', dest='vendor', action='store',
             type='string', default='Me',
             help='Vendor of the RT System. [Default: %default]')
+    parser.add_option('-x', '--xml', dest='xml', action='store_true',
+            default=True, help='Use XML output format. [Default: %default]')
+    parser.add_option('-y', '--yaml', dest='xml', action='store_false',
+            help='Use YAML output format. [Default: %default]')
     parser.add_option('--verbose', dest='verbose', action='store_true',
             default=False, help='Verbose output. [Default: %default]')
 
@@ -225,8 +235,10 @@ be used.'''
     # Create an empty RTSProfile and add the information to it
     rtsprofile = RtsProfile()
     rtsprofile.abstract = options.abstract
-    rtsprofile.creation_date = datetime.today().isoformat()
-    rtsprofile.update_date = datetime.today().isoformat()
+    today = datetime.today()
+    today = today.replace(microsecond=0)
+    rtsprofile.creation_date = today.isoformat()
+    rtsprofile.update_date = today.isoformat()
     rtsprofile.version = RTSPROFILE_SPEC_VERSION
     rtsprofile.id = 'RTSystem :{0}.{1}.{2}'.format(options.vendor,
                                                    options.sysname,
@@ -236,7 +248,22 @@ be used.'''
     rtsprofile.service_port_connectors = svc_connectors
 
     # Write the file
-    rtsprofile.save_to_xml_file(options.output)
+    ext = splitext(options.output)[1]
+    if ext == '.xml':
+        options.xml = True
+    elif ext == '.yaml':
+        options.xml = False
+    if options.output == 'rtsystem.':
+        if options.xml:
+            outputs.output += 'xml'
+        else:
+            options.output += 'yaml'
+    f = open(options.output, 'w')
+    if options.xml:
+        f.write(rtsprofile.save_to_xml())
+    else:
+        f.write(rtsprofile.save_to_yaml())
+    f.close()
 
     return 0
 

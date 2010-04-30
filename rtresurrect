@@ -26,6 +26,7 @@ __version__ = '$Revision: $'
 
 from optparse import OptionParser, OptionError
 from os import sep as pathsep
+from os.path import splitext
 from rtctree.path import parse_path
 from rtctree.tree import create_rtctree
 from rtsprofile.rts_profile import RtsProfile
@@ -181,7 +182,11 @@ def rebuild_system_actions(rtsprofile):
 
 def main(argv):
     usage = '''Usage: %prog [options] <RTSProfile specification file>
-Recreate an RT system using an RT system profile specified in XML or YAML.'''
+Recreate an RT system using an RT system profile specified in XML or YAML.
+
+The input format will be determined automatically from the file extension.
+If the file has no extension, the input format is assumed to be XML.
+The output format can be over-ridden with the --xml or --yaml options.'''
     parser = OptionParser(usage=usage, version=RTSSHELL_VERSION)
     parser.add_option('--dry-run', dest='dry_run', action='store_true',
             default=False,
@@ -189,6 +194,12 @@ Recreate an RT system using an RT system profile specified in XML or YAML.'''
 [Default: %default]")
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False, help='Verbose output. [Default: %default]')
+    parser.add_option('-x', '--xml', dest='xml', action='store_true',
+            default=True, help='Use XML input format if no extension. \
+[Default: %default]')
+    parser.add_option('-y', '--yaml', dest='xml', action='store_false',
+            help='Use YAML input format if no extension. \
+[Default: %default]')
 
     try:
         options, args = parser.parse_args()
@@ -202,7 +213,16 @@ Recreate an RT system using an RT system profile specified in XML or YAML.'''
         return 1
 
     # Load the profile
-    rtsprofile = RtsProfile(xml_spec_file=args[0])
+    ext = splitext(args[0])[1]
+    if ext == '.xml':
+        options.xml = True
+    elif ext == '.yaml':
+        options.xml = False
+    with open(args[0]) as f:
+        if options.xml:
+            rtsprofile = RtsProfile(xml_spec=f)
+        else:
+            rtsprofile = RtsProfile(yaml_spec=f)
     # Build a list of actions to perform that will reconstruct the system
     actions = rebuild_system_actions(rtsprofile)
     if options.dry_run:

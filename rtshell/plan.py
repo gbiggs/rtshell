@@ -24,12 +24,27 @@ __version__ = '$Revision: $'
 
 from operator import attrgetter
 from os import sep as pathsep
-from rtctree.component import Component
 from rtctree.path import parse_path
 from rtsprofile.message_sending import Condition, Preceding, WaitTime
+import sys
+import thread
 import threading
+import time
+from traceback import format_exc
+from types import NoneType
 
 from rtsshell.exceptions import PrecedingTimeoutError
+
+
+class Counter:
+    def __init__(self):
+        self._counter = 1
+
+    @property
+    def value(self):
+        self._counter += 1
+        return self._counter - 1
+ider = Counter()
 
 
 ###############################################################################
@@ -48,19 +63,23 @@ class ActionExecutor(threading.Thread):
     Callbacks can be added to be executed after executing the action.
 
     '''
-    def __init__(self, action=None, *args, **kwargs):
+    def __init__(self, action=None, owner_flag=None, *args, **kwargs):
         super(ActionExecutor, self).__init__(*args, **kwargs)
         self._action = action
         self._callbacks = []
         self._conditions = []
         self._cancelled = False
         self._cancel_lock = threading.Lock()
+        self._error = None
+        self._err_lock = threading.Lock()
         self._flag = threading.Event()
         self._completed = False
         self._completed_lock = threading.Lock()
+        self._id = ider.value
+        self._owner_flag = owner_flag
 
     def __str__(self):
-        result = ''
+        result = self.id_string + ' '
         if self._conditions:
             result += '[{0}'.format(self._conditions[0])
             for c in self._conditions[1:]:
@@ -74,7 +93,7 @@ class ActionExecutor(threading.Thread):
         if self.immediate:
             self._execute_action()
         else:
-            self._start_non_immediates()
+            self._start_conds()
             self.start()
 
     def add_callback(self, callback):
@@ -89,6 +108,18 @@ class ActionExecutor(threading.Thread):
         '''Cancel this action.'''
         with self._cancel_lock:
             self._cancelled = True
+        self.set()
+
+    def set(self):
+        '''Notify this action executor that a condition may have been met.'''
+        self._flag.set()
+
+    def wait_for_exit(self):
+        '''Wait for this action executor to exit.'''
+        if self.immediate:
+            # If this executor is immediate, it won't have a thread.
+            return
+        self.join()
 
     @property
     def action(self):
@@ -106,6 +137,23 @@ class ActionExecutor(threading.Thread):
             return self._completed
 
     @property
+    def error(self):
+        '''Any error that has occurred in this executor or one of its
+        conditions.'''
+        with self._err_lock:
+            return self._error
+
+    @property
+    def id(self):
+        '''ID of this action.'''
+        return self._id
+
+    @property
+    def id_string(self):
+        '''ID of this action as a string.'''
+        return '{' + '{0}'.format(self._id) + '}'
+
+    @property
     def immediate(self):
         '''Tests if this executor can execute immediately.
 
@@ -113,10 +161,10 @@ class ActionExecutor(threading.Thread):
         executor itself is not immediate.
 
         '''
-        if not self._conditions:
-            return True
-        return reduce(lambda x, y: x.satisfied or y.satisfied,
-                      self._conditions)
+        for c in self._conditions:
+            if not c.immediate:
+                return False
+        return True
 
     @property
     def sort_order(self):
@@ -135,11 +183,15 @@ class ActionExecutor(threading.Thread):
         cons_satisfied = False
         if not self._conditions:
             # All conditions have been met
-            self.cons_satisfied = True
+            cons_satisfied = True
         while not cons_satisfied:
             for c in self._conditions:
                 if c.error:
-                    raise c.error
+                    # Propagate the error upwards
+                    self._error = c.error
+                    if self._owner_flag:
+                        self._owner_flag.set()
+                        return
             self._flag.wait()
             self._flag.clear()
             with self._cancel_lock:
@@ -149,17 +201,25 @@ class ActionExecutor(threading.Thread):
             self._reduce_conds()
             if not self._conditions:
                 # All conditions have been met
-                self.cons_satisfied = True
+                cons_satisfied = True
         self._execute_action()
+        if self._owner_flag:
+            self._owner_flag.set()
         with self._completed_lock:
             self._completed = True
+
+    def _cancel_conditions(self):
+        for c in self._conditions:
+            c.cancel()
+        for c in self._conditions:
+            c.wait_for_exit()
 
     def _do_callbacks(self):
         for c in self._callbacks:
             c(*self._args, **self._kwargs)
 
     def _execute_action(self):
-        print 'Executing action', self._action
+        print 'Executing {0} {1}'.format(self.id_string, self._action)
         self._action(*self._args, **self._kwargs)
         self._do_callbacks()
 
@@ -167,28 +227,29 @@ class ActionExecutor(threading.Thread):
         result = []
         for c in self._conditions:
             if c.satisfied:
-                c.join()
+                c.wait_for_exit()
             else:
                 result.append(c)
                 continue
         self._conditions = result
 
-    def _set(self):
-        self._flag.set()
-
     def _start_conds(self):
         for c in self._conditions:
             if not c.immediate:
-                c.set_args(*self._args, **self.__kwargs)
+                c.set_args(*self._args, **self._kwargs)
                 c.start()
 
+
+###############################################################################
+## Condition objects
 
 class BasicCondition(object):
     '''A simple condition specifying just a sequence ordering.
 
     This condition is immediate.
 
-    All other condition types should inherit from this type.
+    All other condition types should inherit from this type, and must implement
+    the @ref start method.
 
     '''
     def __init__(self, executor=None, sequence=-1, desc='', *args, **kwargs):
@@ -198,6 +259,7 @@ class BasicCondition(object):
         self._desc = desc
         self._error = None
         self._err_lock = threading.Lock()
+        self._immediate = True
         self._satisfied = True
         self._sat_lock = threading.Lock()
 
@@ -210,6 +272,9 @@ class BasicCondition(object):
     def set_args(self, *args, **kwargs):
         self._args = args
         self._kwargs = kwargs
+
+    def start(self):
+        return
 
     def wait_for_exit(self):
         '''Wait for this condition's thread to exit.'''
@@ -225,7 +290,7 @@ class BasicCondition(object):
     @property
     def immediate(self):
         '''Will this condition be satisfied immediately?'''
-        return True
+        return self._immediate
 
     @property
     def satisfied(self):
@@ -245,19 +310,25 @@ class SleepCondition(BasicCondition):
     This condition is delayed.
 
     This condition is essentially a sleep. It starts a threaded timer, which
-    sleeps for the given period of time before waking up and setting the
-    condition to satisfied.
+    sleeps for the given period of time (in ms) before waking up and setting
+    the condition to satisfied.
 
     '''
     def __init__(self, wait_time=0, *args, **kwargs):
         super(SleepCondition, self).__init__(wait_time=wait_time, *args, **kwargs)
-        self._wait_time = wait_time
+        self._wait_time_ms = wait_time
+        self._wait_time = wait_time / 1000.0
         self._immediate = False
         self._satisfied = False
         self._timer = None
 
+    def __str__(self):
+        return super(SleepCondition, self).__str__() + \
+                '/Wait {0}ms'.format(self._wait_time_ms)
+
     def cancel(self):
         self._timer.cancel()
+        self._timer.join()
 
     def satisfy(self):
         with self._sat_lock:
@@ -278,38 +349,43 @@ class DelayedCondition(BasicCondition, threading.Thread):
     Delayed conditions start a separate thread, which they use to perform their
     condition check at an appropriate time. They use the reference to their
     owner to signal it that the condition has been met. If their condition is
-    not met within an optional timeout, @ref PrecedingTimeoutError is raised.
+    not met within an optional timeout (specified in ms), @ref
+    PrecedingTimeoutError is set. Set the timeout to None for no timeout.
 
     Once a delayed condition is satisfied, you should ensure its thread has
     completed by calling @ref wait_for_exit.
 
     '''
-    def __init__(self, timeout=0, *args, **kwargs):
+    def __init__(self, timeout=None, *args, **kwargs):
         super(DelayedCondition, self).__init__(timeout=timeout, *args, **kwargs)
         self._immediate = False
         self._satisfied = False
         self._cancelled = False
         self._cancel_lock = threading.Lock()
-        self._timeout = timeout
+        self._timeout = timeout / 1000.0
 
     def __str__(self):
-        return self._desc
+        return super(DelayedCondition, self).__str__() + \
+                '/' + self._desc
 
     def cancel(self):
         with self._cancel_lock:
             self._cancelled = True
 
+    def start(self):
+        threading.Thread.start(self)
+
     def wait_for_exit(self):
         self.join()
 
     def run(self):
+        self._start_time = time.time()
         while True:
             try:
                 satisfied = self._check()
             except Exception, e:
-                with self._err_lock:
-                    self._error = e
-                    break
+                self._set_error(format_exc())
+                break
             with self._cancel_lock:
                 if self._cancelled:
                     return
@@ -319,13 +395,21 @@ class DelayedCondition(BasicCondition, threading.Thread):
                 # Signal the owner
                 self._executor.set()
                 break
-            self._adjust_timeout()
-            if self._timeout <= 0.0:
-                raise PrecedingTimeoutError
+            if type(self._timeout) is not NoneType:
+                # Check if the remaining time is greater than zero
+                if self._check_timeout() <= 0.0:
+                    self._set_error(PrecedingTimeoutError(self._desc))
+                    return
 
-    def _adjust_timeout(self):
+    def _check_timeout(self):
         diff = time.time() - self._start_time
-        self._timeout = self._timeout - diff
+        return self._timeout - diff
+
+    def _set_error(self, e):
+        with self._err_lock:
+            self._error = e
+            # Signal the owner so it checks the error condition
+            self._executor.set()
 
 
 class EventCondition(DelayedCondition):
@@ -336,8 +420,8 @@ class EventCondition(DelayedCondition):
     This condition waits on a @ref threading.Event object. It uses a separate
     thread to perform the wait; it will sleep until its event is set. When the
     event is set, it wakes up and notifies its executor, then exits. If the
-    event is not set within an optional timeout, @ref PrecedingTimeoutError is
-    raised.
+    event is not set within an optional timeout (specified in ms), @ref
+    PrecedingTimeoutError is set. Set timeout to None for no timeout.
 
     '''
     def __init__(self, *args, **kwargs):
@@ -365,9 +449,9 @@ class MonitorCondition(DelayedCondition):
 
     This condition continuously monitors the state of a callback function. When
     the callback's return value matches a provided target value, the condition
-    is satisfied. If this does not occur within an optional timeout, @ref
-    PrecedingTimeoutError is raised. The callback will be called at the
-    frequency specified, in Hertz.
+    is satisfied. If this does not occur within an optional timeout (specified
+    in ms), @ref PrecedingTimeoutError is set. Set timeout to None for no
+    timeout. The callback will be called at the frequency specified, in Hertz.
 
     The callback will be passed all the arguments that get passed to @ref
     set_args. It should accept any arguments it needs, as well as *args and
@@ -384,21 +468,23 @@ class MonitorCondition(DelayedCondition):
     def _check(self):
         if self._callback(*self._args, **self._kwargs) == self._target:
             return True
+        time.sleep(self._sleep_time)
+        return False
 
 
 ###############################################################################
 ## Plan object
 
 def _make_check_comp_state_cb(rtsprofile, target_comp):
-    def cb(rtctree=rtctree, *args, **kwargs):
+    def cb(rtctree=None, *args, **kwargs):
         comp = rtsprofile.find_comp_by_target(target_comp)
-        path = pathsep + source_comp.path_uri
+        path = pathsep + comp.path_uri
         comp = rtctree.get_node(parse_path(path)[0])
-        return comp.state
+        return comp.refresh_state_in_ec(comp.get_ec_index(target_comp.id))
     return cb
 
 def _make_action_cb(target_ec):
-    def cb():
+    def cb(*args, **kwargs):
         target_ec.set()
     return cb
 
@@ -421,6 +507,8 @@ class Plan(object):
         super(Plan, self).__init__(*args, **kwargs)
         self._immediates = []
         self._laters = []
+        self._cancelled = False
+        self._cancel_lock = threading.Lock()
         self._complete_flag = threading.Event()
 
     def __str__(self):
@@ -433,36 +521,48 @@ class Plan(object):
 
     def cancel(self):
         '''Cancel execution of this plan.'''
+        with self._cancel_lock:
+            self._cancelled = True
 
     def execute(self, *args, **kwargs):
         '''Execute this plan.'''
+        error = None
         for a in self._immediates:
             a(*args, **kwargs)
         for a in self._laters:
             a(*args, **kwargs)
-        while self._laters:
+        while self._laters and not error:
             self._complete_flag.wait()
-            with self._cancelled_lock:
+            with self._cancel_lock:
                 if self._cancelled:
                     for a in self._laters:
                         a.cancel()
-                    return
+                    break
+            for a in self._laters:
+                if a.error:
+                    for a in self._laters:
+                        a.cancel()
+                    error = a.error
+                    break
             if self._complete_flag.is_set():
                 self._laters = [a for a in self._laters if not a.complete]
                 self._complete_flag.clear()
+        for a in self._laters:
+            a.wait_for_exit()
+        return error
 
-    def make(self, rtsprofile, actions):
+    def make(self, rtsprofile, actions, conds_source, monitor_target):
         '''Make a plan from a list of actions and an RTSProfile.'''
         all = {}
         # First build a dictionary indexed by target for each action
         for a in actions:
             all[(a.ec_id, a.comp_id, a.instance_name)] = \
-                    ActionExecutor(action=a)
+                    ActionExecutor(action=a, owner_flag=self._complete_flag)
         # For each action, find all its conditions and add them to the action's
         # executor.
         for a in actions:
             # First add an executor for each action to a temporary dictionary
-            conds = self._get_action_conditions(rtsprofile, a)
+            conds = self._get_action_conditions(conds_source, a)
             if not conds:
                 continue
             for c in conds:
@@ -477,15 +577,38 @@ class Plan(object):
                 elif c.__class__ == WaitTime:
                     # An action to be executed after a certain amount of time
                     action.add_condition(SleepCondition(executor=action,
-                        wait_time=c.wait_time * 1000, sequence=c.sequence))
+                        wait_time=c.wait_time, sequence=c.sequence))
                 elif c.__class__ == Preceding:
                     # An action that waits for a previous action to
                     # occur/complete.
-                    if c.sending_timing == 'PRE':
+                    if c.sending_timing == 'SYNC':
+                        # Wait for action to complete
+                        for p in c.preceding_components:
+                            desc = 'Sync to {0}'.format(p.instance_name)
+                            timeout = c.timeout
+                            if timeout == 0:
+                                timeout = None
+                            mc = MonitorCondition(executor=action,
+                                    sequence=c.sequence,
+                                    callback=_make_check_comp_state_cb(rtsprofile, p),
+                                    target=monitor_target,
+                                    desc=desc, timeout=timeout)
+                            action.add_condition(mc)
+                            target_p = (p.id, p.component_id, p.instance_name)
+                            if all[target_p].action.optional:
+                                print >>sys.stderr, 'Warning: action depends \
+on an optional action. This may cause a deadlock if the previous action\'s \
+component is not present.'
+                    else:
                         # Wait for action to occur
                         for p in c.preceding_components:
+                            desc = "After {0}'s action".format(p.instance_name)
+                            timeout = c.timeout
+                            if timeout == 0:
+                                timeout = None
                             ec = EventCondition(executor=action,
-                                    sequence=c.sequence)
+                                    sequence=c.sequence, desc=desc,
+                                    timeout=timeout)
                             action.add_condition(ec)
                             target_p = (p.id, p.component_id, p.instance_name)
                             all[target_p].add_callback(_make_action_cb(ec))
@@ -493,19 +616,7 @@ class Plan(object):
                                 print >>sys.stderr, 'Warning: action depends \
 on previous action, which is optional. This may cause a deadlock if the \
 previous action\'s component is not present.'
-                    else:
-                        # Wait for action to complete
-                        for p in c.preceding_components:
-                            mc = MonitorCondition(executor=action,
-                                    sequence=c.sequence,
-                                    callback=_make_check_comp_state_cb(rtsprofile, p),
-                                    target=component.ACTIVE)
-                            action.add_condition(mc)
-                            target_p = (p.id, p.component_id, p.instance_name)
-                            if all[target_p].action.optional:
-                                print >>sys.stderr, 'Warning: action depends \
-on an optional action. This may cause a deadlock if the previous action\'s \
-component is not present.'
+
         for k, a in all.items():
             if a.immediate:
                 self._immediates.append(a)
@@ -514,11 +625,11 @@ component is not present.'
         self._immediates.sort(key=attrgetter('sort_order'))
         self._laters.sort(key=attrgetter('sort_order'))
 
-    def _get_action_conditions(self, rtsprofile, action):
+    def _get_action_conditions(self, conds_source, action):
         # Get the corresponding conditions for an action, if any.
         result = []
-        if rtsprofile.activation.targets:
-            for c in rtsprofile.activation.targets:
+        if conds_source and conds_source.targets:
+            for c in conds_source.targets:
                 target = c.target_component
                 if target.id == action.ec_id and \
                    target.component_id == action.comp_id and \

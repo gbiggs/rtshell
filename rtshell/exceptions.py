@@ -25,22 +25,27 @@ __version__ = '$Revision: $'
 
 class RtsShellError(Exception):
     '''Base error for all errors that may occur.'''
-    pass
 
 
 class RequiredActionFailedError(RtsShellError):
     '''Error raised when an action that must succeed fails.'''
-    pass
+    def __str__(self):
+        return 'Required action failed: ' + \
+                super(RequiredActionFailedError, self).__str__()
 
 
 class NoSuchOptionError(RtsShellError):
     '''The requested option has not been set.'''
-    pass
+    def __str__(self):
+        return 'No such option: ' + \
+                super(NoSuchOptionError, self).__str__()
 
 
 class PrecedingTimeoutError(RtsShellError):
     '''The time limit on a preceding condition being met has elapsed.'''
-    pass
+    def __str__(self):
+        return 'Preceding condition timed out: ' + \
+                super(PrecedingTimeoutError, self).__str__()
 
 
 # vim: tw=79

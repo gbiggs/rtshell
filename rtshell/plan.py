@@ -597,8 +597,8 @@ class Plan(object):
                             target_p = (p.id, p.component_id, p.instance_name)
                             if all[target_p].action.optional:
                                 print >>sys.stderr, 'Warning: action depends \
-on an optional action. This may cause a deadlock if the previous action\'s \
-component is not present.'
+on an optional action: "{0}". This may cause a deadlock if the previous \
+action\'s component is not present.'.format(desc)
                     else:
                         # Wait for action to occur
                         for p in c.preceding_components:
@@ -614,8 +614,8 @@ component is not present.'
                             all[target_p].add_callback(_make_action_cb(ec))
                             if all[target_p].action.optional:
                                 print >>sys.stderr, 'Warning: action depends \
-on previous action, which is optional. This may cause a deadlock if the \
-previous action\'s component is not present.'
+on an optional action: "{0}". This may cause a deadlock if the previous \
+action\'s component is not present.'.format(desc)
 
         for k, a in all.items():
             if a.immediate:

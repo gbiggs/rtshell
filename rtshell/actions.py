@@ -79,8 +79,8 @@ class Action(object):
         '''Is this action optional?'''
         for cb in self._callbacks:
             if cb.__class__ == RequiredActionCB:
-                return True
-        return False
+                return False
+        return True
 
     def _action_string(self, action_desc):
         if self._callbacks:

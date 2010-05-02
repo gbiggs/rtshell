@@ -24,7 +24,7 @@ Technologies.  This software is licensed under the Eclipse Public License -v
 Requirements
 ------------
 
-rtcshell requires rtctree 1.0. It must be installed for rtcshell to function.
+rtcshell requires rtctree 2.0. It must be installed for rtcshell to function.
 
 rtcshell uses the new string formatting operations that were introduced in
 Python 2.6. It will not function with an earlier version of Python. It has not
@@ -628,4 +628,5 @@ Changelog
 - Support csh in rtcwd
 - rtcat: Print new information available from rtctree for execution contexts
 - rtls: Change recurse option from -r to -R to match ls
+- rtls: Handle unknown objects; display them like dead files
 

@@ -30,8 +30,8 @@ from rtctree.tree import create_rtctree, InvalidServiceError, \
                          FailedToNarrowRootNamingError, \
                          NonRootPathError
 from rtctree.path import parse_path
-from rtctree.utils import build_attr_string, get_num_columns_and_rows, \
-                          get_terminal_size
+from rtctree.utils import build_attr_string, colour_supported, \
+                          get_num_columns_and_rows, get_terminal_size
 import sys
 
 from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
@@ -57,8 +57,10 @@ def get_node_long_lines(nodes, use_colour=True):
                 out_width = 1
             if svc_width == 0:
                 svc_width = 1
-            name = build_attr_string(['bold', 'blue'], use_colour) + \
-                    node.name + build_attr_string(['reset'])
+            name = build_attr_string(['bold', 'blue'],
+                        supported=use_colour) + \
+                    node.name + build_attr_string(['reset'],
+                        supported=use_colour)
             info_strings.append((('-', 0), ('-', 0), ('-', 0),
                                  ('-', 0), ('-', 0), name))
         elif node.is_manager:
@@ -73,8 +75,10 @@ def get_node_long_lines(nodes, use_colour=True):
                 out_width = 1
             if svc_width == 0:
                 svc_width = 1
-            name = build_attr_string(['bold', 'green'], use_colour) + \
-                    node.name + build_attr_string(['reset'])
+            name = build_attr_string(['bold', 'green'],
+                        supported=use_colour) + \
+                    node.name + build_attr_string(['reset'],
+                        supported=use_colour)
             info_strings.append((('-', 0), ('-', 0), ('-', 0),
                                  ('-', 0), ('-', 0), name))
         elif node.is_component:
@@ -82,17 +86,20 @@ def get_node_long_lines(nodes, use_colour=True):
             state_string = node.plain_state_string
             if len(state_string) > state_width:
                 state_width = len(state_string)
-            state_string = (node.state_string, len(node.state_string) - \
-                                len(state_string))
+            state_string = (node.get_state_string(add_colour=use_colour),
+                    len(node.get_state_string(add_colour=use_colour)) - \
+                            len(state_string))
 
             num_ports = len(node.ports)
             num_connected = len(node.connected_ports)
             total_string = '{0}/{1}'.format(num_ports, num_connected)
             if len(total_string) > total_width:
                 total_width = len(total_string)
-            coloured_string = build_attr_string('bold', use_colour) + \
+            coloured_string = build_attr_string('bold',
+                                supported=use_colour) + \
                               str(num_ports) + \
-                              build_attr_string('reset', use_colour) + '/' + \
+                              build_attr_string('reset',
+                                supported=use_colour) + '/' + \
                               str(num_connected)
             total_string = (coloured_string, len(coloured_string) - \
                                 len(total_string))
@@ -102,9 +109,11 @@ def get_node_long_lines(nodes, use_colour=True):
             in_string = '{0}/{1}'.format(num_ports, num_connected)
             if len(in_string) > in_width:
                 in_width = len(in_string)
-            coloured_string = build_attr_string('bold', use_colour) + \
+            coloured_string = build_attr_string('bold',
+                                supported=use_colour) + \
                               str(num_ports) + \
-                              build_attr_string('reset', use_colour) + '/' + \
+                              build_attr_string('reset',
+                                supported=use_colour) + '/' + \
                               str(num_connected)
             in_string = (coloured_string, len(coloured_string) - \
                                 len(in_string))
@@ -114,9 +123,11 @@ def get_node_long_lines(nodes, use_colour=True):
             out_string = '{0}/{1}'.format(num_ports, num_connected)
             if len(out_string) > out_width:
                 out_width = len(out_string)
-            coloured_string = build_attr_string('bold', use_colour) + \
+            coloured_string = build_attr_string('bold',
+                                supported=use_colour) + \
                               str(num_ports) + \
-                              build_attr_string('reset', use_colour) + '/' + \
+                              build_attr_string('reset',
+                                supported=use_colour) + '/' + \
                               str(num_connected)
             out_string = (coloured_string, len(coloured_string) - \
                                 len(out_string))
@@ -126,9 +137,11 @@ def get_node_long_lines(nodes, use_colour=True):
             svc_string = '{0}/{1}'.format(num_ports, num_connected)
             if len(svc_string) > svc_width:
                 svc_width = len(svc_string)
-            coloured_string = build_attr_string('bold', use_colour) + \
+            coloured_string = build_attr_string('bold',
+                                supported=use_colour) + \
                               str(num_ports) + \
-                              build_attr_string('reset', use_colour) + '/' + \
+                              build_attr_string('reset',
+                                supported=use_colour) + '/' + \
                               str(num_connected)
             svc_string = (coloured_string, len(coloured_string) - \
                                 len(svc_string))
@@ -147,8 +160,10 @@ def get_node_long_lines(nodes, use_colour=True):
                 out_width = 1
             if svc_width == 0:
                 svc_width = 1
-            name = build_attr_string(['faint', 'white'], use_colour) + \
-                    node.name + build_attr_string(['reset'])
+            name = build_attr_string(['faint', 'white'],
+                        supported=use_colour) + \
+                    node.name + build_attr_string(['reset'],
+                        supported=use_colour)
             info_strings.append((('-', 0), ('-', 0), ('-', 0),
                                  ('-', 0), ('-', 0), name))
     state_width += 2
@@ -187,32 +202,35 @@ def format_items_list(items):
 
 def list_directory(dir_node, long=False):
     listing = dir_node.children
-    use_colour = sys.stdout.isatty()
+    use_colour = colour_supported(sys.stdout)
     if long:
-        lines = get_node_long_lines(listing)
+        lines = get_node_long_lines(listing, use_colour=use_colour)
         return lines
     else:
         items = []
         for entry in listing:
             if entry.is_directory:
                 items.append((build_attr_string(['bold', 'blue'],
-                                                use_colour) + \
+                                supported=use_colour) + \
                               entry.name + '/' + \
-                              build_attr_string(['reset']),
+                              build_attr_string(['reset'],
+                                supported=use_colour),
                              entry.name))
             elif entry.is_component:
                 items.append((entry.name, entry.name))
             elif entry.is_manager:
                 items.append((build_attr_string(['bold', 'green'],
-                                                use_colour) + \
+                                supported=use_colour) + \
                               entry.name + \
-                              build_attr_string(['reset']),
+                              build_attr_string(['reset'],
+                                  supported=use_colour),
                              entry.name))
             else:
                 items.append((build_attr_string(['faint', 'white'],
-                                                use_colour) + \
+                                supported=use_colour) + \
                               entry.name + \
-                              build_attr_string(['reset']),
+                              build_attr_string(['reset'],
+                                  supported=use_colour),
                              entry.name))
         return format_items_list(items)
 

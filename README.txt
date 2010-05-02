@@ -31,6 +31,8 @@ Python 2.6. It will not function with an earlier version of Python. It has not
 been tested with Python 3 and it is likely that several changes will be
 necessary to make it function using this version of Python.
 
+rtprint and rtinject require the Python version of OpenRTM-aist.
+
 
 Installation
 ------------
@@ -509,6 +511,7 @@ Inactive  4/0  0/0  3/0  1/0  Hokuyo_AIST0.rtc
 # rtmgr provides control over managers. Use it to load a shared library.
  $ rtcwd kenroke.host_cxt/
  $ rtmgr manager.mgr load ~/share/OpenRTM-aist/examples/rtcs/ConsoleIn.so
+   ConsoleInInit
  $ rtcat manager.mgr
  Name: manager
  Instance name: manager
@@ -601,6 +604,12 @@ Loaded shared libraries can be removed from the manager.
  $ rtdel ConsoleOut0.rtc
  $ rtls
  $
+
+
+Known problems
+--------------
+
+These tools currently do not work well with the JAVA orb.
 
 
 Changelog

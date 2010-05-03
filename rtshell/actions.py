@@ -321,6 +321,7 @@ component at path "{2}" to "{3}"'.format(self._param, self._set,
             return False, 'Invalid configuration set: {0}'.format(self._set)
         except NoSuchConfParamError:
             return False, 'Invalid configuration parameter: {0}'.format(self._param)
+        comp.reparse_conf_sets()
         if self._set == comp.active_conf_set_name:
             comp.activate_conf_set(self._set)
         return True, None

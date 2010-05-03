@@ -33,17 +33,21 @@ necessary to make it function using this version of Python.
 
 rtprint and rtinject require the Python version of OpenRTM-aist.
 
+For Ubuntu users, if you are using a version of Ubuntu prior to 9.04, you will
+need to install a suitable Python version by hand. You may want to consider
+upgrading to Ubuntu 9.04 or later (10.04 offers LTS).
 
 Installation
 ------------
 
 There are several methods of installation available:
 
-1. Download the source (either from the repository or a source archive),
-extract it somewhere, and run the commands from that directory.
+1. Download the source from either the repository (see "Repository," below) or
+a source archive, extract it somewhere, and run the commands from that
+directory.
 
-2. Download the source (either from the repository or a source archive),
-extract it somewhere, and use distutils to install it into your Python
+2. Download the source from either the repository (see "Repository," below) or
+a source archive, extract it somewhere, and install it into your Python
 distribution:
 
  a. Extract the source, e.g. to a directory ~/rtcshell
@@ -61,14 +65,15 @@ distribution:
 
 3. Use the Windows installer. This will perform the same job as running
 setup.py (see #2), but saves opening a command prompt. You may still need to
-add paths to your environment variables
+add paths to your environment variables (see step c, above).
 
 Post-install
 ------------
 
 If you are using a bash-compatible shell, source the bash_completion script.
-You can find it in ${prefix}/share/rtcshell/. This will allow you to use
-tab-completion with the commands.
+You can find it in ${prefix}/share/rtcshell/ (${prefix} is the directory where
+you installed rtcshell). This will allow you to use tab-completion with the
+commands.
 
 In Linux/OSX, source the rtcwd alias. The best way to do this is to add a line
 to your shell's startup file that sources it. For example, if you are using a
@@ -129,11 +134,21 @@ Environment variables
 
 The following environment variables are used:
 
-RTCTREE_ORB_ARGS      A list of arguments, separated by semi-colons, to pass
-                        to the ORB when creating it.
-RTCTREE_NAMESERVERS   A list of name server addresses, separated by semi-
-                        colons, to parse when creating the RTCTree.
-RTCSH_CWD               The current working directory in the tree.
+RTCTREE_ORB_ARGS        A list of arguments, separated by semi-colons, to pass
+                        to the ORB when creating it. Optional.
+RTCTREE_NAMESERVERS     A list of name server addresses, separated by semi-
+                        colons, to parse when creating the RTCTree. Each
+                        server in the list will be added to the tree, making
+                        it available for browsing with rtcshell. Optional.
+RTCSH_CWD               The current working directory in the tree. Do not set
+                        this variable; it is set automatically by rtcshell.
+
+The only variable that should normally be set by the user is
+RTCTREE_NAMESERVERS. Set this to a list of name server addresses, separated by
+semi-colons, that you want rtcshell to interact with. For example, in a Bash
+shell, you can run the following:
+
+ $ export RTCTREE_NAMESERVERS=localhost;192.168.0.1:65346;example.com
 
 
 Shell completion
@@ -610,6 +625,18 @@ Known problems
 --------------
 
 These tools currently do not work well with the JAVA orb.
+
+
+Repository
+----------
+
+The latest source is stored in a Git repository at github, available at
+http://github.com/gbiggs/rtcshell. You can download it as a zip file or
+tarball by clicking the "Download Source" link in the top right of the page.
+Alternatively, use Git to clone the repository. This is better if you wish to
+contribute patches.
+
+ $ git clone git://github.com/gbiggs/rtcshell.git
 
 
 Changelog

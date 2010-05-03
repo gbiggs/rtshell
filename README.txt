@@ -16,10 +16,10 @@ their connections and their configurations into a single RTSProfile-format
 file.
 
 rtstart and rtstop are command-line tools for starting and stopping entire RT
-Systems. They use an RTSProfile file to determine what components to start or
-stop, the order to start or stop them in, and any preconditions for starting
-and stopping the components (for example, starting one component after another
-has completed activation).
+Systems. They use an RTSProfile file to determine what components to activate
+or deactivate, the order to activate or deactivate them in, and any
+preconditions for activation or deactivation of the components (for example,
+activating one component after another has completed activation).
 
 This software is developed at the National Institute of Advanced Industrial
 Science and Technology. Approval number H22PRO-1088. The development was
@@ -39,17 +39,22 @@ Python 2.6. It will not function with an earlier version of Python. It has not
 been tested with Python 3 and it is likely that several changes will be
 necessary to make it function using this version of Python.
 
+For Ubuntu users, if you are using a version of Ubuntu prior to 9.04, you will
+need to install a suitable Python version by hand. You may want to consider
+upgrading to Ubuntu 9.04 or later (10.04 offers LTS).
+
 
 Installation
 ------------
 
 There are several methods of installation available:
 
-1. Download the source (either from the repository or a source archive),
-extract it somewhere, and run the commands from that directory.
+1. Download the source from either the repository (see "Repository," below) or
+a source archive, extract it somewhere, and run the commands from that
+directory.
 
-2. Download the source (either from the repository or a source archive),
-extract it somewhere, and use distutils to install it into your Python
+2. Download the source from either the repository (see "Repository," below) or
+a source archive, extract it somewhere, and install it into your Python
 distribution:
 
  a. Extract the source, e.g. to a directory /home/blag/src/rtsshell
@@ -68,7 +73,7 @@ distribution:
 
 3. Use the Windows installer. This will perform the same job as running
    setup.py (see #2), but saves opening a command prompt. You may still need to
-   add paths to your environment variables.
+   add paths to your environment variables (see step c, above).
 
 
 Usage - rtresurrect

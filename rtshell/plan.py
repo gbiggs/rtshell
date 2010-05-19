@@ -30,7 +30,7 @@ import sys
 import thread
 import threading
 import time
-from traceback import format_exc
+from traceback import format_exc, print_stack
 from types import NoneType
 
 from rtsshell.exceptions import PrecedingTimeoutError
@@ -540,8 +540,8 @@ class Plan(object):
                     break
             for a in self._laters:
                 if a.error:
-                    for a in self._laters:
-                        a.cancel()
+                    for b in self._laters:
+                        b.cancel()
                     error = a.error
                     break
             if self._complete_flag.is_set():

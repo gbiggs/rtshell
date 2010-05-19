@@ -167,7 +167,7 @@ def config_set_actions(rtsprofile):
                 set_values.append(SetConfigParamValueAct(pathsep + comp.path_uri,
                         cs.id, p.name, p.data))
 
-    return set_active + set_values
+    return set_values + set_active 
 
 
 def rebuild_system_actions(rtsprofile):

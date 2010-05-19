@@ -255,7 +255,7 @@ extension will be automatically appended. [Default: rtsystem.[xml|yaml]]')
         options.xml = False
     if options.output == 'rtsystem.':
         if options.xml:
-            outputs.output += 'xml'
+            options.output += 'xml'
         else:
             options.output += 'yaml'
     f = open(options.output, 'w')

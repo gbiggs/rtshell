@@ -205,6 +205,18 @@ You can add this to your ~/.bashrc file to have it loaded in every new shell
 instance.
 
 
+Repository
+----------
+
+The latest source is stored in a Git repository at github, available at
+http://github.com/gbiggs/rtsshell. You can download it as a zip file or
+tarball by clicking the "Download Source" link in the top right of the page.
+Alternatively, use Git to clone the repository. This is better if you wish to
+contribute patches.
+
+ $ git clone git://github.com/gbiggs/rtsshell.git
+
+
 Changelog
 ---------
 

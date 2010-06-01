@@ -41,6 +41,7 @@ if sys.platform == 'win32':
                    'rtstop.bat',
                    'rtteardown']
     scripts =  base_scripts + batch_files
+    data_files = []
 else:
     scripts = base_scripts
     data_files = [('share/rtsshell', ['bash_completion'])]
@@ -64,7 +65,7 @@ setup(name='rtsshell',
       author='Geoffrey Biggs',
       author_email='git@killbots.net',
       url='http://github.com/gbiggs/rtsshell',
-      license='BSD',
+      license='EPL',
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Developers',

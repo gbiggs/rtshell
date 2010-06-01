@@ -14,7 +14,7 @@ RTSystemEditor. Being familiar with using a command-line is a benefit when
 using rtcshell.
 
 This software is developed at the National Institute of Advanced Industrial
-Science and Technology. Approval number H22PRO-1082. The development was
+Science and Technology. Approval number H22PRO-1135. The development was
 financially supported by the New Energy and Industrial Technology Development
 Organisation Project for Strategic Development of Advanced Robotics Elemental
 Technologies.  This software is licensed under the Eclipse Public License -v

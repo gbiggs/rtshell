@@ -83,7 +83,7 @@ setup(name='rtcshell',
       author='Geoffrey Biggs',
       author_email='git@killbots.net',
       url='http://github.com/gbiggs/rtcshell',
-      license='BSD',
+      license='EPL',
       long_description='Shell commands for managing RT-Middleware.',
       classifiers=[
           'Development Status :: 5 - Production/Stable',

@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -25,7 +25,7 @@ Command for controlling managers.
 
 import sys
 
-from rtcshell import rtmgr
+from rtshell import rtmgr
 
 
 if __name__ == '__main__':

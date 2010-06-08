@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -32,7 +32,7 @@ from rtctree.tree import create_rtctree
 from rtctree.path import parse_path
 import sys
 
-from rtcshell.path import ENV_VAR, cmd_path_to_full_path
+from rtshell.path import ENV_VAR, cmd_path_to_full_path
 
 
 if sys.platform == 'win32':

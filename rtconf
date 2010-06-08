@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -24,7 +24,7 @@ Command to manage component configuration.
 
 import sys
 
-from rtcshell import rtconf
+from rtshell import rtconf
 
 
 if __name__ == '__main__':

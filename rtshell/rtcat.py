@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -32,8 +32,8 @@ from rtctree.utils import build_attr_string, get_num_columns_and_rows, \
                             get_terminal_size
 import sys
 
-from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
-from rtcshell.path import cmd_path_to_full_path
+from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
+from rtshell.path import cmd_path_to_full_path
 
 
 def format_component(object, use_colour=True, long=False, really_long=False):
@@ -213,7 +213,7 @@ def format_manager(object, use_colour=True, long=False):
             dest.append('{0}: {1}'.format(title, object.profile[key]))
         else:
             print >>sys.stderr, '{0}: Warning: "{1}" profile entry is \
-missing. Possible version conflict between rtcshell and OpenRTM-aist.'.format(\
+missing. Possible version conflict between rtshell and OpenRTM-aist.'.format(\
                     sys.argv[0], key)
 
     result = []

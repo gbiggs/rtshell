@@ -1,7 +1,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtsshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -25,8 +25,8 @@ __version__ = '$Revision: $'
 
 from rtctree.exceptions import NoSuchConfSetError, NoSuchConfParamError
 from rtctree.path import parse_path
-from rtsshell.exceptions import RequiredActionFailedError
-from rtsshell.options import Options
+from rtshell.exceptions import RequiredActionFailedError
+from rtshell.options import Options
 
 
 ###############################################################################

@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -25,7 +25,7 @@ Command to move a component from the error state to the inactive state.
 
 import sys
 
-from rtcshell import rtreset
+from rtshell import rtreset
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtsshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -41,8 +41,8 @@ from rtsprofile.ports import DataPort, ServicePort
 from rtsprofile.targets import TargetPort
 import sys
 
-from rtsshell import RTSSHELL_VERSION
-from rtsshell.options import Options
+from rtshell import RTSHELL_VERSION
+from rtshell.options import Options
 
 
 def make_comp_id(comp):
@@ -189,7 +189,7 @@ be used.
 The output format will be determined automatically from the file extension.
 If the file has no extension, the input format is assumed to be XML.
 The output format can be over-ridden with the --xml or --yaml options.'''
-    parser = OptionParser(usage=usage, version=RTSSHELL_VERSION)
+    parser = OptionParser(usage=usage, version=RTSHELL_VERSION)
     parser.add_option('-a', '--abstract', dest='abstract', action='store',
             type='string', default='RT System created by rtcryo.',
             help='Brief description of the RT System.')

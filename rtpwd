@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -32,12 +32,12 @@ import os
 import sys
 
 
-from rtcshell.path import ENV_VAR
+from rtshell.path import ENV_VAR
 
 
 def main(argv):
     if len(argv) > 1 and (argv[1] == '--help' or argv[1] == '-h'):
-        print 'Print the name of the current rtcshell working directory.'
+        print 'Print the name of the current rtshell working directory.'
         return 0
     if ENV_VAR in os.environ:
         print os.environ[ENV_VAR]

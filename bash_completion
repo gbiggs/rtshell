@@ -272,7 +272,7 @@ _rtmgr()
     return 0
 }
 
-_rtsshell(){
+_rtshell(){
     local cur prev
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
@@ -304,9 +304,9 @@ complete -F _rtconf rtconf
 
 complete -F _rtmgr -A file rtmgr
 
-complete -F _rtsshell -A file rtstart
-complete -F _rtsshell -A file rtstop
-complete -F _rtsshell -A file rtteardown
-complete -F _rtsshell -A file rtresurrect
-complete -F _rtsshell -A file rtcryo
+complete -F _rtshell -A file rtstart
+complete -F _rtshell -A file rtstop
+complete -F _rtshell -A file rtteardown
+complete -F _rtshell -A file rtresurrect
+complete -F _rtshell -A file rtcryo
 

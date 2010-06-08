@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -25,7 +25,7 @@ Implementation of the command to move a component to the activated state.
 
 import sys
 
-from rtcshell.state_control_base import base_main
+from rtshell.state_control_base import base_main
 
 
 def activate_action(object, ec_index):

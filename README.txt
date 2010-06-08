@@ -163,13 +163,13 @@ RTCTREE_ORB_ARGS        A list of arguments, separated by semi-colons, to pass
 RTCTREE_NAMESERVERS     A list of name server addresses, separated by semi-
                         colons, to parse when creating the RTCTree. Each
                         server in the list will be added to the tree, making
-                        it available for browsing with rtcshell. Optional.
+                        it available for browsing with rtshell. Optional.
 RTSH_CWD                The current working directory in the tree. Do not set
-                        this variable; it is set automatically by rtcshell.
+                        this variable; it is set automatically by rtshell.
 
 The only variable that should normally be set by the user is
 RTCTREE_NAMESERVERS. Set this to a list of name server addresses, separated by
-semi-colons, that you want rtcshell to interact with. For example, in a Bash
+semi-colons, that you want rtshell to interact with. For example, in a Bash
 shell, you can run the following:
 
  $ export RTCTREE_NAMESERVERS=localhost;192.168.0.1:65346;example.com

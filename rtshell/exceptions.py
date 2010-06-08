@@ -1,7 +1,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtsshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -23,25 +23,25 @@ __version__ = '$Revision: $'
 # $Source$
 
 
-class RtsShellError(Exception):
+class RtShellError(Exception):
     '''Base error for all errors that may occur.'''
 
 
-class RequiredActionFailedError(RtsShellError):
+class RequiredActionFailedError(RtShellError):
     '''Error raised when an action that must succeed fails.'''
     def __str__(self):
         return 'Required action failed: ' + \
                 super(RequiredActionFailedError, self).__str__()
 
 
-class NoSuchOptionError(RtsShellError):
+class NoSuchOptionError(RtShellError):
     '''The requested option has not been set.'''
     def __str__(self):
         return 'No such option: ' + \
                 super(NoSuchOptionError, self).__str__()
 
 
-class PrecedingTimeoutError(RtsShellError):
+class PrecedingTimeoutError(RtShellError):
     '''The time limit on a preceding condition being met has elapsed.'''
     def __str__(self):
         return 'Preceding condition timed out: ' + \

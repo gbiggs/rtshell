@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -30,7 +30,7 @@ inactive state.
 
 import sys
 
-from rtcshell.state_control_base import base_main
+from rtshell.state_control_base import base_main
 
 
 def reset_action(object, ec_index):

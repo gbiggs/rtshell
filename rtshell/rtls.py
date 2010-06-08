@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -34,8 +34,8 @@ from rtctree.utils import build_attr_string, colour_supported, \
                           get_num_columns_and_rows, get_terminal_size
 import sys
 
-from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
-from rtcshell.path import cmd_path_to_full_path
+from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
+from rtshell.path import cmd_path_to_full_path
 
 
 def get_node_long_lines(nodes, use_colour=True):

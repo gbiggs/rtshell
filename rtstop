@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtsshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -33,11 +33,11 @@ from rtctree.tree import create_rtctree
 from rtsprofile.rts_profile import RtsProfile
 import sys
 
-from rtsshell import RTSSHELL_VERSION
-from rtsshell.actions import *
-from rtsshell.exceptions import RequiredActionFailedError
-from rtsshell.options import Options
-from rtsshell.plan import Plan
+from rtshell import RTSHELL_VERSION
+from rtshell.actions import *
+from rtshell.exceptions import RequiredActionFailedError
+from rtshell.options import Options
+from rtshell.plan import Plan
 
 
 def deactivate_actions(rtsprofile):
@@ -56,7 +56,7 @@ Stop an RT system using an RT system profile specified in XML or YAML.
 The input format will be determined automatically from the file extension.
 If the file has no extension, the input format is assumed to be XML.
 The output format can be over-ridden with the --xml or --yaml options.'''
-    parser = OptionParser(usage=usage, version=RTSSHELL_VERSION)
+    parser = OptionParser(usage=usage, version=RTSHELL_VERSION)
     parser.add_option('--dry-run', dest='dry_run', action='store_true',
             default=False,
             help="Print what will be done but don't actually do anything. \

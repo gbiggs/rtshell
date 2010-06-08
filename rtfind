@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -24,7 +24,7 @@ Command to find components, managers, etc.
 
 import sys
 
-from rtcshell import rtfind
+from rtshell import rtfind
 
 
 if __name__ == '__main__':

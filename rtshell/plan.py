@@ -1,6 +1,6 @@
 # -*- Python -*- # -*- coding: utf-8 -*-
 
-'''rtsshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -33,7 +33,7 @@ import time
 from traceback import format_exc, print_stack
 from types import NoneType
 
-from rtsshell.exceptions import PrecedingTimeoutError
+from rtshell.exceptions import PrecedingTimeoutError
 
 
 class Counter:

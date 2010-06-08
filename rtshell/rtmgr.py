@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -35,8 +35,8 @@ from rtctree.tree import create_rtctree, InvalidServiceError, \
 from rtctree.path import parse_path
 import sys
 
-from rtcshell import RTSH_PATH_USAGE, RTSH_VERSION
-from rtcshell.path import cmd_path_to_full_path
+from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
+from rtshell.path import cmd_path_to_full_path
 
 
 def get_manager(cmd_path, full_path, tree=None):

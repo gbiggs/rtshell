@@ -1,0 +1,278 @@
+# rtcshell Bash completion
+#
+# Copyright (C) 2009-2010
+#     Keisuke Suzuki and Geoffrey Biggs
+#     RT-Synthesis Research Group
+#     Intelligent Systems Research Institute,
+#     National Institute of Advanced Industrial Science and Technology (AIST),
+#     Japan
+#     All rights reserved.
+# Licensed under the Eclipse Public License -v 1.0 (EPL)
+# http://www.opensource.org/licenses/eclipse-1.0.txt
+
+
+# Overview
+#
+# Adds tab-completion functionality to rtcshell. Can complete command options,
+# directories, objects, ports and configuration parameter names.
+#
+# rtcshellにbashの補完機能を追加するbash-completionスクリプト。
+# コマンドオプションやディレクトリ、オブジェクト、ポート、パラメータ名を補完。
+#
+# Usage
+#
+#  $ source ${prefix}/share/rtcshell/bash_completion
+#
+# Example: Directory completion / ディレクトリ名補完
+#
+#  $ rtcwd [TAB]
+#  $ rtcwd localhost/
+#  $ rtcwd localhost/[TAB]
+#  $ rtcwd localhost/foo.host_cxt/
+#  $ rtcwd localhost/foo.host_cxt/[TAB][TAB]
+#  foo.rtc  bar.rtc  manager.mgr
+#  $ rtcwd localhost/foo.host_cxt/[ENTER]
+#
+# Example: Configuration parameter completion / パラメータ名補完 (rtconf)
+#
+#  $ rtconf foo.rtc set [TAB]
+#  param1  param2  param3
+#
+# Example: ポート名補完 (only rtcon rtdis)
+#
+#  $ rtcon foo.rtc:[TAB]
+#  fooIn  barIn  fooOut  barOut
+#
+
+
+# Command option completion
+# Usage : _rtopts ${COMP_WORDS[COMP_CWORD]}
+#         _rtopts ${cur}
+# Receives the currently-being-entered word.
+_rtopts()
+{
+    local opts complist
+
+    case ${COMP_WORDS[0]} in
+        rtact)  opts="--version -h --help -d --debug -e --exec_context="
+                ;;
+        rtcat)  opts="--version -h --help -l --ll -d --debug"
+                ;;
+        rtcwd)  opts=""
+                ;;
+        rtcon)  opts="--version -h --help -d --debug -i --id= -n --name= -p --property="
+                ;;
+        rtconf) opts="--version -h --help -l -d --debug"
+                ;;
+        rtdeact)    opts="--version -h --help -d --debug -e --exec_context="
+                ;;
+        rtdis)  opts="--version -h --help -d --debug"
+                ;;
+        rtfind) opts="--version -h --help -d --debug --maxdepth= --iname= --name= --type="
+                ;;
+        rtls)   opts="--version -h --help -l -d --debug -r --recurse"
+                ;;
+        rtmgr)  opts="--version -h --help -d --debug"
+                ;;
+        rtreset)    opts="--version -h --help -d --debug -e --exec_context="
+                ;;
+        *)      ;;
+    esac
+
+    complist=$(compgen -W "${opts} ${nospaceopts}" -- $1)
+
+    # If there is an = then don't add a space
+    if [[ ${complist} == *= ]] ; then
+        compopt -o nospace
+    fi
+
+    COMPREPLY=(${complist})
+    return 0
+
+}
+
+# Complete object names
+# Usage : _rtobj ${COMP_WORDS[COMP_CWORD]}
+#         _rtobj ${cur}
+#         _rtobj ${cur} port (when completing port names)
+# Receives the currently-being-entered word.
+_rtobj()
+{
+    local objs obj target_dir target_abs target_objs
+
+    target_objs=""
+
+    target_dir=`echo $1 | sed -e 's/\/[^\/]*$/\//g'`
+
+    if [[ ${target_dir} != */ ]] ; then
+        target_dir=""
+    fi
+
+    # Use col to remove colour codes
+    objs=`rtls ${target_dir} 2> /dev/null | col | sed 's/00m//g'`
+
+    target_objs=""
+    for obj in ${objs} ; do
+        target_objs="${target_objs} ${target_dir}${obj}"
+    done
+
+    target_objs=($(compgen -W "${target_objs}" -- $1))
+
+    if [[ ${#target_objs[@]} == 1 ]] ; then
+        # If the completion target is a directory or port, no space
+        if [[ ${target_objs[0]} == */ ]] || [[ ${target_objs[0]} == *:  ]] ; then
+                    compopt -o nospace
+        elif [[  $2 == port ]] ; then
+            target_objs[0]="${target_objs[0]}:"
+            compopt -o nospace
+        fi
+    fi
+
+    COMPREPLY=(${target_objs[@]})
+}
+
+_rtls()
+{
+    local cur prev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [[ ${cur} == -* ]] ; then
+        _rtopts ${cur}
+        return 0
+    fi
+
+    _rtobj ${cur}
+    return 0
+}
+
+_rtcon()
+{
+    local cur prev preprev colonopt
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [[ ${cur} == -* ]] ; then
+            _rtopts ${cur}
+            return 0
+    fi
+
+    # : is treated the same as a space for separating variables
+    # Port completion 1
+    if [[ ${cur} == : ]] ; then
+        colonopt=$(rtcat ${prev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }')
+        COMPREPLY=(${colonopt})
+        return 0
+    fi
+
+    # Port completion 2
+    if [[ ${prev} == : ]] ; then
+        preprev="${COMP_WORDS[COMP_CWORD-2]}"
+        colonopt=`rtcat ${preprev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }'`
+        COMPREPLY=($(compgen -W "${colonopt}" -- ${cur}))
+        return 0
+    fi
+
+    _rtobj "${cur}" port
+    return 0
+}
+
+_rtconf()
+{
+    local cur prev confopts setopt
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    confopts="set list act"
+
+    if [[ ${cur} == -* ]] ; then
+        _rtopts ${cur}
+        return 0
+    fi
+
+    # Look for .rtc or .mgr in the previous option to check if it is an object.
+    # (This needs to be improved.)
+    if [[ ${prev} == *.rtc ]] || [[ ${prev} == *.mgr ]] ; then
+        COMPREPLY=($(compgen -W "${confopts}" -- ${cur}))
+        return 0
+    fi
+
+    case "${prev}" in
+        set)    setopt=$(rtconf ${COMP_WORDS[COMP_CWORD-2]} -l 2> /dev/null | grep "^ " | awk '{ print $1 }')
+                COMPREPLY=($(compgen -W "${setopt}" -- ${cur}))
+                return 0
+                ;;
+        list)
+                return 0
+                ;;
+
+        act)    return 0
+                ;;
+
+        *)
+                ;;
+    esac
+
+    _rtobj ${cur}
+    return 0
+}
+
+_rtmgr()
+{
+    local cur prev mgropts setopt
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    mgropts="load unload create delete"
+
+    if [[ ${cur} == -* ]] ; then
+        _rtopts ${cur}
+        return 0
+    fi
+
+    if [[ ${prev} == *.mgr ]] || [[ ${prev} == *.so ]]; then
+        COMPREPLY=($(compgen -W "${mgropts}" -- ${cur}))
+        return 0
+    fi
+
+    case "${prev}" in
+        load)   # complete -A file
+                return 0
+                ;;
+        unload) # complete -A file
+                return 0
+                ;;
+        create) COMPREPLY=() # No completion
+                return 0
+                ;;
+        delete) _rtobj ${cur} # Complete object name
+                return 0
+                ;;
+        *)      ;;
+    esac
+
+    return 0
+}
+
+complete -F _rtls rtls
+complete -F _rtls rtact
+complete -F _rtls rtcat
+complete -F _rtls rtcwd
+complete -F _rtls rtdeact
+complete -F _rtls rtreset
+complete -F _rtls rtfind
+complete -F _rtls rtdel
+
+complete -F _rtcon rtcon
+complete -F _rtcon rtdis
+complete -F _rtcon rtprint
+complete -F _rtcon rtinject
+
+complete -F _rtconf rtconf
+
+complete -F _rtmgr -A file rtmgr
+

@@ -43,7 +43,7 @@ base_scripts = ['rtact',
                 'rtmgr',
                 'rtprint',
                 'rtpwd',
-                'rtreset'
+                'rtreset',
                 'rtresurrect',
                 'rtstart',
                 'rtstop',
@@ -64,7 +64,7 @@ if sys.platform == 'win32':
                    'rtmgr.bat',
                    'rtprint.bat',
                    'rtpwd.bat',
-                   'rtreset.bat'
+                   'rtreset.bat',
                    'rtresurrect.bat',
                    'rtstart.bat',
                    'rtstop.bat',

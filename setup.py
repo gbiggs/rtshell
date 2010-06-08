@@ -2,7 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -16,7 +16,7 @@ http://www.opensource.org/licenses/eclipse-1.0.txt
 
 File: setup.py
 
-rtcshell install script.
+rtshell install script.
 
 '''
 
@@ -28,11 +28,13 @@ from distutils.core import setup
 import os.path
 import sys
 
+<<<<<<< HEAD
 base_scripts = ['rtact',
                 'rtcat',
                 'rtcon',
                 'rtconf',
                 'rtcwd.py',
+                'rtcryo',
                 'rtdeact',
                 'rtdel',
                 'rtdis',
@@ -42,12 +44,17 @@ base_scripts = ['rtact',
                 'rtmgr',
                 'rtprint',
                 'rtpwd',
-                'rtreset']
+                'rtreset'
+                'rtresurrect',
+                'rtstart',
+                'rtstop',
+                'rtteardown']
 if sys.platform == 'win32':
     batch_files = ['rtact.bat',
                    'rtcat.bat',
                    'rtcon.bat',
                    'rtconf.bat',
+                   'rtcryo.bat',
                    'rtcwd.bat',
                    'rtdeact.bat',
                    'rtdel.bat',
@@ -58,12 +65,16 @@ if sys.platform == 'win32':
                    'rtmgr.bat',
                    'rtprint.bat',
                    'rtpwd.bat',
-                   'rtreset.bat']
+                   'rtreset.bat'
+                   'rtresurrect.bat',
+                   'rtstart.bat',
+                   'rtstop.bat',
+                   'rtteardown.bat']
     scripts = base_scripts + batch_files
     data_files = []
 else:
     scripts = base_scripts + ['rtcwd']
-    data_files = [('share/rtcshell', ['bash_completion'])]
+    data_files = [('share/rtshell', ['bash_completion'])]
 
 
 class InstallRename(install_scripts):
@@ -77,12 +88,12 @@ class InstallRename(install_scripts):
                                os.path.join(self.install_dir, s + '.py'))
 
 
-setup(name='rtcshell',
+setup(name='rtshell',
       version='3.0.0',
-      description='Shell commands for managing RT-Middleware.',
+      description='Shell commands for managing RT Components and RT Systems.',
       author='Geoffrey Biggs',
       author_email='git@killbots.net',
-      url='http://github.com/gbiggs/rtcshell',
+      url='http://github.com/gbiggs/rtshell',
       license='EPL',
       long_description='Shell commands for managing RT-Middleware.',
       classifiers=[
@@ -97,7 +108,7 @@ setup(name='rtcshell',
           'Topic :: Software Development',
           'Topic :: Utilities'
           ],
-      packages=['rtcshell'],
+      packages=['rtshell'],
       scripts=scripts,
       data_files=data_files,
       cmdclass={'install_scripts':InstallRename}

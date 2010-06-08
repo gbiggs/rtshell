@@ -1,7 +1,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-'''rtcshell
+'''rtshell
 
 Copyright (C) 2009-2010
     Geoffrey Biggs
@@ -38,7 +38,7 @@ registered on the name server at 'localhost'. '/localhost/manager/comp0.rtc'
 refers to the component 'comp0.rtc' in the directory 'manager' on the
 'localhost' name server. 'comp0.rtc' refers to that component in the current
 directory.'''
-RTSH_VERSION = '1.0.0'
+RTSH_VERSION = '3.0.0'
 
 
 # vim: tw=79

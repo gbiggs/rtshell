@@ -1,4 +1,4 @@
-# rtcshell Bash completion
+# rtshell Bash completion
 #
 # Copyright (C) 2009-2010
 #     Keisuke Suzuki and Geoffrey Biggs
@@ -13,15 +13,15 @@
 
 # Overview
 #
-# Adds tab-completion functionality to rtcshell. Can complete command options,
+# Adds tab-completion functionality to rtshell. Can complete command options,
 # directories, objects, ports and configuration parameter names.
 #
-# rtcshellにbashの補完機能を追加するbash-completionスクリプト。
+# rtshellにbashの補完機能を追加するbash-completionスクリプト。
 # コマンドオプションやディレクトリ、オブジェクト、ポート、パラメータ名を補完。
 #
 # Usage
 #
-#  $ source ${prefix}/share/rtcshell/bash_completion
+#  $ source ${prefix}/share/rtshell/bash_completion
 #
 # Example: Directory completion / ディレクトリ名補完
 #
@@ -54,29 +54,43 @@ _rtopts()
     local opts complist
 
     case ${COMP_WORDS[0]} in
-        rtact)  opts="--version -h --help -d --debug -e --exec_context="
-                ;;
-        rtcat)  opts="--version -h --help -l --ll -d --debug"
-                ;;
-        rtcwd)  opts=""
-                ;;
-        rtcon)  opts="--version -h --help -d --debug -i --id= -n --name= -p --property="
-                ;;
-        rtconf) opts="--version -h --help -l -d --debug"
-                ;;
+        rtact)      opts="--version -h --help -d --debug -e --exec_context="
+                    ;;
+        rtcat)      opts="--version -h --help -l --ll -d --debug"
+                    ;;
+        rtcwd)      opts=""
+                    ;;
+        rtcon)      opts="--version -h --help -d --debug -i --id= -n --name= -p --property="
+                    ;;
+        rtconf)     opts="--version -h --help -l -d --debug"
+                    ;;
         rtdeact)    opts="--version -h --help -d --debug -e --exec_context="
-                ;;
-        rtdis)  opts="--version -h --help -d --debug"
-                ;;
-        rtfind) opts="--version -h --help -d --debug --maxdepth= --iname= --name= --type="
-                ;;
-        rtls)   opts="--version -h --help -l -d --debug -r --recurse"
-                ;;
-        rtmgr)  opts="--version -h --help -d --debug"
-                ;;
+                    ;;
+        rtdis)      opts="--version -h --help -d --debug"
+                    ;;
+        rtfind)     opts="--version -h --help -d --debug --maxdepth= --iname= --name= --type="
+                    ;;
+        rtls)       opts="--version -h --help -l -d --debug -r --recurse"
+                    ;;
+        rtmgr)      opts="--version -h --help -d --debug"
+                    ;;
         rtreset)    opts="--version -h --help -d --debug -e --exec_context="
-                ;;
-        *)      ;;
+                    ;;
+        rtstart)    opts="--version -h --help --dry-run -v --verbose"
+                    ;;
+        rtstop)     opts="--version -h --help --dry-run -v --verbose"
+                    ;;
+        rtteardown) opts="--version -h --help --dry-run -v --verbose"
+                    ;;
+        rtcryo)     opts="--version -h --help -a --abstract= -n --system-name= -o --output= -v --system-version= -e --vendor= --verbose"
+                    ;;
+        rtresurrect)    opts="--version -h --help --dry-run -v --verbose"
+                    ;;
+        rtprint)    opts="--version -h --help -d --debug"
+                    ;;
+        rtinject)   opts="--version -h --help -d --debug"
+                    ;;
+        *)          ;;
     esac
 
     complist=$(compgen -W "${opts} ${nospaceopts}" -- $1)
@@ -258,6 +272,20 @@ _rtmgr()
     return 0
 }
 
+_rtsshell(){
+    local cur prev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [[ ${cur} == -* ]] ; then
+        _rtopts ${cur}
+        return 0
+    fi
+
+    return 0
+}
+
 complete -F _rtls rtls
 complete -F _rtls rtact
 complete -F _rtls rtcat
@@ -275,4 +303,10 @@ complete -F _rtcon rtinject
 complete -F _rtconf rtconf
 
 complete -F _rtmgr -A file rtmgr
+
+complete -F _rtsshell -A file rtstart
+complete -F _rtsshell -A file rtstop
+complete -F _rtsshell -A file rtteardown
+complete -F _rtsshell -A file rtresurrect
+complete -F _rtsshell -A file rtcryo
 

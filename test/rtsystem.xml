@@ -1,0 +1,112 @@
+<?xml version="1.0" ?>
+<rts:RtsProfile rts:abstract="RT System created by rtcryo." rts:creationDate="2010-05-13T10:07:43" rts:id="RTSystem :Me.RTSystem.0" rts:updateDate="2010-05-13T10:07:43" rts:version="0.2" xmlns:rts="http://www.openrtp.org/namespaces/rts" xmlns:rtsExt="http://www.openrtp.org/namespaces/rts_ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <rts:Components rts:activeConfigurationSet="default" rts:compositeType="None" rts:id="RTC:Noriaki Ando, AIST:example:Motor:1.0" rts:instanceName="Motor0" rts:isRequired="true" rts:pathUri="localhost/kenroke.host_cxt/Motor0.rtc" rtsExt:visible="true">
+        <rts:DataPorts rts:name="in" rtsExt:visible="true"/>
+        <rts:DataPorts rts:name="out" rtsExt:visible="true"/>
+        <rts:ConfigurationSets rts:id="default">
+            <rts:ConfigurationData rts:data="0" rts:name="motor_id"/>
+        </rts:ConfigurationSets>
+        <rts:ExecutionContexts rts:id="0" rts:kind="PERIODIC" rts:rate="1000.0"/>
+        <rtsExt:Location rtsExt:direction="DOWN" rtsExt:height="0" rtsExt:width="0" rtsExt:x="0" rtsExt:y="0"/>
+        <rtsExt:Properties rtsExt:name="IOR" rtsExt:value="IOR:010000003500000049444c3a6f70656e72746d2e616973742e676f2e6a702f4f70656e52544d2f44617461466c6f77436f6d706f6e656e743a312e3000000000010000000000000064000000010102000e0000003135302e32392e39372e3230380058a30e000000fe8750eb4b00004c02000000000000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"/>
+    </rts:Components>
+    <rts:Components rts:compositeType="None" rts:id="RTC:Noriaki Ando, AIST:example:Controller:1.0" rts:instanceName="Controller0" rts:isRequired="true" rts:pathUri="localhost/kenroke.host_cxt/Controller0.rtc" rtsExt:visible="true">
+        <rts:DataPorts rts:name="in" rtsExt:visible="true"/>
+        <rts:DataPorts rts:name="out" rtsExt:visible="true"/>
+        <rts:ConfigurationSets rts:id="default"/>
+        <rts:ExecutionContexts rts:id="0" rts:kind="PERIODIC" rts:rate="1000.0"/>
+        <rtsExt:Location rtsExt:direction="DOWN" rtsExt:height="0" rtsExt:width="0" rtsExt:x="0" rtsExt:y="0"/>
+        <rtsExt:Properties rtsExt:name="IOR" rtsExt:value="IOR:010000003500000049444c3a6f70656e72746d2e616973742e676f2e6a702f4f70656e52544d2f44617461466c6f77436f6d706f6e656e743a312e3000000000010000000000000064000000010102000e0000003135302e32392e39372e32303800c4d30e000000fe8c50eb4b00004c31000000000000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"/>
+    </rts:Components>
+    <rts:Components rts:compositeType="None" rts:id="RTC:Noriaki Ando, AIST:example:Sensor:1.0" rts:instanceName="Sensor0" rts:isRequired="true" rts:pathUri="localhost/kenroke.host_cxt/Sensor0.rtc" rtsExt:visible="true">
+        <rts:DataPorts rts:name="in" rtsExt:visible="true"/>
+        <rts:DataPorts rts:name="out" rtsExt:visible="true"/>
+        <rts:ConfigurationSets rts:id="default"/>
+        <rts:ExecutionContexts rts:id="0" rts:kind="PERIODIC" rts:rate="1000.0"/>
+        <rtsExt:Location rtsExt:direction="DOWN" rtsExt:height="0" rtsExt:width="0" rtsExt:x="0" rtsExt:y="0"/>
+        <rtsExt:Properties rtsExt:name="IOR" rtsExt:value="IOR:010000003500000049444c3a6f70656e72746d2e616973742e676f2e6a702f4f70656e52544d2f44617461466c6f77436f6d706f6e656e743a312e3000000000010000000000000064000000010102000e0000003135302e32392e39372e3230380092d50e000000fe8950eb4b00004c10000000000000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"/>
+    </rts:Components>
+    <rts:Components rts:compositeType="None" rts:id="RTC:Noriaki Ando, AIST:example:ConsoleIn:1.0" rts:instanceName="ConsoleIn0" rts:isRequired="true" rts:pathUri="localhost/kenroke.host_cxt/ConsoleIn0.rtc" rtsExt:visible="true">
+        <rts:DataPorts rts:name="out" rtsExt:visible="true"/>
+        <rts:ConfigurationSets rts:id="default"/>
+        <rts:ExecutionContexts rts:id="0" rts:kind="PERIODIC" rts:rate="1000.0"/>
+        <rtsExt:Location rtsExt:direction="DOWN" rtsExt:height="0" rtsExt:width="0" rtsExt:x="0" rtsExt:y="0"/>
+        <rtsExt:Properties rtsExt:name="IOR" rtsExt:value="IOR:010000003500000049444c3a6f70656e72746d2e616973742e676f2e6a702f4f70656e52544d2f44617461466c6f77436f6d706f6e656e743a312e3000000000010000000000000064000000010102000e0000003135302e32392e39372e323038000eb80e000000fe8050eb4b00004bb4000000000000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"/>
+    </rts:Components>
+    <rts:Components rts:compositeType="None" rts:id="RTC:Noriaki Ando, AIST:example:ConsoleOut:1.0" rts:instanceName="ConsoleOut0" rts:isRequired="true" rts:pathUri="localhost/kenroke.host_cxt/ConsoleOut0.rtc" rtsExt:visible="true">
+        <rts:DataPorts rts:name="in" rtsExt:visible="true"/>
+        <rts:ConfigurationSets rts:id="default"/>
+        <rts:ExecutionContexts rts:id="0" rts:kind="PERIODIC" rts:rate="1000.0"/>
+        <rtsExt:Location rtsExt:direction="DOWN" rtsExt:height="0" rtsExt:width="0" rtsExt:x="0" rtsExt:y="0"/>
+        <rtsExt:Properties rtsExt:name="IOR" rtsExt:value="IOR:010000003500000049444c3a6f70656e72746d2e616973742e676f2e6a702f4f70656e52544d2f44617461466c6f77436f6d706f6e656e743a312e3000000000010000000000000064000000010102000e0000003135302e32392e39372e32303800c0970e000000fe8250eb4b00004bd9000000000000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"/>
+    </rts:Components>
+    <rts:DataPortConnectors rts:connectorId="ebb1f236-4af8-4b29-887c-091533000000" rts:dataType="TimedLong" rts:dataflowType="push" rts:interfaceType="corba_cdr" rts:name="out_in" rts:pushInterval="0.0" rts:subscriptionType="flush" rtsExt:visible="true">
+        <rts:sourceDataPort rts:componentId="RTC:Noriaki Ando, AIST:example:Motor:1.0" rts:instanceName="Motor0" rts:portName="Motor0.out">
+            <rtsExt:Properties rtsExt:name="COMPONENT_PATH_ID" rtsExt:value="localhost/kenroke.host_cxt/Motor0.rtc"/>
+        </rts:sourceDataPort>
+        <rts:targetDataPort rts:componentId="RTC:Noriaki Ando, AIST:example:Sensor:1.0" rts:instanceName="Sensor0" rts:portName="Sensor0.in">
+            <rtsExt:Properties rtsExt:name="COMPONENT_PATH_ID" rtsExt:value="localhost/kenroke.host_cxt/Sensor0.rtc"/>
+        </rts:targetDataPort>
+    </rts:DataPortConnectors>
+    <rts:DataPortConnectors rts:connectorId="ff7d0001-0000-0000-1e00-000000000000" rts:dataType="TimedFloat" rts:dataflowType="push" rts:interfaceType="corba_cdr" rts:name="out_in" rts:pushInterval="0.0" rts:subscriptionType="flush" rtsExt:visible="true">
+        <rts:sourceDataPort rts:componentId="RTC:Noriaki Ando, AIST:example:Controller:1.0" rts:instanceName="Controller0" rts:portName="Controller0.out">
+            <rtsExt:Properties rtsExt:name="COMPONENT_PATH_ID" rtsExt:value="localhost/kenroke.host_cxt/Controller0.rtc"/>
+        </rts:sourceDataPort>
+        <rts:targetDataPort rts:componentId="RTC:Noriaki Ando, AIST:example:Motor:1.0" rts:instanceName="Motor0" rts:portName="Motor0.in">
+            <rtsExt:Properties rtsExt:name="COMPONENT_PATH_ID" rtsExt:value="localhost/kenroke.host_cxt/Motor0.rtc"/>
+        </rts:targetDataPort>
+    </rts:DataPortConnectors>
+    <rts:DataPortConnectors rts:connectorId="e434c616-d586-497e-8ae6-4b25f7b252a7" rts:dataType="TimedFloat" rts:dataflowType="push" rts:interfaceType="corba_cdr" rts:name="out_in" rts:pushInterval="0.0" rts:subscriptionType="flush" rtsExt:visible="true">
+        <rts:sourceDataPort rts:componentId="RTC:Noriaki Ando, AIST:example:Sensor:1.0" rts:instanceName="Sensor0" rts:portName="Sensor0.out">
+            <rtsExt:Properties rtsExt:name="COMPONENT_PATH_ID" rtsExt:value="localhost/kenroke.host_cxt/Sensor0.rtc"/>
+        </rts:sourceDataPort>
+        <rts:targetDataPort rts:componentId="RTC:Noriaki Ando, AIST:example:Controller:1.0" rts:instanceName="Controller0" rts:portName="Controller0.in">
+            <rtsExt:Properties rtsExt:name="COMPONENT_PATH_ID" rtsExt:value="localhost/kenroke.host_cxt/Controller0.rtc"/>
+        </rts:targetDataPort>
+    </rts:DataPortConnectors>
+    <rts:DataPortConnectors rts:connectorId="f6b28275-d2f1-4736-b3dc-2bbf0eea8c4f" rts:dataType="TimedLong" rts:dataflowType="push" rts:interfaceType="corba_cdr" rts:name="out_in" rts:pushInterval="0.0" rts:subscriptionType="flush" rtsExt:visible="true">
+        <rts:sourceDataPort rts:componentId="RTC:Noriaki Ando, AIST:example:ConsoleIn:1.0" rts:instanceName="ConsoleIn0" rts:portName="ConsoleIn0.out">
+            <rtsExt:Properties rtsExt:name="COMPONENT_PATH_ID" rtsExt:value="localhost/kenroke.host_cxt/ConsoleIn0.rtc"/>
+        </rts:sourceDataPort>
+        <rts:targetDataPort rts:componentId="RTC:Noriaki Ando, AIST:example:ConsoleOut:1.0" rts:instanceName="ConsoleOut0" rts:portName="ConsoleOut0.in">
+            <rtsExt:Properties rtsExt:name="COMPONENT_PATH_ID" rtsExt:value="localhost/kenroke.host_cxt/ConsoleOut0.rtc"/>
+        </rts:targetDataPort>
+    </rts:DataPortConnectors>
+    <rts:Activation>
+        <rts:targets rts:sequence="2">
+            <rts:WaitTime rts:waitTime="3000"/>
+            <rts:TargetComponent rts:id="0"
+                rts:instanceName="ConsoleOut0"
+                rts:componentId="RTC:Noriaki Ando, AIST:example:ConsoleOut:1.0"/>
+        </rts:targets>
+        <rts:targets rts:sequence="3">
+            <rts:Preceding rts:sendingTiming="SYNC" rts:timeout="1000">
+                <rts:PrecedingComponents rts:id="0"
+                    rts:instanceName="Motor0"
+                    rts:componentId="RTC:Noriaki Ando, AIST:example:Motor:1.0"/>
+                <rts:PrecedingComponents rts:id="0"
+                    rts:instanceName="Controller0"
+                    rts:componentId="RTC:Noriaki Ando, AIST:example:Controller:1.0"/>
+            </rts:Preceding>
+            <rts:TargetComponent rts:id="0"
+                rts:instanceName="Sensor0"
+                rts:componentId="RTC:Noriaki Ando, AIST:example:Sensor:1.0"/>
+        </rts:targets>
+        <rts:targets rts:sequence="4">
+            <rts:WaitTime rts:waitTime="1000"/>
+            <rts:TargetComponent rts:id="0"
+                rts:instanceName="Controller0"
+                rts:componentId="RTC:Noriaki Ando, AIST:example:Controller:1.0"/>
+        </rts:targets>
+        <rts:targets rts:sequence="5">
+            <rts:Preceding rts:sendingTiming="NO_SYNC" rts:timeout="5000">
+                <rts:PrecedingComponents rts:id="0"
+                    rts:instanceName="ConsoleOut0"
+                    rts:componentId="RTC:Noriaki Ando, AIST:example:ConsoleOut:1.0"/>
+            </rts:Preceding>
+            <rts:TargetComponent rts:id="0"
+                rts:instanceName="Motor0"
+                rts:componentId="RTC:Noriaki Ando, AIST:example:Motor:1.0"/>
+        </rts:targets>
+    </rts:Activation>
+</rts:RtsProfile>

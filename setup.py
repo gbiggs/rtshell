@@ -28,7 +28,6 @@ from distutils.core import setup
 import os.path
 import sys
 
-<<<<<<< HEAD
 base_scripts = ['rtact',
                 'rtcat',
                 'rtcon',

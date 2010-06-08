@@ -41,7 +41,7 @@ from rtsprofile.ports import DataPort, ServicePort
 from rtsprofile.targets import TargetPort
 import sys
 
-from rtshell import RTSHELL_VERSION
+from rtshell import RTSH_VERSION
 from rtshell.options import Options
 
 
@@ -189,7 +189,7 @@ be used.
 The output format will be determined automatically from the file extension.
 If the file has no extension, the input format is assumed to be XML.
 The output format can be over-ridden with the --xml or --yaml options.'''
-    parser = OptionParser(usage=usage, version=RTSHELL_VERSION)
+    parser = OptionParser(usage=usage, version=RTSH_VERSION)
     parser.add_option('-a', '--abstract', dest='abstract', action='store',
             type='string', default='RT System created by rtcryo.',
             help='Brief description of the RT System.')

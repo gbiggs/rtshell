@@ -1,0 +1,126 @@
+\documentclass[a4paper,10pt]{article}
+
+\usepackage{CJKutf8}
+% \usepackage[UKenglish]{babel}
+\usepackage[overlap, CJK]{ruby}
+\usepackage{CJKulem}
+
+\renewcommand{\rubysep}{-0.2ex}
+\newenvironment{Japanese}{%
+  \CJKfamily{min}%
+  \CJKtilde
+  \CJKnospace}{}
+
+\usepackage{pdfsync}
+\usepackage{a4wide}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{listings}
+
+\lstloadlanguages{Bash}
+\lstset{basicstyle=\small\ttfamily, escapeinside={(*@}{@*)}, showstringspaces=false, numbers=none,
+breaklines=true, breakatwhitespace=true, tabsize=4, language=Bash, numberfirstline=true}
+
+\begin{document}
+% \begin{CJK}{UTF8}{}
+% \begin{Japanese}
+
+\begin{table}
+  \centering
+  \begin{tabularx}{\columnwidth}{ll}
+    \toprule
+    Command & Purpose \\
+    \midrule
+    rtact $\langle$component$\rangle$ & Activate a component. \\
+    rtcat & Display component meta-data. \\
+    rtcon $\langle$component 1$\rangle$:$\langle$port 1$\rangle$ & Connect two ports. \\
+    \qquad$\langle$component 2$\rangle$:$\langle$port 2$\rangle$ & \\
+    rtconf $\langle$component$\rangle$ & Display, select and edit configuration sets and parameters. \\
+    rtcwd [path] & Change the current working directory in the RTC Tree. \\
+    rtdeact $\langle$component$\rangle$ & Deactivate a component. \\
+    rtdel $\langle$path$\rangle$ & Delete an object from a naming context. \\
+    rtdis $\langle$component 1$\rangle$[:port 1] & Disconnect two ports, or all connections from a port or \\
+    \qquad[component 2[:port 2]] & component. \\
+    rtfind $\langle$path$\rangle$ $\langle$options$\rangle$ & Search for components and other objects in the RTC Tree. \\
+    rtinject $\langle$component$\rangle$:$\langle$port$\rangle$ $\langle$data$\rangle$ & Send data to an InPort on a component. \\
+    rtls [path] & Display the contents of a directory in the RTC Tree. \\
+    rtmgr $\langle$manager$\rangle$ & Control a manager. \\
+    rtprint $\langle$component$\rangle$:$\langle$port$\rangle$ & Print the data being sent by an OutPort in the console. \\
+    rtpwd & Print the current working directory in the RTC Tree. \\
+    rtreset $\langle$component$\rangle$ & Reset a component. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{table}
+  \centering
+  \begin{tabularx}{\columnwidth}{ll}
+    \toprule
+    Command & Purpose \\
+    \midrule
+    rtresurrect $\langle$xml|yaml file$\rangle$ & Restore a complete RT System. \\
+    rtstart $\langle$xml|yaml file$\rangle$ & Start an RT System. \\
+    rtstop $\langle$xml|yaml file$\rangle$ & Stop an RT System. \\
+    rtcryo $\langle$xml|yaml file$\rangle$ & Save an RT System to a file. \\
+    rtteardown $\langle$xml|yaml file$\rangle$ & Delete all connections in an RT System. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\newpage
+
+\section*{Try out these commands}
+
+\begin{lstlisting}[frame=tb]
+1.rtls
+2.rtcwd localhost/me.host_cxt/
+3.rtls
+4.rtfind . --type=m
+5.rtfind . --type=c
+6.rtls -l
+7.rtmgr manager.mgr load /usr/local/share/OpenRTM-aist/examples/rtcs/Sensor.so SensorInit
+8.rtcat manager.mgr
+9.rtmgr manager.mgr create Sensor
+10.rtls / -R
+11.rtcon Motor0.rtc:out ../Sensor0.rtc:in
+12.rtcon ../Sensor0.rtc:out Controller0.rtc:in
+13.rtcon Motor0.rtc:in Controller0.rtc:out
+14.rtls -l
+15.rtcon ConsoleIn0.rtc:out ConsoleOut0.rtc:in
+16.for c in `rtfind . --type=c`; do rtact ${c}; done
+17.rtls -l
+18.rtinject ConsoleOut0.rtc:in 'RTC.TimedLong({time}, 42)'
+19.rtprint ConsoleIn0.rtc:out
+20.rtcat ConsoleOut0.rtc
+21.rtcat ConsoleOut0.rtc -l
+22.rtcat ConsoleOut0.rtc --ll
+23.rtconf ConfigSample0.rtc
+24.rtconf ConfigSample0.rtc -l
+25.rtconf ConfigSample0.rtc set default int_param0 42
+26.rtconf ConfigSample0.rtc -l
+27.watch -n 1 rtls -l
+\end{lstlisting}
+
+\vspace{1cm}
+
+\begin{lstlisting}[frame=tb]
+1.rtls -l
+2.rtresurrect --dry-run rtsystem.xml
+3.rtresurrect rtsystem.xml
+4.rtls -l
+5.rtstart --dry-run rtsystem.xml
+6.rtstart rtsystem.xml
+7.rtls -l
+8.rtls -l ../
+9.rtstop rtsystem.xml
+10.rtls -l
+11.rtcryo localhost -o sys.xml
+12.rtteardown sys.xml
+13.rtls -l
+\end{lstlisting}
+
+% \end{Japanese}
+% \end{CJK}
+\end{document}

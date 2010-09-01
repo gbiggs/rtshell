@@ -36,7 +36,7 @@ from rtshell.path import cmd_path_to_full_path
 def alter_component_state(action, cmd_path, full_path, options, tree=None):
     path, port = parse_path(full_path)
     if port:
-        # Can't cat a port
+        # Can't alter a port
         print >>sys.stderr, '{0}: Cannot access {1}: No such \
 object.'.format(sys.argv[0], cmd_path)
         return 1
@@ -59,8 +59,8 @@ object.'.format(sys.argv[0], cmd_path)
         return 1
     object = tree.get_node(path)
     if not object.is_component:
-        print >>sys.stderr, '{0}: Cannot access {1}: Not an \
-object'.format(sys.argv[0], cmd_path)
+        print >>sys.stderr, '{0}: Cannot access {1}: Not a \
+component'.format(sys.argv[0], cmd_path)
         return 1
 
     try:

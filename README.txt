@@ -114,6 +114,7 @@ rtdeact     Deactivate a component.
 rtdel       Delete a name from a name server. Use to remove zombies.
 rtdis       Disconnect a connection between to ports, or all connections from a
             port or component.
+rtexit      Tell a component to exit.
 rtfind      Find RTC tree entries matching given search criteria.
 rtinject    Inject data into an input port of a component.
 rtls        List the contents of the current working directory of the RT tree.

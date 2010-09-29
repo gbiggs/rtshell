@@ -54,41 +54,41 @@ _rtopts()
     local opts complist
 
     case ${COMP_WORDS[0]} in
-        rtact)      opts="--version -h --help -d --debug -e --exec_context="
+        *rtact)     opts="--version -h --help -d --debug -e --exec_context="
                     ;;
-        rtcat)      opts="--version -h --help -l --ll -d --debug"
+        *rtcat)     opts="--version -h --help -l --ll -d --debug"
                     ;;
-        rtcwd)      opts=""
+        *rtcwd)     opts=""
                     ;;
-        rtcon)      opts="--version -h --help -d --debug -i --id= -n --name= -p --property="
+        *rtcon)     opts="--version -h --help -d --debug -i --id= -n --name= -p --property="
                     ;;
-        rtconf)     opts="--version -h --help -l -d --debug"
+        *rtconf)    opts="--version -h --help -l -d --debug -s --set= -a --all"
                     ;;
-        rtdeact)    opts="--version -h --help -d --debug -e --exec_context="
+        *rtdeact)   opts="--version -h --help -d --debug -e --exec_context="
                     ;;
-        rtdis)      opts="--version -h --help -d --debug"
+        *rtdis)     opts="--version -h --help -d --debug"
                     ;;
-        rtfind)     opts="--version -h --help -d --debug --maxdepth= --iname= --name= --type="
+        *rtfind)    opts="--version -h --help -d --debug --maxdepth= --iname= --name= --type="
                     ;;
-        rtls)       opts="--version -h --help -l -d --debug -r --recurse"
+        *rtls)      opts="--version -h --help -l -d --debug -r --recurse"
                     ;;
-        rtmgr)      opts="--version -h --help -d --debug"
+        *rtmgr)     opts="--version -h --help -d --debug"
                     ;;
-        rtreset)    opts="--version -h --help -d --debug -e --exec_context="
+        *rtreset)   opts="--version -h --help -d --debug -e --exec_context="
                     ;;
-        rtstart)    opts="--version -h --help --dry-run -v --verbose"
+        *rtstart)   opts="--version -h --help --dry-run -v --verbose"
                     ;;
-        rtstop)     opts="--version -h --help --dry-run -v --verbose"
+        *rtstop)    opts="--version -h --help --dry-run -v --verbose"
                     ;;
-        rtteardown) opts="--version -h --help --dry-run -v --verbose"
+        *rtteardown)opts="--version -h --help --dry-run -v --verbose"
                     ;;
-        rtcryo)     opts="--version -h --help -a --abstract= -n --system-name= -o --output= -v --system-version= -e --vendor= --verbose"
+        *rtcryo)    opts="--version -h --help -a --abstract= -n --system-name= -o --output= -v --system-version= -e --vendor= --verbose"
                     ;;
-        rtresurrect)    opts="--version -h --help --dry-run -v --verbose"
+        *rtresurrect)    opts="--version -h --help --dry-run -v --verbose"
                     ;;
-        rtprint)    opts="--version -h --help -d --debug"
+        *rtprint)   opts="--version -h --help -d --debug"
                     ;;
-        rtinject)   opts="--version -h --help -d --debug"
+        *rtinject)  opts="--version -h --help -d --debug"
                     ;;
         *)          ;;
     esac
@@ -193,44 +193,158 @@ _rtcon()
     return 0
 }
 
+_get_set_opt_val()
+{
+    SET_OPT_VAL="$(grep ' \-s \| \-\-set=' <<< ${COMP_WORDS[@]} | \
+        sed 's/.* \(-s \|--set=\)\([a-zA-Z0-9_]\+\).*/\2/')"
+    return 0
+}
+
+_check_hidden()
+{
+    if $(grep -q ' \-a \| \-\-all ' <<< ${COMP_WORDS[@]})
+    then
+        ALL_SETS="-a"
+    else
+        ALL_SETS=""
+    fi
+    return 0
+}
+
+_rtconf_set_name()
+{
+    # $1 = path
+    # $2 = current word
+    _check_hidden
+    local cur=${2#=}
+    local setnames=$(rtconf ${1} ${ALL_SETS} 2> /dev/null | sed 's/^+//' | sed 's/*$//')
+    COMPREPLY=($(compgen -W "${setnames}" -- ${cur}))
+    return 0
+}
+
+_rtconf_param_name()
+{
+    # $1 = path
+    # $2 = current word
+    local params
+    _get_set_opt_val
+    _check_hidden
+    if [[ "${SET_OPT_VAL}" == "" ]]; then
+        # Param in active set
+        params=$(rtconf ${1} ${ALL_SETS} -l 2> /dev/null | \
+            sed -n '/^-/{:1;p;n;/^-/q;b1};p' | grep '^ ' | awk '{print $1}')
+        COMPREPLY=($(compgen -W "${params}" -- ${2}))
+    else
+        # Param in specific set
+        params=$(rtconf ${1} ${ALL_SETS} -s ${SET_OPT_VAL} -l 2> /dev/null | \
+            sed -n '/^-/{:1;p;n;/^-/q;b1};p' | grep '^ ' | awk '{print $1}')
+        COMPREPLY=($(compgen -W "${params}" -- ${2}))
+    fi
+    return 0
+}
+
+_rtconf_param_val()
+{
+    # $1 = path
+    # $2 = param
+    # $3 = current word
+    local val
+    _get_set_opt_val
+    _check_hidden
+    if [[ "${SET_OPT_VAL}" == "" ]]; then
+        # Param in active set
+        val="\"$(rtconf ${1} ${ALL_SETS} get ${2} 2> /dev/null)\""
+        COMPREPLY=$(compgen -W "${val}" -- ${3})
+    else
+        # Param in specific set
+        val="\"$(rtconf ${1} ${ALL_SETS} -s ${SET_OPT_VAL} get ${2} 2> /dev/null)\""
+        COMPREPLY=$(compgen -W "${val}" -- ${3})
+    fi
+    return 0
+}
+
+_rtconf_set()
+{
+    local cur set_name
+    cur="${COMP_WORDS[COMP_CWORD]}"
+
+    case ${COMP_WORDS[COMP_CWORD - 1]} in
+        set) # No param yet - complete parameter names
+            _rtconf_param_name "${COMP_WORDS[1]}" "${cur}"
+            ;;
+        *) # Have a param name - complete value
+            _rtconf_param_val "${COMP_WORDS[1]}" \
+                "${COMP_WORDS[COMP_CWORD - 1]}" "${cur}"
+            ;;
+    esac
+    return 0
+}
+
 _rtconf()
 {
     local cur prev confopts setopt
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    prev="${COMP_WORDS[COMP_CWORD - 1]}"
 
-    confopts="set list act"
+    confopts="set get list act"
 
-    if [[ ${cur} == -* ]] ; then
+    if [[ ${prev} == *rtconf ]]
+    then
+        _rtobj ${cur}
+        return 0
+    fi
+
+    if [[ ${cur} == -* ]]
+    then
         _rtopts ${cur}
         return 0
     fi
 
-    # Look for .rtc or .mgr in the previous option to check if it is an object.
-    # (This needs to be improved.)
-    if [[ ${prev} == *.rtc ]] || [[ ${prev} == *.mgr ]] ; then
-        COMPREPLY=($(compgen -W "${confopts}" -- ${cur}))
-        return 0
-    fi
-
     case "${prev}" in
-        set)    setopt=$(rtconf ${COMP_WORDS[COMP_CWORD-2]} -l 2> /dev/null | grep "^ " | awk '{ print $1 }')
-                COMPREPLY=($(compgen -W "${setopt}" -- ${cur}))
-                return 0
-                ;;
+        --set|-s)
+            _rtconf_set_name "${COMP_WORDS[1]}" "${cur}"
+            return 0
+            ;;
+        set)
+            _rtconf_set
+            return 0
+            ;;
+        get)
+            _rtconf_param_name "${COMP_WORDS[1]}" "${cur}"
+            return 0
+            ;;
         list)
+            return 0
+            ;;
+        act)
+            return 0
+            ;;
+        =)
+            if [[ "${COMP_WORDS[COMP_CWORD - 2]}" == "--set" ]]
+            then
+                _rtconf_set_name "${COMP_WORDS[1]}" "${cur}"
                 return 0
-                ;;
-
-        act)    return 0
-                ;;
-
+            fi
+            ;;
         *)
-                ;;
+            if (( ${#COMP_WORDS[@]} >= 4 ))
+            then
+                if [[ "${COMP_WORDS[COMP_CWORD - 2]}" == "set" ]]
+                then
+                    _rtconf_set
+                    return 0
+                else
+                    COMPREPLY=($(compgen -W "${confopts}" -- ${cur}))
+                    return 0
+                fi
+            else
+                COMPREPLY=($(compgen -W "${confopts}" -- ${cur}))
+                return 0
+            fi
+            ;;
     esac
 
-    _rtobj ${cur}
     return 0
 }
 

@@ -14,13 +14,9 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtprint.py
-
 Implementation of the command to print data sent by a port to the console.
 
 '''
-
-# $Source$
 
 
 import inspect
@@ -94,7 +90,7 @@ object.'.format(sys.argv[0], cmd_path)
     comp = tree.get_node(path)
     if not comp or not comp.is_component:
         print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object'.format(sys.argv[0], cmd_path)
+component'.format(sys.argv[0], cmd_path)
         return 1, None
     return 0, (tree, comp)
 

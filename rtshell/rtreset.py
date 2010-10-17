@@ -14,19 +14,11 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtreset.py
-
 Implementation of the command to move a component from the error state to the
 inactive state.
 
 '''
 
-# $Source$
-
-
-#!/usr/bin/env python
-# -*- Python -*-
-# -*- coding: utf-8 -*-
 
 import sys
 

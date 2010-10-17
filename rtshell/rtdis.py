@@ -14,13 +14,9 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtdis.py
-
 Implementation of the command to disconnect ports.
 
 '''
-
-# $Source$
 
 
 from optparse import OptionParser, OptionError
@@ -109,6 +105,9 @@ specified'.format(sys.argv[0])
         print >>sys.stderr, '{0}: Cannot access {1}: No such \
 object.'.format(sys.argv[0], source_cmd_path)
         return 1
+    if source_comp.is_zombie:
+        print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
+        return 1
     if not source_comp.is_component:
         print >>sys.stderr, '{0}: Cannot access {1}: No such \
 object'.format(sys.argv[0], source_cmd_path)
@@ -122,6 +121,9 @@ port'.format(sys.argv[0], source_cmd_path)
     if not dest_comp:
         print >>sys.stderr, '{0}: Cannot access {1}: No such \
 object.'.format(sys.argv[0], dest_cmd_path)
+        return 1
+    if dest_comp.is_zombie:
+        print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
         return 1
     if not dest_comp.is_component:
         print >>sys.stderr, '{0}: Cannot access {1}: No such \

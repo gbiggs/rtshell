@@ -14,19 +14,11 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtpwd
-
 Command to show the current value of the current working directory environment
 variable.
 
 '''
 
-# $Source$
-
-
-#!/usr/bin/env python
-# -*- Python -*-
-# -*- coding: utf-8 -*-
 
 import os
 import sys

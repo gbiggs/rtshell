@@ -14,13 +14,9 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtcon.py
-
 Implementation of the command to connect two ports.
 
 '''
-
-# $Source$
 
 
 from optparse import OptionParser, OptionError, OptionValueError
@@ -81,7 +77,7 @@ object.'.format(sys.argv[0], dest_cmd_path)
     source_comp = tree.get_node(source_path)
     if not source_comp or not source_comp.is_component:
         print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object'.format(sys.argv[0], source_cmd_path)
+component'.format(sys.argv[0], source_cmd_path)
         return 1
     source_port_obj = source_comp.get_port_by_name(source_port)
     if not source_port_obj:
@@ -91,7 +87,7 @@ port'.format(sys.argv[0], source_cmd_path)
     dest_comp = tree.get_node(dest_path)
     if not dest_comp or not dest_comp.is_component:
         print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object'.format(sys.argv[0], dest_cmd_path)
+component'.format(sys.argv[0], dest_cmd_path)
         return 1
     dest_port_obj = dest_comp.get_port_by_name(dest_port)
     if not dest_port_obj:

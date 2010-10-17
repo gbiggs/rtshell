@@ -14,14 +14,9 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtcwd.py
-
 Create a command to change the current working directory environment variable.
 
 '''
-
-__version__ = '$Revision: $'
-# $Source$
 
 
 #!/usr/bin/env python

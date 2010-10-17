@@ -14,13 +14,9 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtcat.py
-
 Implementation of the command to display component information.
 
 '''
-
-# $Source$
 
 
 from optparse import OptionParser, OptionError
@@ -289,6 +285,9 @@ object.'.format(sys.argv[0], cmd_path)
         for l in format_manager(object, use_colour=sys.stdout.isatty(),
                                 long=options.long):
             print l
+    elif object.is_zombie:
+        print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
+        return 1
     else:
         print >>sys.stderr, '{0}: Cannot access {1}: No such \
 object.'.format(sys.argv[0], cmd_path)

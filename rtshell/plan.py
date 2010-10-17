@@ -12,14 +12,9 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: plan.py
-
 Creation and execution of state change plans.
 
 '''
-
-__version__ = '$Revision: $'
-# $Source$
 
 
 from operator import attrgetter

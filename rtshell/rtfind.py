@@ -14,13 +14,9 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtfind.py
-
 Implementation of the command to find components, managers, etc.
 
 '''
-
-# $Source$
 
 
 from optparse import OptionParser, OptionError
@@ -111,6 +107,8 @@ object.'.format(sys.argv[0], cmd_path)
         if node.is_directory and 'd' not in options.type and \
                 (not node.is_nameserver and not node.is_manager):
             return False
+        if node.is_zombie and 'z' not in options.type:
+            return False
         if not name_res:
             return True
         # Check for name matches
@@ -149,8 +147,8 @@ option can be specified multiple times.')
 option can be specified multiple times.')
     parser.add_option('--type', dest='type', action='store', type='string',
                       help='Type of object: c (component), d (directory), m \
-(manager), n (name server). Multiple types can be specified in a single entry, \
-e.g. "--type dmn".')
+(manager), n (name server), z (zombie). Multiple types can be specified in a \
+single entry, e.g. "--type dmn".')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv

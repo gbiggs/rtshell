@@ -14,13 +14,9 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtmgr.py
-
 Implementation of the command for controlling managers.
 
 '''
-
-# $Source$
 
 
 from optparse import OptionParser, OptionError
@@ -61,6 +57,9 @@ object.'.format(sys.argv[0], cmd_path)
         print >>sys.stderr, '{0}: Cannot access {1}: No such \
 object.'.format(sys.argv[0], cmd_path)
         return tree, None
+    if object.is_zombie:
+        print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
+        return 1
     if not object.is_manager:
         print >>sys.stderr, '{0}: Cannot access {1}: Not a \
 manager.'.format(sys.argv[0], cmd_path)

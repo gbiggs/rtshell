@@ -58,6 +58,9 @@ object'.format(sys.argv[0], cmd_path)
 object.'.format(sys.argv[0], cmd_path)
         return 1
     object = tree.get_node(path)
+    if object.is_zombie:
+        print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
+        return 1
     if not object.is_component:
         print >>sys.stderr, '{0}: Cannot access {1}: Not a \
 component'.format(sys.argv[0], cmd_path)

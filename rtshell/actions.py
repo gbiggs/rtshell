@@ -13,14 +13,9 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: actions.py
-
 Function objects for actions that can be performed using rtctree.
 
 '''
-
-__version__ = '$Revision: $'
-# $Source$
 
 
 from rtctree.exceptions import NoSuchConfSetError, NoSuchConfParamError

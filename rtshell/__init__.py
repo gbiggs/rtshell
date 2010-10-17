@@ -13,13 +13,9 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: __init__.py
-
 Commands for managing RT Components and RTM-based systems from a shell.
 
 '''
-
-# $Source$
 
 
 RTSH_PATH_USAGE =\

@@ -14,13 +14,9 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: rtconf.py
-
 Implementation of the command to manage component configuration.
 
 '''
-
-# $Source$
 
 
 from optparse import OptionParser, OptionError
@@ -276,6 +272,9 @@ object'.format(sys.argv[0], cmd_path)
     if not object:
         print >>sys.stderr, '{0}: Cannot access {1}: No such \
 object.'.format(sys.argv[0], cmd_path)
+        return 1
+    if object.is_zombie:
+        print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
         return 1
     if not object.is_component:
         print >>sys.stderr, '{0}: Cannot access {1}: Not a \

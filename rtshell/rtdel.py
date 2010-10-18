@@ -49,7 +49,7 @@ ports.'.format(sys.argv[0], cmd_path)
         return 1
 
     if not tree:
-        tree = create_rtctree(paths=path)
+        tree = create_rtctree(paths=path, filter=[path])
     if not tree:
         return 1
 

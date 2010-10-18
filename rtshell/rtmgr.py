@@ -48,7 +48,7 @@ object.'.format(sys.argv[0], cmd_path)
         path = path[:-1]
 
     if not tree:
-        tree = create_rtctree(paths=path)
+        tree = create_rtctree(paths=path, filter=[path])
     if not tree:
         return None
 

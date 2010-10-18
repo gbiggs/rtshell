@@ -61,7 +61,8 @@ specified'.format(sys.argv[0])
         return 1
 
     if not tree:
-        tree = create_rtctree(paths=[source_path, dest_path])
+        tree = create_rtctree(paths=[source_path, dest_path],
+                filter=[source_path, dest_path])
     if not tree:
         return 1
 

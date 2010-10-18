@@ -45,7 +45,8 @@ port_type = None
 
 def get_our_listener(options, tree=None, orb=None):
     if not tree:
-        tree = create_rtctree(paths=['/', 'localhost'], orb=orb)
+        tree = create_rtctree(paths=['/', 'localhost'], orb=orb,
+                filter=[['/', 'localhost']])
     if not tree:
         return 1, None
 
@@ -78,7 +79,7 @@ port'.format(sys.argv[0], listener_name)
 
 def get_comp_obj(cmd_path, path, options, tree=None, orb=None):
     if not tree:
-        tree = create_rtctree(paths=path, orb=orb)
+        tree = create_rtctree(paths=path, orb=orb, filter=[path])
     if not tree:
         return 1, (None, None)
 
@@ -121,7 +122,7 @@ port'.format(sys.argv[0], cmd_path)
 
 def select_index(path, tree=None):
     if not tree:
-        tree = create_rtctree(paths=path)
+        tree = create_rtctree(paths=path, filter=[path])
     if not tree:
         return 1, 0
 

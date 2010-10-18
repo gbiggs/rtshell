@@ -134,7 +134,7 @@ be able to get it back.
             print >>sys.stderr, '{0}: Cannot delete the root directory.'.format(\
                     sys.argv[0])
             return 1
-        return delete_object_reference(cmd_path, full_path, options, tree)
+        return delete_object_reference(args[0], full_path, options, tree)
     else:
         print >>sys.stderr, usage
         return 1

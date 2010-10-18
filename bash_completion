@@ -123,7 +123,7 @@ _rtobj()
     fi
 
     # Use col to remove colour codes
-    objs=`rtls ${target_dir} 2> /dev/null | col | sed 's/00m//g' | sed 's/*//g'`
+    objs=$(rtls ${target_dir} 2> /dev/null | col | sed 's/00m//g' | sed 's/*//g')
 
     target_objs=""
     for obj in ${objs} ; do

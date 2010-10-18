@@ -53,6 +53,11 @@ ports.'.format(sys.argv[0], cmd_path)
     if not tree:
         return 1
 
+    if options.zombies and not tree.is_zombie(path):
+        print >>sys.stderr, '{0}: {1}: Not a zombie.'.format(sys.argv[0],\
+cmd_path)
+        return 1
+
     # There is no point in doing path checks for the path, as the path we are
     # deleting may not be in the tree if it's a zombie. Instead, we need to
     # find its parent, and use that to remove the name.
@@ -75,6 +80,21 @@ managers.'.format(sys.argv[0], cmd_path)
     return 0
 
 
+def delete_all_zombies(options, tree=None):
+    if not tree:
+        tree = create_rtctree()
+    if not tree:
+        return 1
+    def del_zombie(node, args):
+        try:
+            node.parent.unbind(node.name)
+        except BadPathError:
+            print >>sys.stderr, '{0}: {1}: Error deleting.'.format(\
+                    sys.argv[0], node.name)
+    tree.iterate(del_zombie, filter=['is_zombie'])
+    return 0
+
+
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <path>
 Delete an object from a name server.
@@ -89,6 +109,8 @@ be able to get it back.
     parser.add_option('-d', '--debug', dest='debug', action='store_true',
             default=False, help='Print debugging information. \
 [Default: %default]')
+    parser.add_option('-z', '--zombies', dest='zombies', action='store_true',
+            default=False, help='Delete only zombies. [Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
@@ -99,23 +121,23 @@ be able to get it back.
         return 1
 
     if not args:
-        # If no path given then can't do anything.
-        print >>sys.stderr, '{0}: No object specified.'.format(sys.argv[0])
-        return 1
+        if not options.zombies:
+            print >>sys.stderr, '{0}: No path given.'.format(sys.argv[0])
+            return 1
+        else:
+            # If no path given, delete all zombies found
+            return delete_all_zombies(options, tree)
     elif len(args) == 1:
-        cmd_path = args[0]
+        full_path = cmd_path_to_full_path(args[0])
+        # Some sanity checks
+        if full_path == '/':
+            print >>sys.stderr, '{0}: Cannot delete the root directory.'.format(\
+                    sys.argv[0])
+            return 1
+        return delete_object_reference(cmd_path, full_path, options, tree)
     else:
         print >>sys.stderr, usage
         return 1
-    full_path = cmd_path_to_full_path(cmd_path)
-
-    # Some sanity checks
-    if full_path == '/':
-        print >>sys.stderr, '{0}: Cannot delete the root directory.'.format(\
-                sys.argv[0])
-        return 1
-
-    return delete_object_reference(cmd_path, full_path, options, tree)
 
 
 # vim: tw=79

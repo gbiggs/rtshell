@@ -144,6 +144,24 @@ def get_node_long_lines(nodes, use_colour=True):
 
             info_strings.append((state_string, total_string, in_string,
                                  out_string, svc_string, node.name))
+        elif node.is_zombie:
+            # Zombies are treated like unknowns, but tagged with *
+            if state_width == 0:
+                state_width = 1
+            if total_width == 0:
+                total_width = 1
+            if in_width == 0:
+                in_width = 1
+            if out_width == 0:
+                out_width = 1
+            if svc_width == 0:
+                svc_width = 1
+            name = build_attr_string(['faint', 'white'],
+                        supported=use_colour) + \
+                    '*' + node.name + build_attr_string(['reset'],
+                        supported=use_colour)
+            info_strings.append((('-', 0), ('-', 0), ('-', 0),
+                                 ('-', 0), ('-', 0), name))
         else:
             # Other types are unknowns
             if state_width == 0:
@@ -221,6 +239,13 @@ def list_directory(dir_node, long=False):
                               build_attr_string(['reset'],
                                   supported=use_colour),
                              entry.name))
+            elif entry.is_zombie:
+                items.append((build_attr_string(['faint', 'white'],
+                                supported=use_colour) + \
+                              '*' + entry.name + \
+                              build_attr_string(['reset'],
+                                  supported=use_colour),
+                             '*' + entry.name))
             else:
                 items.append((build_attr_string(['faint', 'white'],
                                 supported=use_colour) + \
@@ -246,7 +271,7 @@ object.'.format(sys.argv[0], cmd_path)
         path = path[:-1]
 
     if not tree:
-        tree = create_rtctree(paths=path)
+        tree = create_rtctree(paths=path, filter=[path])
     if not tree:
         return 1
 
@@ -254,10 +279,11 @@ object.'.format(sys.argv[0], cmd_path)
         print >>sys.stderr, '{0}: Cannot access {1}: No such directory or \
 object.'.format(sys.argv[0], cmd_path)
         return 1
-    if tree.is_component(path):
-        # Path points to a single component: print it like 'ls <file>'.
+    if tree.is_component(path) or tree.is_unknown(path) or \
+            tree.is_zombie(path):
+        # Path points to a single object: print it like 'ls <file>'.
         if trailing_slash:
-            # If there was a trailing slash, complain that a component is not a
+            # If there was a trailing slash, complain that the object is not a
             # directory.
             print >>sys.stderr, '{0}: cannot access {1}: Not a \
 directory.'.format(sys.argv[0], address)
@@ -268,7 +294,19 @@ directory.'.format(sys.argv[0], address)
             for l in lines:
                 print l
         else:
-            print path[-1]
+            if tree.is_component(path):
+                print path[-1]
+            elif tree.is_zombie(path):
+                print build_attr_string(['faint', 'white'],
+                        supported=sys.stdout.isatty()) + \
+                    '*' + path[-1] + build_attr_string(['reset'],
+                        supported=sys.stdout.isatty())
+            else:
+                # Assume unknown
+                print build_attr_string(['faint', 'white'],
+                        supported=sys.stdout.isatty()) + \
+                    path[-1] + build_attr_string(['reset'],
+                        supported=sys.stdout.isatty())
     elif tree.is_directory(path):
         # If recursing, need to list this directory and all its children
         if options.recurse:

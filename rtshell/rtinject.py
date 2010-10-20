@@ -20,6 +20,7 @@ port of a component.
 '''
 
 
+import imp
 from omniORB import any, cdrMarshal, CORBA
 from optparse import OptionParser, OptionError
 import os
@@ -111,11 +112,60 @@ your data type matches the port.'.format(sys.argv[0])
     return 0
 
 
+def import_user_mod(mod_name):
+    f = None
+    m = None
+    try:
+        f, p, d = imp.find_module(mod_name)
+        m = imp.load_module(mod_name, f, p, d)
+    except ImportError, e:
+        print >>sys.stderr, '{0}: {1}: Error importing module: {2}'.format(\
+                sys.argv[0], mod_name, e)
+        m = None
+    finally:
+        if f:
+            f.close()
+    if not m:
+        return None
+    return (mod_name, m)
+
+
+def import_user_mods(mod_names):
+    all_mod_names = []
+    for mn in mod_names.split(','):
+        if not mn:
+            continue
+        all_mod_names += [mn, mn + '__POA']
+    mods = [import_user_mod(mn) for mn in all_mod_names]
+    if None in mods:
+        return None
+    return mods
+
+
+def replace_mod_name(string, mods):
+    for (mn, m) in mods:
+        if mn in string:
+            string = string.replace(mn, 'mods[{0}][1]'.format(mods.index((mn, m))))
+    return string
+
+
 def replace_time(string):
-    '''Replaces any occurances with %time% with the system time.'''
+    '''Replaces any occurances with {time} with the system time.'''
     now = time.time()
     sys_time = RTC.Time(int(now), int((now - int(now)) * 1e9))
     return string.format(time=sys_time)
+
+
+def eval_const(const_expr, mods):
+    try:
+        repl_const_expr = replace_mod_name(replace_time(const_expr), mods)
+        if not repl_const_expr:
+            return None
+        const = eval(repl_const_expr)
+    except:
+        print_exc()
+        return None
+    return const
 
 
 def main(argv=None, tree=None):
@@ -137,6 +187,11 @@ any checks. You should not give access to this command to untrusted people.
     parser.add_option('-d', '--debug', dest='debug', action='store_true',
             default=False, help='Print debugging information. \
 [Default: %default]')
+    parser.add_option('-m', '--type-mod', dest='type_mods', action='store',
+            type='string', default='',
+            help='Specify the module containing the data type. This option \
+must be supplied if the data type is not defined in the RTC modules supplied \
+with OpenRTM-aist. This module and the __POA module will both be imported.')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
@@ -152,7 +207,8 @@ any checks. You should not give access to this command to untrusted people.
 
     cmd_path = args[0]
     full_path = cmd_path_to_full_path(cmd_path)
-    data = eval(replace_time(args[1]))
+    mods = import_user_mods(options.type_mods) + [('RTC', RTC)]
+    data = eval_const(args[1], mods)
 
     return inject_data(cmd_path, full_path, options, data, tree)
 

@@ -19,6 +19,7 @@ Implementation of the command to print data sent by a port to the console.
 '''
 
 
+import imp
 import inspect
 import OpenRTM_aist
 from optparse import OptionParser, OptionError
@@ -40,11 +41,7 @@ from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
 from rtshell.path import cmd_path_to_full_path
 
 
-index = 0
-port_type = None
-
-
-def get_our_listener(options, tree=None, orb=None):
+def get_our_listener(options, index, tree=None, orb=None):
     if not tree:
         tree = create_rtctree(paths=['/', 'localhost'], orb=orb,
                 filter=[['/', 'localhost']])
@@ -65,8 +62,8 @@ def get_our_listener(options, tree=None, orb=None):
     return 0, matches[0]
 
 
-def get_our_listener_port(options, tree=None, orb=None):
-    result, comp = get_our_listener(options, tree=tree, orb=orb)
+def get_our_listener_port(options, index, tree=None, orb=None):
+    result, comp = get_our_listener(options, index, tree=tree, orb=orb)
     if result:
         return result, None
 
@@ -141,22 +138,74 @@ def select_index(path, tree=None):
     return 0, matches[-1] + 1
 
 
-def find_port_type(type_name):
-    types = [member for member in inspect.getmembers (RTC, inspect.isclass) \
-                if member[0] == type_name]
-    if len(types) == 0:
+def import_user_mod(mod_name):
+    f = None
+    m = None
+    try:
+        f, p, d = imp.find_module(mod_name)
+        m = imp.load_module(mod_name, f, p, d)
+    except ImportError, e:
+        print >>sys.stderr, '{0}: {1}: Error importing module: {2}'.format(\
+                sys.argv[0], mod_name, e)
+    finally:
+        if f:
+            f.close()
+    return m
+
+
+def import_user_mods(mod_names):
+    mods = [import_user_mod(m) for m in mod_names.split(',')]
+    if None in mods:
         return None
-    elif len(types) != 1:
+    return mods
+
+
+def find_port_type(type_name, modules):
+    for m in modules:
+        types = [member for member in inspect.getmembers (m, inspect.isclass) \
+                    if member[0] == type_name]
+        if len(types) == 0:
+            continue
+        elif len(types) != 1:
+            return None
+        else:
+            return types[0][1]
+    return None
+
+
+def import_formatter(mod_name):
+    mod = import_user_mod(mod_name)
+    if not mod:
         return None
-    return types[0][1]
+    fs = [m for m in inspect.getmembers(mod, inspect.isfunction) \
+            if m[0] == 'format']
+    if len(fs) == 0:
+        print >>sys.stderr, '{0}: {1}: No format function found.'.format(\
+                sys.argv[0], mod_name)
+        return None
+    elif len(fs) != 1:
+        print >>sys.stderr, \
+                '{0}: {1}: Multiple format functions found.'.format(\
+                        sys.argv[0], mod_name)
+        return None
+    else:
+        f = fs[0][1]
+        args, varargs, varkw, defaults = inspect.getargspec(f)
+        if len(args) != 1 or varargs or varkw or defaults:
+            print >>sys.stderr, \
+                    '{0}: {1}: Format function has bad signature.'.format(\
+                    sys.argv[0], mod_name)
+            return None
+        return f
 
 
 class Listener(OpenRTM_aist.DataFlowComponentBase):
-    def __init__(self, manager, event, one=False):
+    def __init__(self, manager, port_type, event, one=False, formatter=None):
         OpenRTM_aist.DataFlowComponentBase.__init__ (self, manager)
         self._port_type = port_type
         self._event = event
         self._one = one
+        self._formatter = formatter
 
     def onInitialize(self):
         try:
@@ -181,8 +230,16 @@ class Listener(OpenRTM_aist.DataFlowComponentBase):
         try:
             if self._inport.isNew():
                 self._inport_data = self._inport.read()
-                print '[{0}.{1:09}] {2}'.format(self._inport_data.tm.sec,
-                        self._inport_data.tm.nsec, str(self._inport_data.data))
+                if self._formatter:
+                    output = self._formatter(self._inport_data)
+                else:
+                    output = ''
+                    if 'tm' in dir(self._inport_data):
+                        output += '[{0}.{1:09}] '.format(\
+                                self._inport_data.tm.sec,
+                                self._inport_data.tm.nsec)
+                    output += '{0}'.format(self._inport_data)
+                print output
                 if self._one:
                     self._event.set()
         except:
@@ -203,13 +260,13 @@ def listener_reg_name(index):
     return '{0}0.rtc'.format(listener_name(index))
 
 
-def listener_fact(event, one):
+def listener_fact(port_type, event, one, formatter):
     def fact_fun(mgr):
-        return Listener(mgr, event, one)
+        return Listener(mgr, port_type, event, one, formatter)
     return fact_fun
 
 
-def init_listener(event, one=False):
+def init_listener(port_type, event, index, one=False, formatter=None):
     def init_fun(mgr):
         spec= ['implementation_id', listener_name(index),
             'type_name', listener_name(index),
@@ -223,33 +280,36 @@ def init_listener(event, one=False):
             'lang_type', 'SCRIPT',
             '']
         profile = OpenRTM_aist.Properties(defaults_str=spec)
-        mgr.registerFactory(profile, listener_fact(event, one),
+        mgr.registerFactory(profile,
+                listener_fact(port_type, event, one, formatter),
                 OpenRTM_aist.Delete)
         comp = mgr.createComponent(listener_name(index))
     return init_fun
 
 
-def create_listener_comp(port_string, event, one=False):
+def create_listener_comp(port_string, event, index, one=False, user_mods=[],
+        formatter=None):
     global port_type
-    port_type = find_port_type(port_string)
+    port_type = find_port_type(port_string, user_mods + [RTC])
     if port_type == None:
         print >>sys.stderr, '{0}: Port has unknown or ambiguous type: \
 {1}'.format(sys.argv[0], port_string)
         return 1, None
 
     mgr = OpenRTM_aist.Manager.init(1, [sys.argv[0]])
-    mgr.setModuleInitProc(init_listener(event, one))
+    mgr.setModuleInitProc(init_listener(port_type, event, index, one,
+        formatter))
     mgr.activateManager()
     mgr.runManager(True)
     return 0, mgr
 
 
-def connect_listener(cmd_path, path, port, options, orb):
+def connect_listener(cmd_path, path, port, options, index, orb):
     result, source_port = get_port_obj(cmd_path, path, port, options, orb=orb)
     if result:
         return result
 
-    result, dest_port = get_our_listener_port(options, orb=orb)
+    result, dest_port = get_our_listener_port(options, index, orb=orb)
     if result:
         return result
 
@@ -276,8 +336,8 @@ match.'.format(sys.argv[0])
     return 0
 
 
-def activate_listener(options, orb):
-    result, comp = get_our_listener(options, orb=orb)
+def activate_listener(options, index, orb):
+    result, comp = get_our_listener(options, index, orb=orb)
     if result:
         return result
     comp.activate_in_ec(0)
@@ -306,20 +366,33 @@ def listen_to_port(cmd_path, full_path, options, tree=None):
         print >>sys.stderr, '{0}: Bad path'.format(sys.argv[0])
         return 1
 
-    result, port_string = get_port_type_string(cmd_path, path, port, options, tree)
+    if options.formatter:
+        formatter = import_formatter(options.formatter)
+        if not formatter:
+            return 1
+    else:
+        formatter = None
+
+    user_mods = import_user_mods(options.type_mods)
+    if not user_mods:
+        return 1
+
+    result, port_string = get_port_type_string(cmd_path, path, port, options,
+            tree)
     if result:
         return result
     result, index = select_index(path, tree)
     if result:
         return result
-    result, manager = create_listener_comp(port_string, event=event,
-            one=options.one)
+    result, manager = create_listener_comp(port_string, event, index,
+            one=options.one, user_mods=user_mods, formatter=formatter)
     if result:
         return result
-    result = connect_listener(cmd_path, path, port, options, manager.getORB())
+    result = connect_listener(cmd_path, path, port, options, index,
+            manager.getORB())
     if result:
         return result
-    result = activate_listener(options, manager.getORB())
+    result = activate_listener(options, index, manager.getORB())
     if result:
         return result
 
@@ -358,6 +431,17 @@ compatible with the port.'''
     parser.add_option('-d', '--debug', dest='debug', action='store_true',
             default=False, help='Print debugging information. \
 [Default: %default]')
+    parser.add_option('-f', '--formatter', dest='formatter', action='store',
+            type='string', default='',
+            help='Specify a data printer module. This module must provide a \
+function called "formatter" that will format the data. The function will be \
+passed the data item and must return a string. The module will be imported, \
+so it must be in the PYTHONPATH (such as in the current directory).')
+    parser.add_option('-m', '--type-mod', dest='type_mods', action='store',
+            type='string', default='',
+            help='Specify the module containing the data type. This option \
+must be supplied if the data type is not defined in the RTC modules supplied \
+with OpenRTM-aist. This module and the __POA module will both be imported.')
     parser.add_option('-t', '--timeout', dest='timeout', action='store',
             type='float', default=-1, help='Print data for this many seconds, \
 then stop. Specify -1 for no timeout. [Default: %default]')

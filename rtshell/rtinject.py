@@ -14,176 +14,101 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-Implementation of the command to inject a single shot of data into an input
-port of a component.
+Implementation of the command to print data sent by ports to the console.
 
 '''
 
 
-import imp
-from omniORB import any, cdrMarshal, CORBA
-from optparse import OptionParser, OptionError
-import os
-from rtctree.exceptions import RtcTreeError
-from rtctree.tree import create_rtctree
-from rtctree.path import parse_path
-from OpenRTM import PORT_OK
-from OpenRTM__POA import InPortCdr
+import OpenRTM_aist
+import optparse
 import RTC
-import SDOPackage
+import rtctree.tree
+import rtctree.utils
 import sys
+import threading
 import time
+import traceback
 
-from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
-from rtshell.path import cmd_path_to_full_path
+import comp_mgmt
+import eval_const
+import path
+import port_types
+import rtshell
+import rtinject_comp
+import user_mods
 
 
-def inject_data(cmd_path, full_path, options, data, tree):
-    path, port = parse_path(full_path)
-    if not port:
-        # Need a port to inject to
-        print >>sys.stderr, '{0}: Cannot access {1}: Not a port'.format(\
-                sys.argv[0], cmd_path)
-        return 1
+def write_to_ports(raw_paths, options, tree=None):
+    event = threading.Event()
 
-    trailing_slash = False
-    if not path[-1]:
-        # There was a trailing slash
-        print >>sys.stderr, '{0}: {1}: Not a port'.format(\
-                sys.argv[0], cmd_path)
-        return 1
+    mods = user_mods.load_mods_and_poas(options.type_mods) + \
+            [user_mods.PreloadedModule('RTC', RTC)]
+    if options.verbose:
+        print >>sys.stderr, \
+                'Loaded modules: {0}'.format([str(m) for m in mods])
+    val = eval_const.eval_const(options.const, mods)
+    if options.verbose:
+        print >>sys.stderr, 'Evaluated constant to {0}'.format(val)
+    if options.timeout == -1:
+        max = options.max
+        if options.verbose:
+            print >>sys.stderr, 'Will run {0} times.'.format(max)
+    else:
+        max = -1
+        if options.verbose:
+            print >>sys.stderr, 'Will stop after {0}s'.format(options.timeout)
 
+    targets = port_types.parse_targets(raw_paths)
     if not tree:
-        tree = create_rtctree(paths=path, filter=[path])
-    if not tree:
-        return tree
+        paths = [t[0] for t in targets]
+        tree = rtctree.tree.create_rtctree(paths=paths, filter=paths)
+    port_specs = port_types.make_port_specs(targets, mods, tree)
+    port_types.require_all_output(port_specs)
+    if options.verbose:
+        print >>sys.stderr, \
+                'Port specifications: {0}'.format([str(p) for p in port_specs])
 
-    comp = tree.get_node(path)
-    if not comp or not comp.is_component:
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-component.'.format(sys.argv[0], cmd_path)
-        return 1
-    port = comp.get_port_by_name(port)
-    if not port:
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-port'.format(sys.argv[0], cmd_path)
-        return 1
-    if not port.porttype == 'DataInPort':
-        print >>sys.stderr, '{0}: Can only inject to DataInPort port \
-type.'.format(sys.argv[0])
-        return 1
-
-    # Create a dummy connector on the port
-    datatype = str(data.__class__).rpartition('.')[2]
-    props = []
-    props.append(SDOPackage.NameValue('dataport.dataflow_type',
-                                      any.to_any('push')))
-    props.append(SDOPackage.NameValue('dataport.interface_type',
-                                      any.to_any('corba_cdr')))
-    props.append(SDOPackage.NameValue('dataport.subscription_type',
-                                      any.to_any('flush')))
-    props.append(SDOPackage.NameValue('dataport.data_type',
-                                      any.to_any(datatype)))
-    profile = RTC.ConnectorProfile(path[-1] + '.inject_conn',
-                                   path[-1] + '.temp', [port.object], props)
-    return_code, profile = port.object.connect(profile)
-    port.reparse_connections()
-    if return_code != RTC.RTC_OK:
-        print >>sys.stderr, '{0}: Failed to create local connection. Check \
-your data type matches the port.'.format(sys.argv[0])
-        return 1
-    # Get the connection's IOR and narrow it to an InPortCdr object
-    conn = port.get_connection_by_name(path[-1] + '.inject_conn')
-    ior = conn.properties['dataport.corba_cdr.inport_ior']
-    object = comp.orb.string_to_object(ior)
-    if CORBA.is_nil(object):
-        print >>sys.stderr, '{0}: Failed to get inport object.'.format(\
-                sys.argv[0])
-        return 1
-    object = object._narrow(InPortCdr)
-    # Inject the data
-    cdr = cdrMarshal(any.to_any(data).typecode(), data, True)
-    if object.put(cdr) != PORT_OK:
-        print >>sys.stderr, '{0}: Failed to inject data.'.format(sys.argv[0])
-        return 1
-    # Remove the dummy connection
-    conn.disconnect()
-
+    comp_name, mgr = comp_mgmt.make_comp('rtinject_writer', tree,
+            rtinject_comp.Writer, port_specs, event=event, rate=options.rate,
+            max=max, val=val)
+    if options.verbose:
+        print >>sys.stderr, 'Created component {0}'.format(comp_name)
+    comp = comp_mgmt.find_comp_in_mgr(comp_name, mgr)
+    comp_mgmt.connect(comp, port_specs, tree)
+    comp_mgmt.activate(comp)
+    try:
+        if options.timeout != -1:
+            event.wait(options.timeout)
+        else:
+            event.wait()
+    except KeyboardInterrupt:
+        pass
+    except EOFError:
+        pass
+    tree.give_away_orb()
+    del tree
+    comp_mgmt.disconnect(comp)
+    comp_mgmt.deactivate(comp)
+    comp_mgmt.shutdown(mgr)
     return 0
 
 
-def import_user_mod(mod_name):
-    f = None
-    m = None
-    try:
-        f, p, d = imp.find_module(mod_name)
-        m = imp.load_module(mod_name, f, p, d)
-    except ImportError, e:
-        print >>sys.stderr, '{0}: {1}: Error importing module: {2}'.format(\
-                sys.argv[0], mod_name, e)
-        m = None
-    finally:
-        if f:
-            f.close()
-    if not m:
-        return None
-    return (mod_name, m)
-
-
-def import_user_mods(mod_names):
-    all_mod_names = []
-    for mn in mod_names.split(','):
-        if not mn:
-            continue
-        all_mod_names += [mn, mn + '__POA']
-    mods = [import_user_mod(mn) for mn in all_mod_names]
-    if None in mods:
-        return None
-    return mods
-
-
-def replace_mod_name(string, mods):
-    for (mn, m) in mods:
-        if mn in string:
-            string = string.replace(mn, 'mods[{0}][1]'.format(mods.index((mn, m))))
-    return string
-
-
-def replace_time(string):
-    '''Replaces any occurances with {time} with the system time.'''
-    now = time.time()
-    sys_time = RTC.Time(int(now), int((now - int(now)) * 1e9))
-    return string.format(time=sys_time)
-
-
-def eval_const(const_expr, mods):
-    try:
-        repl_const_expr = replace_mod_name(replace_time(const_expr), mods)
-        if not repl_const_expr:
-            return None
-        const = eval(repl_const_expr)
-    except:
-        print_exc()
-        return None
-    return const
-
-
 def main(argv=None, tree=None):
-    usage = '''Usage: %prog [options] <path> <data>
+    usage = '''Usage: %prog [options] <path1>:<port1> [<path2>:<port2>...]
+Write a constant value to one or more ports.
 
-Inject a single shot of data into an input port of a component.
+By default, the value is written once. Options are available to write a set
+number of times, or write regularly for a specified length of time.
 
-The data must be a valid Python expression, such as "RTC.TimedLong({time}, 42)"
-or "RTC.TimedLongSeq(RTC.Time(0, 0), [1, 2, 3])". If the expression contains
-the phrase "{time}", it will be replaced with an RTC.Time object containing the
-system time.
-
-Warning: This command is insecure. The Python expression is evaluated without
-any checks. You should not give access to this command to untrusted people.
-
-''' + RTSH_PATH_USAGE
-    version = RTSH_VERSION
-    parser = OptionParser(usage=usage, version=version)
+''' + rtshell.RTSH_PATH_USAGE + '''
+A connection will be made to the port using the default connection settings
+compatible with the port.'''
+    version = rtshell.RTSH_VERSION
+    parser = optparse.OptionParser(usage=usage, version=version)
+    parser.add_option('-c', '--const', dest='const', action='store',
+            type='string', default='',
+            help='The constant value to send, as a Python expression. \
+Required.')
     parser.add_option('-d', '--debug', dest='debug', action='store_true',
             default=False, help='Print debugging information. \
 [Default: %default]')
@@ -192,26 +117,39 @@ any checks. You should not give access to this command to untrusted people.
             help='Specify the module containing the data type. This option \
 must be supplied if the data type is not defined in the RTC modules supplied \
 with OpenRTM-aist. This module and the __POA module will both be imported.')
+    parser.add_option('-n', '--number', dest='max', action='store',
+            type='int', default='1',
+            help='Specify the number of times to write to the port. \
+[Default: %default]')
+    parser.add_option('-r', '--rate', dest='rate', action='store',
+            type='float', default=1.0,
+            help='Specify the rate in Hertz at which to emit data. \
+[Default: %default]')
+    parser.add_option('-t', '--timeout', dest='timeout', action='store',
+            type='float', default=-1, help='Write data for this many seconds, \
+then stop. Specify -1 for no timeout. This option overrides --number. \
+[Default: %default]')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+            default=False,
+            help='Output verbose information. [Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except OptionError, e:
+    except optparse.OptionError, e:
         print 'OptionError:', e
         return 1
 
-    if len(args) != 2:
-        print >>sys.stderr, 'Insufficient arguments.'
+    if len(args) < 1:
+        print >>sys.stderr, usage
         return 1
 
-    cmd_path = args[0]
-    full_path = cmd_path_to_full_path(cmd_path)
-    mods = import_user_mods(options.type_mods) + [('RTC', RTC)]
-    data = eval_const(args[1], mods)
-
-    return inject_data(cmd_path, full_path, options, data, tree)
-
-
-# vim: tw=79
+    try:
+        write_to_ports([path.cmd_path_to_full_path(p) \
+                for p in args], options, tree)
+    except Exception, e:
+        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        return 1
+    return 0
 

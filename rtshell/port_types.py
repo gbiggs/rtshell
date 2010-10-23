@@ -24,19 +24,23 @@ import re
 import rtctree.path
 
 import comp_mgmt
+import eval_const
 import rts_exceptions
+import user_mods
 
 
 ###############################################################################
 ## Class for managing port specifications.
 
 class PortSpec(object):
-    def __init__(self, name, type, target, input=True, *args, **kwargs):
+    def __init__(self, name, type, target, input=True, formatter=None, *args,
+            **kwargs):
         super(PortSpec, self).__init__()
         self._name = name
         self._type = type
         self._target = target
         self._input = input
+        self._formatter = formatter
 
     def __str__(self):
         if self.input:
@@ -71,6 +75,11 @@ class PortSpec(object):
         '''If the port is an output port or not.'''
         return not self._input
 
+    @property
+    def formatter(self):
+        '''Get the port's formatter function.'''
+        return self._formatter
+
 
 ###############################################################################
 ## Functions for building port specifications.
@@ -92,6 +101,11 @@ def find_port_cons(class_name, mods):
         elif len(types) != 1:
             raise rts_exceptions.AmbiguousTypeError(type_name)
         else:
+            # Check for the POA module
+            if m.name != 'RTC':
+                if not [other_m for other_m in mods \
+                        if other_m.name == m.name + '__POA']:
+                    raise rts_exceptions.MissingPOAError(m.name)
             return types[0][1]
     raise rts_exceptions.TypeNotFoundError(class_name)
 
@@ -106,14 +120,14 @@ def make_port_specs(ports, mods, tree):
     is an InPort, a PortSpec for an OutPort will be created, and vice versa.
 
     @param ports The paths to the target ports. Each must be a tuple of
-                 (path, port, name) where path is a list of path components in
-                 the format used by rtctree.
+                 (path, port, name, formatter) where path is a list of path
+                 components in the format used by rtctree.
     @param tree An RTCTree to search for the ports in.
 
     '''
     result = []
     index = 0
-    for (rtc, port, name) in ports:
+    for (rtc, port, name, form) in ports:
         port_obj = comp_mgmt.find_port(rtc, port, tree)
         if port_obj.porttype == 'DataInPort':
             input = False
@@ -128,7 +142,13 @@ def make_port_specs(ports, mods, tree):
                 name = 'output{0}'.format(index)
         port_cons = find_port_cons(port_obj.properties['dataport.data_type'],
                 mods)
-        result.append(PortSpec(name, port_cons, (rtc, port), input))
+        if form:
+            # Look up the formatter in one of the user-provided modules
+            formatter = user_mods.import_formatter(form, mods)
+        else:
+            formatter = None
+        result.append(PortSpec(name, port_cons, (rtc, port), input=input,
+            formatter=formatter))
         index += 1
     return result
 
@@ -140,23 +160,25 @@ def parse_targets(targets):
     (path, port, name), where path is in the rtctree format.
 
     @param targets A list of target ports, as strings. Each string should
-                   be in the format "path:port>name", e.g.
-                   "/localhost/blurg.host_cxt/comp0.rtc:input>stuff". The name
-                   component is optional; if it is not present, neither should
-                   the '>' character be.
+                   be in the format "path:port.name#formatter", e.g.
+                   "/localhost/blurg.host_cxt/comp0.rtc:input.stuff#print_stuff".
+                   The name component is optional; if it is not present, neither should
+                   the '.' character be. The formatter component is optional;
+                   if it is not present, neither should the '#' character be. A
+                   name is not required to use a formatter.
 
     '''
-    regex = re.compile(r'(?P<path>[:\w/.]+)(?:>(?P<name>\w+))?')
+    regex = re.compile(r'^(?P<path>[:\w/.]+?)(?:\.(?P<name>\w+))?(?:#(?P<form>[\w.]+))?$')
     result = []
     for t in targets:
         m = regex.match(t)
         if not m:
             raise rts_exceptions.BadPortSpecError(t)
-        raw_path, name = m.groups()
+        raw_path, name, formatter = m.groups()
         path, port = rtctree.path.parse_path(raw_path)
         if not port or not path[-1]:
             raise rts_exceptions.BadPortSpecError(t)
-        result.append((path, port, name))
+        result.append((path, port, name, formatter))
     return result
 
 

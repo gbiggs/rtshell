@@ -14,7 +14,7 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-Writer component used by rtinject
+Reader component used by rtprint
 
 '''
 
@@ -25,15 +25,18 @@ import RTC
 
 
 ###############################################################################
-## Writer component for rtinject
+## Reader component for rtprint
 
-class Writer(gen_comp.GenComp):
-    def __init__(self, mgr, port_specs, val=None, *args, **kwargs):
+class Reader(gen_comp.GenComp):
+    def __init__(self, mgr, port_specs, *args, **kwargs):
         gen_comp.GenComp.__init__(self, mgr, port_specs, *args, **kwargs)
-        self._val = val
 
     def _behv(self, ec_id):
+        execed = False
         for p in self._ports:
-            p.port.write(self._val)
-        return RTC.RTC_OK, True
+            if p.port.isNew():
+                execed = True
+                p.read()
+                print p.format()
+        return RTC.RTC_OK, execed
 

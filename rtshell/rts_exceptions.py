@@ -204,5 +204,35 @@ class PortNotOutputError(RtShellError):
         return 'Port is not output: {0}'.format(self._name)
 
 
+class ImportFormatterError(RtShellError):
+    '''An error occured importing a formatting function.'''
+    def __init__(self, exc, *args, **kwargs):
+        super(ImportFormatterError, self).__init__(self, *args, **kwargs)
+        self._exc = exc
+
+    def __str__(self):
+        return 'Error importing formatter: {0}'.format(self._exc)
+
+
+class BadFormatterError(RtShellError):
+    '''The imported formatter is bad (most likely not a function).'''
+    def __init__(self, fun, *args, **kwargs):
+        super(BadFormatterError, self).__init__(self, *args, **kwargs)
+        self._fun = fun
+
+    def __str__(self):
+        return 'Bad formatter: {0}'.format(self._fun)
+
+
+class MissingPOAError(RtShellError):
+    '''A data type from a module was used without a matching POA loaded.'''
+    def __init__(self, mod, *args, **kwargs):
+        super(MissingPOAError, self).__init__(self, *args, **kwargs)
+        self._mod = mod
+
+    def __str__(self):
+        return 'Missing POA module: {0}'.format(self._mod)
+
+
 # vim: tw=79
 

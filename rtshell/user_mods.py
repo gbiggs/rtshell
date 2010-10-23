@@ -20,6 +20,10 @@ Functions and classes for managing run-time-loaded modules.
 
 
 import imp
+import inspect
+
+import eval_const
+import rts_exceptions
 
 
 class Module(object):
@@ -83,10 +87,38 @@ def load_mods_and_poas(mods):
     @param mods The module names, as a comma-separated string.
 
     '''
-    all_names = []
+    result = []
     for m in mods.split(','):
         if not m:
             continue
-        all_names += [m, m + '__POA']
-    return load_mods(all_names)
+        mod = Module(m)
+        result.append(mod)
+        try:
+            mod_poa = Module(m + '__POA')
+            result.append(mod_poa)
+        except ImportError:
+            pass
+    return result
+
+
+def import_formatter(form, mods):
+    '''Import a formatter.
+
+    This function attempts to evaluate an expression specifying a function
+    object that can be used to format a piece of data. The imported function
+    must receive one positional argument, which is the data to format.
+
+    '''
+    form_rpl = eval_const.replace_mod_name(form, mods)
+    try:
+        form_fun = eval(form_rpl)
+    except Exception, e:
+        raise rts_exceptions.ImportFormatterError(e)
+    # Check if the formatter is a function
+    if type(form_fun) != type(import_formatter):
+        raise rts_exceptions.BadFormatterError(form)
+    args, varargs, varkw, defaults = inspect.getargspec(form_fun)
+    if len(args) != 1 or varargs or varkw or defaults:
+        raise BadFormatterError(form)
+    return form_fun
 

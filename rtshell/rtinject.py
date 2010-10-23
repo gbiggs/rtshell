@@ -33,8 +33,8 @@ import comp_mgmt
 import eval_const
 import path
 import port_types
-import rtshell
 import rtinject_comp
+import rtshell
 import user_mods
 
 

@@ -31,10 +31,11 @@ import traceback
 
 class Port(object):
     '''Class to store the objects used for a port.'''
-    def __init__(self, data, port, *args, **kwargs):
+    def __init__(self, data, port, formatter=None, *args, **kwargs):
         super(Port, self).__init__()
         self._data = data
         self._port = port
+        self._formatter = formatter
 
     @property
     def data(self):
@@ -45,6 +46,36 @@ class Port(object):
     def port(self):
         '''Get the port object.'''
         return self._port
+
+    @property
+    def formatter(self):
+        '''Get the formatter function for the port, if any.'''
+        return self._formatter
+
+    def read(self):
+        '''Read the next value from the port into self.data.'''
+        self._data = self._port.read()
+
+    def format(self):
+        '''Return a string representation of the value of self.data.
+
+        If self.formatter is not None, that function will be called to create
+        the string representation. Otherwise, str() will be used except in the
+        cases of data that contains a .tm member of type RTC.Time and a .data
+        member. In that case, the time will be pretty-printed, followed by the
+        data member, printed using str().
+
+        '''
+        if self.formatter:
+            return self.formatter(self.data)
+        else:
+            members = [m for m in dir(self.data) if not m.startswith('_')]
+            if len(members) == 2 and 'tm' in members and \
+                    'data' in members and self.data.tm.__class__ == RTC.Time:
+                return '[{0}.{1:09}] {2}'.format(self.data.tm.sec,
+                        self.data.tm.nsec, self.data.data)
+            else:
+                return str(self.data)
 
 
 ###############################################################################
@@ -92,7 +123,7 @@ class GenComp(OpenRTM_aist.DataFlowComponentBase):
                 p_data = p.type(*init_args)
                 p_port = port_con(p.name, p_data)
                 port_reg(p.name, p_port)
-                self._ports.append(Port(p_data, p_port))
+                self._ports.append(Port(p_data, p_port, formatter=p.formatter))
         except:
             print >>sys.stderr, traceback.format_exc()
             return RTC.RTC_ERROR
@@ -100,18 +131,26 @@ class GenComp(OpenRTM_aist.DataFlowComponentBase):
 
     def onExecute(self, ec_id):
         # Call the component behaviour
-        try:
-            if self._count < self._max or self._max < 0:
-                self._behv(ec_id)
+        res = RTC.RTC_OK
+        if self._count < self._max or self._max < 0:
+            res, executed = self._behv(ec_id)
+            if executed:
                 self._count += 1
                 if self._count == self._max:
                     self._set()
-        except:
-            traceback.print_exc()
-            return RTC.RTC_ERROR
-        return RTC.RTC_OK
+        return res
 
     def _behv(self, ec_id):
+        '''Behaviour function for derived components.
+
+        Deriving classes must implement this function. It will be called by
+        onExecute. It must return a tuple of (RTC result code, _behv result
+        code). The RTC result code is used to create the result of onExecute;
+        if no errors occur, it must be RTC.RTC_OK. The _behv result code is
+        used to tell the component if the behaviour was able to execute
+        (whether it succeeded or not), for the purposes of execution counting.
+
+        '''
         pass
 
     def _set(self):

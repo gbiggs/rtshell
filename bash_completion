@@ -68,6 +68,8 @@ _rtopts()
                     ;;
         *rtdis)     opts="--version -h --help -d --debug"
                     ;;
+        *rtexit)    opts="--version -h --help -d --debug"
+                    ;;
         *rtfind)    opts="--version -h --help -d --debug --maxdepth= --iname= --name= --type="
                     ;;
         *rtls)      opts="--version -h --help -l -d --debug -r --recurse"

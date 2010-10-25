@@ -36,6 +36,12 @@ class Port(object):
         self._data = data
         self._port = port
         self._formatter = formatter
+        members = [m for m in dir(self.data) if not m.startswith('_')]
+        if len(members) == 2 and 'tm' in members and \
+                'data' in members and self.data.tm.__class__ == RTC.Time:
+            self._standard_type = True
+        else:
+            self._standard_type = False
 
     @property
     def data(self):
@@ -51,6 +57,16 @@ class Port(object):
     def formatter(self):
         '''Get the formatter function for the port, if any.'''
         return self._formatter
+
+    @property
+    def standard_type(self):
+        '''Check if the port's data type is an RTC standard type.
+
+        RTC standard types have a tm member (the timestamp) and a data member
+        (the data).
+
+        '''
+        return self._standard_type
 
     def read(self):
         '''Read the next value from the port into self.data.'''

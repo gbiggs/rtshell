@@ -253,7 +253,11 @@ extension will be automatically appended. [Default: rtsystem.[xml|yaml]]')
             options.output += 'xml'
         else:
             options.output += 'yaml'
-    f = open(options.output, 'w')
+    if options.output == '-':
+        options.xml = True
+        f = sys.stdout
+    else:
+        f = open(options.output, 'w')
     if options.xml:
         f.write(rtsprofile.save_to_xml())
     else:

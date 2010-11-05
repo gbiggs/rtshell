@@ -11,7 +11,7 @@
 #  -Output in eps [paste in latex paper]
 #   % rtstodot rtsystem.xml | dot -T eps > rtsystem.eps
 #  -Visualize current configuration to screen
-#   % rtcryo -o - | rtstodot | dot -T xlib
+#   % rtcryo; rtstodot rtsystem.xml | dot -T xlib
 
 # History
 # 2010/10/05 First version
@@ -25,7 +25,7 @@ def usage():
     print " -Output in eps format [can be used in latex paper]"
     print "  % rtstodot rtsystem.xml | dot -T eps > rtsystem.eps"
     print " -Visualize current configuration to screen"
-    print "  % rtcryo -o - | rtstodot | dot -T xlib"
+    print "  % rtcryo; rtstodot rtsystem.xml | dot -T xlib"
 
 def main():
     if (len(sys.argv) != 2):

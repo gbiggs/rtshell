@@ -25,7 +25,7 @@ def usage():
     print " -Output in eps format [can be used in latex paper]"
     print "  % rtstodot rtsystem.xml | dot -T eps > rtsystem.eps"
     print " -Visualize current configuration to screen"
-    print "  % rtcryo - | rtstodot | dot -T xlib"
+    print "  % rtcryo -o - | rtstodot | dot -T xlib"
 
 def main():
     if (len(sys.argv) != 2):

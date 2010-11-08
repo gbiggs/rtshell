@@ -76,16 +76,20 @@ def read_from_ports(raw_paths, options, tree=None):
     try:
         if options.timeout != -1:
             event.wait(options.timeout)
-        else:
+            comp_mgmt.disconnect(comp)
+            comp_mgmt.deactivate(comp)
+        elif options.max != -1:
             event.wait()
+            comp_mgmt.disconnect(comp)
+            comp_mgmt.deactivate(comp)
+        else:
+            raw_input()
     except KeyboardInterrupt:
         pass
     except EOFError:
         pass
     tree.give_away_orb()
     del tree
-    comp_mgmt.disconnect(comp)
-    comp_mgmt.deactivate(comp)
     comp_mgmt.shutdown(mgr)
     return 0
 
@@ -113,7 +117,7 @@ compatible with the port.'''
 must be supplied if the data type is not defined in the RTC modules supplied \
 with OpenRTM-aist. This module and the __POA module will both be imported.')
     parser.add_option('-n', '--number', dest='max', action='store',
-            type='int', default='1',
+            type='int', default='-1',
             help='Specify the number of times to read from any ports. \
 [Default: %default]')
     parser.add_option('-r', '--rate', dest='rate', action='store',

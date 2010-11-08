@@ -23,6 +23,7 @@ import imp
 import inspect
 
 import eval_const
+import fmt
 import rts_exceptions
 
 
@@ -109,7 +110,11 @@ def import_formatter(form, mods):
     must receive one positional argument, which is the data to format.
 
     '''
-    form_rpl = eval_const.replace_mod_name(form, mods)
+    # Special case for internal formatters: replace 'rtshell' with 'fmt'
+    if form.startswith('rtshell.'):
+        form_rpl = 'fmt.' + form[8:]
+    else:
+        form_rpl = eval_const.replace_mod_name(form, mods)
     try:
         form_fun = eval(form_rpl)
     except Exception, e:

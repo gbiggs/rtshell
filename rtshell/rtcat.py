@@ -32,9 +32,9 @@ from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
 from rtshell.path import cmd_path_to_full_path
 
 
-def format_port(port, comp, use_colour=True, long=0):
+def format_port(port, comp, start_indent=0, use_colour=True, long=0):
     result = []
-    indent = 2
+    indent = 1 + start_indent
     if long > 0:
         tag = '-'
     else:
@@ -203,9 +203,11 @@ def format_component(object, use_colour=True, long=0):
         else:
             result.append('{0}Execution Context {1}'.format(\
                     '+'.rjust(indent), ec.handle))
+    indent -= 2
 
     for p in object.ports:
-        result += format_port(p, object, use_colour=use_colour, long=long)
+        result += format_port(p, object, start_indent=indent + 1,
+                use_colour=use_colour, long=long)
 
     return result
 
@@ -269,7 +271,12 @@ object'.format(sys.argv[0], cmd_path)
         return 1
 
     if not tree:
-        tree = create_rtctree(paths=path, filter=[path])
+        if options.long > 0:
+            # Longer output needs to look around the tree, so don't filter
+            filter = []
+        else:
+            filter = [path]
+        tree = create_rtctree(paths=path, filter=filter)
     if not tree:
         return tree
 
@@ -288,8 +295,8 @@ component.'.format(sys.argv[0], cmd_path)
             print >>sys.stderr, '{0}: Cannot access {1}: No such \
 port'.format(sys.argv[0], source_cmd_path)
             return 1
-        for l in format_port(p, object, use_colour=sys.stdout.isatty(),
-                long=options.long):
+        for l in format_port(p, object, start_indent=0,
+                use_colour=sys.stdout.isatty(), long=options.long):
             print l
     else:
         if object.is_component:

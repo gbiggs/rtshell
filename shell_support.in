@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 # Copyright (C) 2009-2010
 #     Geoffrey Biggs
 #     RT-Synthesis Research Group
@@ -12,6 +10,6 @@
 
 rtcwd()
 {
-   eval $(rtcwd.py "$@")
+   eval $(python -c "import sys; from rtshell import rtcwd; sys.exit(rtcwd.main(['${1}']))")
 }
 

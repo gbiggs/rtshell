@@ -46,10 +46,10 @@
 
 
 # Command option completion
-# Usage : _rtopts ${COMP_WORDS[COMP_CWORD]}
-#         _rtopts ${cur}
+# Usage : _rtsbc_rtopts ${COMP_WORDS[COMP_CWORD]}
+#         _rtsbc_rtopts ${cur}
 # Receives the currently-being-entered word.
-_rtopts()
+_rtsbc_rtopts()
 {
     local opts complist
 
@@ -66,7 +66,7 @@ _rtopts()
                     ;;
         *rtdeact)   opts="--version -h --help -e --exec_context="
                     ;;
-        *rtdis)     opts="--version -h --help"
+        *rtdis)     opts="--version -h --help -i --id"
                     ;;
         *rtexit)    opts="--version -h --help"
                     ;;
@@ -108,11 +108,11 @@ _rtopts()
 }
 
 # Complete object names
-# Usage : _rtobj ${COMP_WORDS[COMP_CWORD]}
-#         _rtobj ${cur}
-#         _rtobj ${cur} port (when completing port names)
+# Usage : _rtsbc_rtobj ${COMP_WORDS[COMP_CWORD]}
+#         _rtsbc_rtobj ${cur}
+#         _rtsbc_rtobj ${cur} port (when completing port names)
 # Receives the currently-being-entered word.
-_rtobj()
+_rtsbc_rtobj()
 {
     local objs obj target_dir target_abs target_objs
 
@@ -147,7 +147,7 @@ _rtobj()
     COMPREPLY=(${target_objs[@]})
 }
 
-_rtls()
+_rtsbc_rtls()
 {
     local cur prev
     COMPREPLY=()
@@ -155,15 +155,15 @@ _rtls()
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     if [[ ${cur} == -* ]] ; then
-        _rtopts ${cur}
+        _rtsbc_rtopts ${cur}
         return 0
     fi
 
-    _rtobj ${cur}
+    _rtsbc_rtobj ${cur}
     return 0
 }
 
-_rtcon()
+_rtsbc_rtcat()
 {
     local cur prev preprev colonopt
     COMPREPLY=()
@@ -171,7 +171,7 @@ _rtcon()
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     if [[ ${cur} == -* ]] ; then
-            _rtopts ${cur}
+            _rtsbc_rtopts ${cur}
             return 0
     fi
 
@@ -191,18 +191,99 @@ _rtcon()
         return 0
     fi
 
-    _rtobj "${cur}" port
+    _rtsbc_rtobj "${cur}" port
     return 0
 }
 
-_get_set_opt_val()
+_rtsbc_rtcon()
+{
+    local cur prev preprev colonopt
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [[ ${cur} == -* ]] ; then
+            _rtsbc_rtopts ${cur}
+            return 0
+    fi
+
+    # : is treated the same as a space for separating variables
+    # Port completion 1
+    if [[ ${cur} == : ]] ; then
+        colonopt=$(rtcat ${prev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }')
+        COMPREPLY=(${colonopt})
+        return 0
+    fi
+
+    # Port completion 2
+    if [[ ${prev} == : ]] ; then
+        preprev="${COMP_WORDS[COMP_CWORD-2]}"
+        colonopt=`rtcat ${preprev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }'`
+        COMPREPLY=($(compgen -W "${colonopt}" -- ${cur}))
+        return 0
+    fi
+
+    _rtsbc_rtobj "${cur}" port
+    return 0
+}
+
+_rtsbc_conid()
+{
+    # $1 = path
+    # $2 = current word
+    local cur=${2#=}
+    local ids=$(rtcat ConsoleIn0.rtc:out --ll | grep ID | awk '{print $2}')
+    COMPREPLY=($(compgen -W "${ids}" -- ${cur}))
+    return 0
+}
+
+_rtsbc_rtdis()
+{
+    local cur prev preprev colonopt
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [[ ${cur} == -* ]] ; then
+            _rtsbc_rtopts ${cur}
+            return 0
+    fi
+
+    case "${prev}" in
+        -i|--id)
+            _rtsbc_conid "${COMP_WORDS[1]}" "${cur}"
+            return 0
+            ;;
+    esac
+
+    # : is treated the same as a space for separating variables
+    # Port completion 1
+    if [[ ${cur} == : ]] ; then
+        colonopt=$(rtcat ${prev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }')
+        COMPREPLY=(${colonopt})
+        return 0
+    fi
+
+    # Port completion 2
+    if [[ ${prev} == : ]] ; then
+        preprev="${COMP_WORDS[COMP_CWORD-2]}"
+        colonopt=`rtcat ${preprev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }'`
+        COMPREPLY=($(compgen -W "${colonopt}" -- ${cur}))
+        return 0
+    fi
+
+    _rtsbc_rtobj "${cur}" port
+    return 0
+}
+
+_rtsbc_get_set_opt_val()
 {
     SET_OPT_VAL="$(grep ' \-s \| \-\-set=' <<< ${COMP_WORDS[@]} | \
         sed 's/.* \(-s \|--set=\)\([a-zA-Z0-9_]\+\).*/\2/')"
     return 0
 }
 
-_check_hidden()
+_rtsbc_check_hidden()
 {
     if $(grep -q ' \-a \| \-\-all ' <<< ${COMP_WORDS[@]})
     then
@@ -213,24 +294,24 @@ _check_hidden()
     return 0
 }
 
-_rtconf_set_name()
+_rtsbc_rtconf_set_name()
 {
     # $1 = path
     # $2 = current word
-    _check_hidden
+    _rtsbc_check_hidden
     local cur=${2#=}
     local setnames=$(rtconf ${1} ${ALL_SETS} 2> /dev/null | sed 's/^+//' | sed 's/*$//')
     COMPREPLY=($(compgen -W "${setnames}" -- ${cur}))
     return 0
 }
 
-_rtconf_param_name()
+_rtsbc_rtconf_param_name()
 {
     # $1 = path
     # $2 = current word
     local params
-    _get_set_opt_val
-    _check_hidden
+    _rtsbc_get_set_opt_val
+    _rtsbc_check_hidden
     if [[ "${SET_OPT_VAL}" == "" ]]; then
         # Param in active set
         params=$(rtconf ${1} ${ALL_SETS} -l 2> /dev/null | \
@@ -245,14 +326,14 @@ _rtconf_param_name()
     return 0
 }
 
-_rtconf_param_val()
+_rtsbc_rtconf_param_val()
 {
     # $1 = path
     # $2 = param
     # $3 = current word
     local val
-    _get_set_opt_val
-    _check_hidden
+    _rtsbc_get_set_opt_val
+    _rtsbc_check_hidden
     if [[ "${SET_OPT_VAL}" == "" ]]; then
         # Param in active set
         val="\"$(rtconf ${1} ${ALL_SETS} get ${2} 2> /dev/null)\""
@@ -265,24 +346,24 @@ _rtconf_param_val()
     return 0
 }
 
-_rtconf_set()
+_rtsbc_rtconf_set()
 {
     local cur set_name
     cur="${COMP_WORDS[COMP_CWORD]}"
 
     case ${COMP_WORDS[COMP_CWORD - 1]} in
         set) # No param yet - complete parameter names
-            _rtconf_param_name "${COMP_WORDS[1]}" "${cur}"
+            _rtsbc_rtconf_param_name "${COMP_WORDS[1]}" "${cur}"
             ;;
         *) # Have a param name - complete value
-            _rtconf_param_val "${COMP_WORDS[1]}" \
+            _rtsbc_rtconf_param_val "${COMP_WORDS[1]}" \
                 "${COMP_WORDS[COMP_CWORD - 1]}" "${cur}"
             ;;
     esac
     return 0
 }
 
-_rtconf()
+_rtsbc_rtconf()
 {
     local cur prev confopts setopt
     COMPREPLY=()
@@ -293,27 +374,27 @@ _rtconf()
 
     if [[ ${prev} == *rtconf ]]
     then
-        _rtobj ${cur}
+        _rtsbc_rtobj ${cur}
         return 0
     fi
 
     if [[ ${cur} == -* ]]
     then
-        _rtopts ${cur}
+        _rtsbc_rtopts ${cur}
         return 0
     fi
 
     case "${prev}" in
         --set|-s)
-            _rtconf_set_name "${COMP_WORDS[1]}" "${cur}"
+            _rtsbc_rtconf_set_name "${COMP_WORDS[1]}" "${cur}"
             return 0
             ;;
         set)
-            _rtconf_set
+            _rtsbc_rtconf_set
             return 0
             ;;
         get)
-            _rtconf_param_name "${COMP_WORDS[1]}" "${cur}"
+            _rtsbc_rtconf_param_name "${COMP_WORDS[1]}" "${cur}"
             return 0
             ;;
         list)
@@ -325,7 +406,7 @@ _rtconf()
         =)
             if [[ "${COMP_WORDS[COMP_CWORD - 2]}" == "--set" ]]
             then
-                _rtconf_set_name "${COMP_WORDS[1]}" "${cur}"
+                _rtsbc_rtconf_set_name "${COMP_WORDS[1]}" "${cur}"
                 return 0
             fi
             ;;
@@ -334,7 +415,7 @@ _rtconf()
             then
                 if [[ "${COMP_WORDS[COMP_CWORD - 2]}" == "set" ]]
                 then
-                    _rtconf_set
+                    _rtsbc_rtconf_set
                     return 0
                 else
                     COMPREPLY=($(compgen -W "${confopts}" -- ${cur}))
@@ -350,7 +431,7 @@ _rtconf()
     return 0
 }
 
-_rtmgr()
+_rtsbc_rtmgr()
 {
     local cur prev mgropts setopt
     COMPREPLY=()
@@ -360,7 +441,7 @@ _rtmgr()
     mgropts="load unload create delete"
 
     if [[ ${cur} == -* ]] ; then
-        _rtopts ${cur}
+        _rtsbc_rtopts ${cur}
         return 0
     fi
 
@@ -379,7 +460,7 @@ _rtmgr()
         create) COMPREPLY=() # No completion
                 return 0
                 ;;
-        delete) _rtobj ${cur} # Complete object name
+        delete) _rtsbc_rtobj ${cur} # Complete object name
                 return 0
                 ;;
         *)      ;;
@@ -388,42 +469,44 @@ _rtmgr()
     return 0
 }
 
-_rtshell(){
+_rtsbc_rtshell(){
     local cur prev
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     if [[ ${cur} == -* ]] ; then
-        _rtopts ${cur}
+        _rtsbc_rtopts ${cur}
         return 0
     fi
 
     return 0
 }
 
-complete -F _rtls rtls
-complete -F _rtls rtact
-complete -F _rtls rtcat
-complete -F _rtls rtcwd
-complete -F _rtls rtdeact
-complete -F _rtls rtexit
-complete -F _rtls rtreset
-complete -F _rtls rtfind
-complete -F _rtls rtdel
+complete -F _rtsbc_rtls rtls
+complete -F _rtsbc_rtls rtact
+complete -F _rtsbc_rtls rtcwd
+complete -F _rtsbc_rtls rtdeact
+complete -F _rtsbc_rtls rtexit
+complete -F _rtsbc_rtls rtreset
+complete -F _rtsbc_rtls rtfind
+complete -F _rtsbc_rtls rtdel
 
-complete -F _rtcon rtcon
-complete -F _rtcon rtdis
-complete -F _rtcon rtprint
-complete -F _rtcon rtinject
+complete -F _rtsbc_rtcon rtcon
+complete -F _rtsbc_rtcon rtprint
+complete -F _rtsbc_rtcon rtinject
 
-complete -F _rtconf rtconf
+complete -F _rtsbc_rtcat rtcat
 
-complete -F _rtmgr -A file rtmgr
+complete -F _rtsbc_rtdis rtdis
 
-complete -F _rtshell -A file rtstart
-complete -F _rtshell -A file rtstop
-complete -F _rtshell -A file rtteardown
-complete -F _rtshell -A file rtresurrect
-complete -F _rtshell -A file rtcryo
+complete -F _rtsbc_rtconf rtconf
+
+complete -F _rtsbc_rtmgr -A file rtmgr
+
+complete -F _rtsbc_rtshell -A file rtstart
+complete -F _rtsbc_rtshell -A file rtstop
+complete -F _rtsbc_rtshell -A file rtteardown
+complete -F _rtsbc_rtshell -A file rtresurrect
+complete -F _rtsbc_rtshell -A file rtcryo
 

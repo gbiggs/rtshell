@@ -24,7 +24,9 @@ rtshell install script.
 
 
 from distutils.command.install_scripts import install_scripts
+from distutils.command.install_data import install_data
 from distutils.core import setup
+import os
 import os.path
 import sys
 
@@ -32,7 +34,6 @@ base_scripts = ['rtact',
                 'rtcat',
                 'rtcon',
                 'rtconf',
-                'rtcwd.py',
                 'rtcryo',
                 'rtdeact',
                 'rtdel',
@@ -75,8 +76,8 @@ if sys.platform == 'win32':
     scripts = base_scripts + batch_files
     data_files = []
 else:
-    scripts = base_scripts + ['rtcwd']
-    data_files = [('share/rtshell', ['bash_completion'])]
+    scripts = base_scripts
+    data_files = [('share/rtshell', ['bash_completion', 'shell_support.in'])]
 
 
 class InstallRename(install_scripts):
@@ -88,6 +89,20 @@ class InstallRename(install_scripts):
             for s in base_scripts:
                 self.move_file(os.path.join(self.install_dir, s),
                                os.path.join(self.install_dir, s + '.py'))
+
+
+class InstallConfigure(install_data):
+    def run(self):
+        install_data.run(self)
+        cmd = 'echo $SHELL | grep -q bash && source {dir}/bash_completion\n'
+        dest = os.path.join(self.install_dir, 'share/rtshell', 'shell_support')
+        if os.path.isfile(dest):
+            os.remove(dest)
+        self.move_file(os.path.join(self.install_dir, 'share/rtshell',
+                'shell_support.in'), dest)
+        with open(dest, 'a') as f:
+            f.writelines((cmd.format(dir=os.path.join(self.install_dir,
+                'share/rtshell')), '\n'))
 
 
 setup(name='rtshell',
@@ -113,7 +128,8 @@ setup(name='rtshell',
       packages=['rtshell'],
       scripts=scripts,
       data_files=data_files,
-      cmdclass={'install_scripts':InstallRename}
+      cmdclass={'install_scripts':InstallRename,
+          'install_data':InstallConfigure}
       )
 
 

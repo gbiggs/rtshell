@@ -60,13 +60,32 @@ object'.format(sys.argv[0], cmd_path)
         port_obj = object.get_port_by_name(port)
         if not port_obj:
             print >>sys.stderr, '{0}: Cannot access {1}: No such \
-    port'.format(sys.argv[0], cmd_path)
+port'.format(sys.argv[0], cmd_path)
             return 1
-        port_obj.disconnect_all()
+        if options.id:
+            conn = port_obj.get_connection_by_id(options.id)
+            if not conn:
+                print >>sys.stderr, '{0}: No connection from {1} with that \
+ID'.format(sys.argv[0], cmd_path)
+                return 1
+            conn.disconnect()
+        else:
+            port_obj.disconnect_all()
     else:
-        # Disconnect all ports
-        object.disconnect_all()
-        pass
+        if options.id:
+            # Hunt through the ports for the connection ID
+            for p in object.ports:
+                conn = p.get_connection_by_id(options.id)
+                if not conn:
+                    continue
+                conn.disconnect()
+                return 0
+            print >>sys.stderr, '{0}: No connection from {1} with that \
+ID'.format(sys.argv[0], cmd_path)
+            return 1
+        else:
+            # Disconnect all ports
+            object.disconnect_all()
 
     return 0
 
@@ -136,11 +155,20 @@ object'.format(sys.argv[0], dest_cmd_path)
 port'.format(sys.argv[0], dest_cmd_path)
         return 1
 
-    conn = source_port_obj.get_connection_by_dest(dest_port_obj)
-    if not conn:
-        print >>sys.stderr, '{0}: No connection between {1} and \
+    if options.id:
+        s_conn = source_port_obj.get_connection_by_id(options.id)
+        d_conn = dest_port_obj.get_connection_by_id(options.id)
+        if not s_conn or not d_conn:
+            print >>sys.stderr, '{0}: No connection between {1} and \
+{2} with that ID'.format(sys.argv[0], source_cmd_path, dest_cmd_path)
+            return 1
+        conn = s_conn
+    else:
+        conn = source_port_obj.get_connection_by_dest(dest_port_obj)
+        if not conn:
+            print >>sys.stderr, '{0}: No connection between {1} and \
 {2}'.format(sys.argv[0], source_cmd_path, dest_cmd_path)
-        return 1
+            return 1
 
     conn.disconnect()
 
@@ -149,13 +177,16 @@ port'.format(sys.argv[0], dest_cmd_path)
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <source path> [destination path]
-Disconnect two ports, or all connections from a component or port.
+Remove a connection between two ports, or all connections from a component or
+port.
 
 ''' + RTSH_PATH_USAGE + '''
 
 Ports are specified at the end of each path, preceeded by a colon (:).'''
     version = RTSH_VERSION
     parser = OptionParser(usage=usage, version=version)
+    parser.add_option('-i', '--id', dest='id', action='store', type='string',
+            default='', help='ID of the connection.')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv

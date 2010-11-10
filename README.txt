@@ -79,22 +79,22 @@ distribution:
 setup.py (see #2), but saves opening a command prompt. You may still need to
 add paths to your environment variables (see step c, above).
 
-Post-install
-------------
+4. In non-Windows operating systems, you must source the shell support file to
+gain full functionaliy. Amongst other things, rtcwd will not work without
+sourcing this file. You can find this file at
+${prefix}/share/rtshell/shell_support (${prefix} is the directory where you
+installed rtshell). You can source it by running the following command
+(assuming rtshell has been installed to /usr/local):
 
-If you are using a bash-compatible shell, source the bash_completion script.
-You can find it in ${prefix}/share/rtshell/ (${prefix} is the directory where
-you installed rtshell). This will allow you to use tab-completion with the
-commands.
+ source /usr/local/share/rtshell/shell_support
 
-In Linux/OSX, source the rtcwd alias. The best way to do this is to add a line
-to your shell's startup file that sources it. For example, if you are using a
-bash shell and installed rtshell to /usr/local, add the following line to the
+So that you don't have to run this command every time you open a terminal, you
+can add it to your shell's startup file. For example, if you are using a bash
+shell and installed rtshell to /usr/local, add the following line to the
 .bashrc file in your home directory:
 
- source /usr/local/bin/rtcwd
+ source /usr/local/share/rtshell/shell_support
 
-On Windows, simply use the rtcwd.bat file directly.
 
 Commands
 --------
@@ -804,6 +804,27 @@ Changelog
 
 3.0
 - Merged rtcshell and rtsshell into a single toolkit.
+- New command: rtexit.
+- New command: rtlog.
+- rtconf bash completion now completes set names, parameter names and values.
+- Merged rtcwd and bash_completion bash files into a single file.
+- Overhauled rtconf command line, added option to get a parameter value
+  directly.
+- Handle zombies properly.
+- Display zombies in rtls.
+- Delete zombies in rtdel (including all zombies found).
+- Support path filters in rtctree to speed up tree creation.
+- rtcat: Option to print a single port's information.
+- rtcat: Changes --ll to -ll.
+- rtcryo: Print RtsProfile to standard output by default.
+- rtdis: Disconnect-by-ID allows removing only one connection.
+- rtinject/rtprint: Added support for user data types.
+- rtprint: Option to exit after receiving one round of data.
+- rtprint: Added support for user-defined formatters.
+- rtprint: Added ability to print raw Python code.
+- rtinject: Accept raw Python input from stdin.
+- Refactored former rtsshell commands into rtshell-style libraries.
+- Added some unit tests.
 
 rtcshell-2.0
 - Fixes for Windows

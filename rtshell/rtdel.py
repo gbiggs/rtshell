@@ -106,9 +106,6 @@ be able to get it back.
 ''' + RTSH_PATH_USAGE
     version = RTSH_VERSION
     parser = OptionParser(usage=usage, version=version)
-    parser.add_option('-d', '--debug', dest='debug', action='store_true',
-            default=False, help='Print debugging information. \
-[Default: %default]')
     parser.add_option('-z', '--zombies', dest='zombies', action='store_true',
             default=False, help='Delete only zombies. [Default: %default]')
 
@@ -117,7 +114,7 @@ be able to get it back.
     try:
         options, args = parser.parse_args()
     except OptionError, e:
-        print 'OptionError:', e
+        print >>sys.stderr, 'OptionError:', e
         return 1
 
     if not args:

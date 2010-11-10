@@ -132,9 +132,6 @@ Equivalent to the UNIX 'find' command.
 ''' + RTSH_PATH_USAGE
     version = RTSH_VERSION
     parser = OptionParser(usage=usage, version=version)
-    parser.add_option('-d', '--debug', dest='debug', action='store_true',
-            default=False, help='Print debugging information. \
-[Default: %default]')
     parser.add_option('--maxdepth', dest='max_depth', action='store',
                       type='int', default=0,
                       help='Maximum depth to search down to in the tree. Set \
@@ -155,7 +152,7 @@ single entry, e.g. "--type dmn".')
     try:
         options, args = parser.parse_args()
     except OptionError, e:
-        print 'OptionError:', e
+        print >>sys.stderr, 'OptionError:', e
         return 1
 
     if len(args) == 1:

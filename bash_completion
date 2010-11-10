@@ -54,29 +54,29 @@ _rtopts()
     local opts complist
 
     case ${COMP_WORDS[0]} in
-        *rtact)     opts="--version -h --help -d --debug -e --exec_context="
+        *rtact)     opts="--version -h --help -e --exec_context="
                     ;;
-        *rtcat)     opts="--version -h --help -l --ll -d --debug"
+        *rtcat)     opts="--version -h --help -l --ll"
                     ;;
         *rtcwd)     opts=""
                     ;;
-        *rtcon)     opts="--version -h --help -d --debug -i --id= -n --name= -p --property="
+        *rtcon)     opts="--version -h --help -i --id= -n --name= -p --property="
                     ;;
-        *rtconf)    opts="--version -h --help -l -d --debug -s --set= -a --all"
+        *rtconf)    opts="--version -h --help -l -s --set= -a --all"
                     ;;
-        *rtdeact)   opts="--version -h --help -d --debug -e --exec_context="
+        *rtdeact)   opts="--version -h --help -e --exec_context="
                     ;;
-        *rtdis)     opts="--version -h --help -d --debug"
+        *rtdis)     opts="--version -h --help"
                     ;;
-        *rtexit)    opts="--version -h --help -d --debug"
+        *rtexit)    opts="--version -h --help"
                     ;;
-        *rtfind)    opts="--version -h --help -d --debug --maxdepth= --iname= --name= --type="
+        *rtfind)    opts="--version -h --help --maxdepth= --iname= --name= --type="
                     ;;
-        *rtls)      opts="--version -h --help -l -d --debug -r --recurse"
+        *rtls)      opts="--version -h --help -l -r --recurse"
                     ;;
-        *rtmgr)     opts="--version -h --help -d --debug"
+        *rtmgr)     opts="--version -h --help"
                     ;;
-        *rtreset)   opts="--version -h --help -d --debug -e --exec_context="
+        *rtreset)   opts="--version -h --help -e --exec_context="
                     ;;
         *rtstart)   opts="--version -h --help --dry-run -v --verbose"
                     ;;
@@ -88,9 +88,9 @@ _rtopts()
                     ;;
         *rtresurrect)    opts="--version -h --help --dry-run -v --verbose"
                     ;;
-        *rtprint)   opts="--version -h --help -d --debug"
+        *rtprint)   opts="--version -h --help"
                     ;;
-        *rtinject)  opts="--version -h --help -d --debug"
+        *rtinject)  opts="--version -h --help"
                     ;;
         *)          ;;
     esac

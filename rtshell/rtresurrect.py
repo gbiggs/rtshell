@@ -234,7 +234,7 @@ The output format can be over-ridden with the --xml or --yaml options.'''
             for a in actions:
                 a(tree)
         except RequiredActionFailedError, e:
-            print e
+            print >>sys.stderr, e
             return 1
     return 0
 

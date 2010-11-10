@@ -108,9 +108,6 @@ A connection will be made to the port using the default connection settings
 compatible with the port.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
-    parser.add_option('-d', '--debug', dest='debug', action='store_true',
-            default=False, help='Print debugging information. \
-[Default: %default]')
     parser.add_option('-m', '--type-mod', dest='type_mods', action='store',
             type='string', default='',
             help='Specify the module containing the data type. This option \
@@ -137,7 +134,7 @@ then stop. Specify -1 for no timeout. This option overrides --number. \
     try:
         options, args = parser.parse_args()
     except optparse.OptionError, e:
-        print 'OptionError:', e
+        print >>sys.stderr, 'OptionError:', e
         return 1
 
     if len(args) < 1:

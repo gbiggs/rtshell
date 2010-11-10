@@ -157,9 +157,6 @@ Other properties may also be valid, depending on your OpenRTM
 implementation.'''
     version = RTSH_VERSION
     parser = OptionParser(usage=usage, version=version)
-    parser.add_option('-d', '--debug', dest='debug', action='store_true',
-            default=False, help='Print debugging information. \
-[Default: %default]')
     parser.add_option('-i', '--id', dest='id', action='store', type='string',
             default='', help='ID of the connection. [Default: %default]')
     parser.add_option('-n', '--name', dest='name', action='store',
@@ -175,7 +172,7 @@ implementation.'''
     try:
         options, args = parser.parse_args()
     except OptionError, e:
-        print 'OptionError:', e
+        print >>sys.stderr, 'OptionError:', e
         return 1
 
     if not getattr(options, 'properties'):

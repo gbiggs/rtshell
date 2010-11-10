@@ -214,7 +214,8 @@ class ActionExecutor(threading.Thread):
             c(*self._args, **self._kwargs)
 
     def _execute_action(self):
-        print 'Executing {0} {1}'.format(self.id_string, self._action)
+        print >>sys.stderr, 'Executing {0} {1}'.format(self.id_string,
+                self._action)
         self._action(*self._args, **self._kwargs)
         self._do_callbacks()
 

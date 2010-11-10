@@ -14,19 +14,14 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-Command file for rtresurrect.
+Built-in formatters for rtprint.
 
 '''
 
 
-import sys
+###############################################################################
+## Python source formatter
 
-from rtshell import rtresurrect
-
-
-if __name__ == '__main__':
-    sys.exit(rtresurrect.main())
-
-
-# vim: tw=79
+def rawpy(data):
+    return data.__repr__()
 

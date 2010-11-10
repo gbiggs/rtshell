@@ -192,7 +192,7 @@ implementation.'''
 
     return connect_ports(source_path, source_full_path,
                          dest_path, dest_full_path,
-                         options, tree)
+                         options, tree=tree)
 
 
 # vim: tw=79

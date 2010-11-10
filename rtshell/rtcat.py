@@ -319,7 +319,7 @@ Equivalent to the POSIX 'cat' command.
     try:
         options, args = parser.parse_args()
     except OptionError, e:
-        print 'OptionError:', e
+        print >>sys.stderr, 'OptionError:', e
         return 1
 
     if options.really_long:
@@ -336,7 +336,7 @@ Equivalent to the POSIX 'cat' command.
         return 1
     full_path = cmd_path_to_full_path(cmd_path)
 
-    return cat_target(cmd_path, full_path, options, tree)
+    return cat_target(cmd_path, full_path, options, tree=tree)
 
 
 # vim: tw=79

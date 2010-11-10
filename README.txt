@@ -807,6 +807,7 @@ Changelog
 - New command: rtexit.
 - New command: rtlog.
 - rtconf bash completion now completes set names, parameter names and values.
+- Merged rtcwd and bash_completion bash files into a single file.
 - Overhauled rtconf command line, added option to get a parameter value
   directly.
 - Handle zombies properly.
@@ -814,6 +815,7 @@ Changelog
 - Delete zombies in rtdel (including all zombies found).
 - Support path filters in rtctree to speed up tree creation.
 - rtcat: Option to print a single port's information.
+- rtcat: Changes --ll to -ll.
 - rtcryo: Print RtsProfile to standard output by default.
 - rtdis: Disconnect-by-ID allows removing only one connection.
 - rtinject/rtprint: Added support for user data types.

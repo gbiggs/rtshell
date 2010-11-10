@@ -32,10 +32,10 @@ from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
 from rtshell.path import cmd_path_to_full_path
 
 
-def format_port(port, comp, use_colour=True, long=False, really_long=False):
+def format_port(port, comp, use_colour=True, long=0):
     result = []
     indent = 2
-    if long:
+    if long > 0:
         tag = '-'
     else:
         tag = '+'
@@ -43,7 +43,7 @@ def format_port(port, comp, use_colour=True, long=False, really_long=False):
             port.name + build_attr_string('reset', supported=use_colour)
     result.append('{0}{1}: {2}'.format(tag.rjust(indent), port.porttype,
                                        name_string))
-    if long:
+    if long > 0:
         indent += 2
         keys = port.properties.keys()
         keys.sort()
@@ -68,7 +68,7 @@ def format_port(port, comp, use_colour=True, long=False, really_long=False):
                 indent -= 2
         num_conns = len(port.connections)
         for conn in port.connections:
-            if really_long:
+            if long > 1:
                 tag2 = '-'
             else:
                 tag2 = '+'
@@ -95,7 +95,7 @@ def format_port(port, comp, use_colour=True, long=False, really_long=False):
                         build_attr_string('bold', supported=use_colour) +\
                         dp + \
                         build_attr_string('reset', supported=use_colour)))
-                if really_long:
+                if long > 1:
                     indent += 2
                     keys = [k for k in conn.properties.keys() \
                             if not k.endswith('inport_ref') \
@@ -122,7 +122,7 @@ def format_port(port, comp, use_colour=True, long=False, really_long=False):
     return result
 
 
-def format_component(object, use_colour=True, long=False, really_long=False):
+def format_component(object, use_colour=True, long=0):
     result = []
     result.append('{0}  {1}'.format(object.name,
             object.get_state_string(add_colour=use_colour)))
@@ -156,7 +156,7 @@ def format_component(object, use_colour=True, long=False, really_long=False):
         indent -= 2
 
     for ec in object.owned_ecs:
-        if long:
+        if long > 0:
             result.append('{0}Execution Context {1}'.format(\
                     '-'.rjust(indent), ec.handle))
             padding = 7 # = len('State') + 2
@@ -173,7 +173,7 @@ def format_component(object, use_colour=True, long=False, really_long=False):
                 result.append('{0}{1}{2}'.format(''.ljust(indent),
                     'Owner'.ljust(padding), ec.owner_name))
             if ec.participant_names:
-                if really_long:
+                if long > 1:
                         result.append('{0}{1}'.format('-'.rjust(indent),
                             'Participants'.ljust(padding)))
                         indent += 2
@@ -185,7 +185,7 @@ def format_component(object, use_colour=True, long=False, really_long=False):
                     result.append('{0}{1}'.format('+'.rjust(indent),
                         'Participants'.ljust(padding)))
             if ec.properties:
-                if really_long:
+                if long > 1:
                     result.append('{0}{1}'.format('-'.rjust(indent),
                         'Extra properties'.ljust(padding)))
                     indent += 2
@@ -205,13 +205,12 @@ def format_component(object, use_colour=True, long=False, really_long=False):
                     '+'.rjust(indent), ec.handle))
 
     for p in object.ports:
-        result += format_port(p, object, use_colour=use_colour, long=long,
-                really_long=really_long)
+        result += format_port(p, object, use_colour=use_colour, long=long)
 
     return result
 
 
-def format_manager(object, use_colour=True, long=False):
+def format_manager(object, use_colour=True, long=0):
     def add_profile_entry(dest, title, key):
         if key in object.profile:
             dest.append('{0}: {1}'.format(title, object.profile[key]))
@@ -290,12 +289,12 @@ component.'.format(sys.argv[0], cmd_path)
 port'.format(sys.argv[0], source_cmd_path)
             return 1
         for l in format_port(p, object, use_colour=sys.stdout.isatty(),
-                long=options.long, really_long=options.really_long):
+                long=options.long):
             print l
     else:
         if object.is_component:
             for l in format_component(object, use_colour=sys.stdout.isatty(),
-                    long=options.long, really_long=options.really_long):
+                    long=options.long):
                 print l
         elif object.is_manager:
             for l in format_manager(object, use_colour=sys.stdout.isatty(),
@@ -321,11 +320,9 @@ Equivalent to the POSIX 'cat' command.
 ''' + RTSH_PATH_USAGE
     version = RTSH_VERSION
     parser = OptionParser(usage=usage, version=version)
-    parser.add_option('-l', dest='long', action='store_true', default=False,
-            help='Show more information. [Default: %default]')
-    parser.add_option('--ll', dest='really_long', action='store_true',
-            default=False, help='Show even more information. Implies -l. \
-[Default: %default]')
+    parser.add_option('-l', dest='long', action='count', default=0,
+            help='Show more information. Specify multiple times for even \
+more information. [Default: False]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
@@ -334,9 +331,6 @@ Equivalent to the POSIX 'cat' command.
     except OptionError, e:
         print >>sys.stderr, 'OptionError:', e
         return 1
-
-    if options.really_long:
-        options.long = True
 
     if not args:
         # If no path given then can't do anything.

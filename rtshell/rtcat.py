@@ -32,6 +32,96 @@ from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
 from rtshell.path import cmd_path_to_full_path
 
 
+def format_port(port, comp, use_colour=True, long=False, really_long=False):
+    result = []
+    indent = 2
+    if long:
+        tag = '-'
+    else:
+        tag = '+'
+    name_string = build_attr_string('bold', supported=use_colour) + \
+            port.name + build_attr_string('reset', supported=use_colour)
+    result.append('{0}{1}: {2}'.format(tag.rjust(indent), port.porttype,
+                                       name_string))
+    if long:
+        indent += 2
+        keys = port.properties.keys()
+        keys.sort()
+        pad_length = max([len(key) for key in keys]) + 2
+        for key in keys:
+            result.append('{0}{1}{2}'.format(''.ljust(indent),
+                    key.ljust(pad_length), port.properties[key]))
+        if port.porttype == 'CorbaPort' and port.interfaces:
+            for intf in port.interfaces:
+                result.append('{0}Interface:'.format(''.ljust(indent)))
+                pad_length = 15 # = len('Instance name') + 2
+                indent += 2
+                result.append('{0}{1}{2}'.format(''.ljust(indent),
+                        'Instance name'.ljust(pad_length),
+                        intf.instance_name))
+                result.append('{0}{1}{2}'.format(''.ljust(indent),
+                        'Type name'.ljust(pad_length),
+                        intf.type_name))
+                result.append('{0}{1}{2}'.format(''.ljust(indent),
+                        'Polarity'.ljust(pad_length),
+                        intf.polarity_as_string(add_colour=use_colour)))
+                indent -= 2
+        num_conns = len(port.connections)
+        for conn in port.connections:
+            if really_long:
+                tag2 = '-'
+            else:
+                tag2 = '+'
+            dest_ports = []
+            for name, p in conn.ports:
+                # Handle the case of unknown port owners
+                if not p:
+                    dest_ports.append(name)
+                    num_conns -= 1
+                # Filter out ports belonging to this comp
+                elif not comp.get_port_by_ref(p.object):
+                    dest_ports.append(name)
+                    num_conns -= 1
+            if dest_ports:
+                result.append('{0}Connected to  {1}'.format(\
+                        tag2.rjust(indent),
+                        build_attr_string('bold', supported=use_colour) +\
+                        dest_ports[0] + \
+                        build_attr_string('reset', supported=use_colour)))
+                if len(dest_ports) > 1:
+                    for dp in dest_ports[1:]:
+                        result.append('{0}{1}{2}'.format(''.ljust(indent),
+                                                         ''.ljust(14),
+                        build_attr_string('bold', supported=use_colour) +\
+                        dp + \
+                        build_attr_string('reset', supported=use_colour)))
+                if really_long:
+                    indent += 2
+                    keys = [k for k in conn.properties.keys() \
+                            if not k.endswith('inport_ref') \
+                            if not k.endswith('inport_ior')]
+                    pad_length = max([len('Name')] + \
+                                     [len(key) for key in keys]) + 2
+                    result.append('{0}{1}{2}'.format(''.ljust(indent),
+                            'Name'.ljust(pad_length), conn.name))
+                    result.append('{0}{1}{2}'.format(''.ljust(indent),
+                            'ID'.ljust(pad_length), conn.id))
+                    for key in keys:
+                        result.append('{0}{1}{2}'.format(''.ljust(indent),
+                                key.ljust(pad_length),
+                                conn.properties[key]))
+                    indent -= 2
+        if num_conns > 0:
+            if num_conns > 1:
+                plural = 's'
+            else:
+                plural = ''
+            result.append('{0}({1} other connection{2})'.format(\
+                    ''.rjust(indent), num_conns, plural))
+        indent -= 2
+    return result
+
+
 def format_component(object, use_colour=True, long=False, really_long=False):
     result = []
     result.append('{0}  {1}'.format(object.name,
@@ -114,91 +204,9 @@ def format_component(object, use_colour=True, long=False, really_long=False):
             result.append('{0}Execution Context {1}'.format(\
                     '+'.rjust(indent), ec.handle))
 
-    for port in object.ports:
-        if long:
-            tag = '-'
-        else:
-            tag = '+'
-        name_string = build_attr_string('bold', supported=use_colour) + \
-                port.name + build_attr_string('reset', supported=use_colour)
-        result.append('{0}{1}: {2}'.format(tag.rjust(indent), port.porttype,
-                                           name_string))
-        if long:
-            indent += 2
-            keys = port.properties.keys()
-            keys.sort()
-            pad_length = max([len(key) for key in keys]) + 2
-            for key in keys:
-                result.append('{0}{1}{2}'.format(''.ljust(indent),
-                        key.ljust(pad_length), port.properties[key]))
-            if port.porttype == 'CorbaPort' and port.interfaces:
-                for intf in port.interfaces:
-                    result.append('{0}Interface:'.format(''.ljust(indent)))
-                    pad_length = 15 # = len('Instance name') + 2
-                    indent += 2
-                    result.append('{0}{1}{2}'.format(''.ljust(indent),
-                            'Instance name'.ljust(pad_length),
-                            intf.instance_name))
-                    result.append('{0}{1}{2}'.format(''.ljust(indent),
-                            'Type name'.ljust(pad_length),
-                            intf.type_name))
-                    result.append('{0}{1}{2}'.format(''.ljust(indent),
-                            'Polarity'.ljust(pad_length),
-                            intf.polarity_as_string(add_colour=use_colour)))
-                    indent -= 2
-            num_conns = len(port.connections)
-            for conn in port.connections:
-                if really_long:
-                    tag2 = '-'
-                else:
-                    tag2 = '+'
-                dest_ports = []
-                for name, p in conn.ports:
-                    # Handle the case of unknown port owners
-                    if not p:
-                        dest_ports.append(name)
-                        num_conns -= 1
-                    # Filter out ports belonging to this object
-                    elif not object.get_port_by_ref(p.object):
-                        dest_ports.append(name)
-                        num_conns -= 1
-                if dest_ports:
-                    result.append('{0}Connected to  {1}'.format(\
-                            tag2.rjust(indent),
-                            build_attr_string('bold', supported=use_colour) +\
-                            dest_ports[0] + \
-                            build_attr_string('reset', supported=use_colour)))
-                    if len(dest_ports) > 1:
-                        for dp in dest_ports[1:]:
-                            result.append('{0}{1}{2}'.format(''.ljust(indent),
-                                                             ''.ljust(14),
-                            build_attr_string('bold', supported=use_colour) +\
-                            dp + \
-                            build_attr_string('reset', supported=use_colour)))
-                    if really_long:
-                        indent += 2
-                        keys = [k for k in conn.properties.keys() \
-                                if not k.endswith('inport_ref') \
-                                if not k.endswith('inport_ior')]
-                        pad_length = max([len('Name')] + \
-                                         [len(key) for key in keys]) + 2
-                        result.append('{0}{1}{2}'.format(''.ljust(indent),
-                                'Name'.ljust(pad_length), conn.name))
-                        result.append('{0}{1}{2}'.format(''.ljust(indent),
-                                'ID'.ljust(pad_length), conn.id))
-                        for key in keys:
-                            result.append('{0}{1}{2}'.format(''.ljust(indent),
-                                    key.ljust(pad_length),
-                                    conn.properties[key]))
-                        indent -= 2
-            if num_conns > 0:
-                if num_conns > 1:
-                    plural = 's'
-                else:
-                    plural = ''
-                result.append('{0}({1} other connection{2})'.format(\
-                        ''.rjust(indent), num_conns, plural))
-            indent -= 2
+    for p in object.ports:
+        result += format_port(p, object, use_colour=use_colour, long=long,
+                really_long=really_long)
 
     return result
 
@@ -253,11 +261,6 @@ def cat_target(cmd_path, full_path, options, tree=None):
     use_colour = sys.stdout.isatty()
 
     path, port = parse_path(full_path)
-    if port:
-        # Can't cat a port
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
 
     trailing_slash = False
     if not path[-1]:
@@ -276,22 +279,35 @@ object'.format(sys.argv[0], cmd_path)
 object.'.format(sys.argv[0], cmd_path)
         return 1
     object = tree.get_node(path)
-    if object.is_component:
-        for l in format_component(object, use_colour=sys.stdout.isatty(),
-                                  long=options.long,
-                                  really_long=options.really_long):
+    if port:
+        if not object.is_component:
+            print >>sys.stderr, '{0}: Cannot access {1}: Not a \
+component.'.format(sys.argv[0], cmd_path)
+            return 1
+        p = object.get_port_by_name(port)
+        if not p:
+            print >>sys.stderr, '{0}: Cannot access {1}: No such \
+port'.format(sys.argv[0], source_cmd_path)
+            return 1
+        for l in format_port(p, object, use_colour=sys.stdout.isatty(),
+                long=options.long, really_long=options.really_long):
             print l
-    elif object.is_manager:
-        for l in format_manager(object, use_colour=sys.stdout.isatty(),
-                                long=options.long):
-            print l
-    elif object.is_zombie:
-        print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
-        return 1
     else:
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
+        if object.is_component:
+            for l in format_component(object, use_colour=sys.stdout.isatty(),
+                    long=options.long, really_long=options.really_long):
+                print l
+        elif object.is_manager:
+            for l in format_manager(object, use_colour=sys.stdout.isatty(),
+                    long=options.long):
+                print l
+        elif object.is_zombie:
+            print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
+            return 1
+        else:
+            print >>sys.stderr, '{0}: Cannot access {1}: No such \
 object.'.format(sys.argv[0], cmd_path)
-        return 1
+            return 1
 
     return 0
 

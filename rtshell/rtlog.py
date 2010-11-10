@@ -133,7 +133,7 @@ then stop. Specify -1 for no timeout. This option overrides --number. \
     try:
         options, args = parser.parse_args()
     except optparse.OptionError, e:
-        print 'OptionError:', e
+        print >>sys.stderr, 'OptionError:', e
         return 1
 
     if len(args) < 1:

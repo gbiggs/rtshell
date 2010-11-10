@@ -113,10 +113,10 @@ class BaseCallback(object):
     def __call__(self, result, err_msg):
         if err_msg:
             if not result:
-                print 'Action failed: ' + err_msg
+                print >>sys.stderr, 'Action failed: ' + err_msg
         else:
             if not result:
-                print 'Action failed.'
+                print >>sys.stderr, 'Action failed.'
 
     def __str__(self):
         return ''
@@ -170,8 +170,9 @@ class CheckForRequiredCompAct(Action):
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print 'Checking for required component {0} with ID "{1}" and \
-instance name "{2}"'.format(self._path_str, self._id, self._instance_name)
+            print >>sys.stderr, 'Checking for required component {0} with ID \
+"{1}" and instance name "{2}"'.format(self._path_str, self._id,
+                    self._instance_name)
         # Check there is a component at the specified path
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
@@ -222,8 +223,8 @@ component at path {1}'.format(self._port_name, self._path_str))
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print 'Checking for required port {0} on component {1}'.format(\
-                    self._port_name, self._path_str)
+            print >>sys.stderr, 'Checking for required port {0} on component \
+{1}'.format(self._port_name, self._path_str)
         # Get the component at the specified path
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
@@ -263,8 +264,8 @@ component at path {1}'.format(self._set, self._path_str))
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print 'Setting configuration set "{0}" active on component \
-{1}'.format(self._set, self._path_str)
+            print >>sys.stderr, 'Setting configuration set "{0}" active on \
+component {1}'.format(self._set, self._path_str)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
             return False, 'Component missing: {0}'.format(self._path_str)
@@ -305,8 +306,9 @@ component at path "{2}" to "{3}"'.format(self._param, self._set,
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print 'Setting parameter "{0}" in set "{1}" on component at path \
-"{2}" to "{3}"'.format(self._param, self._set, self._path_str, self._new_value)
+            print >>sys.stderr, 'Setting parameter "{0}" in set "{1}" on \
+component at path "{2}" to "{3}"'.format(self._param, self._set,
+                    self._path_str, self._new_value)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
             return False, 'Component missing: {0}'.format(self._path_str)
@@ -354,7 +356,7 @@ properties {4}'.format(self._source_path_str, self._source_port,
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print 'Connecting {0}:{1} to {2}:{3}'.format(\
+            print >>sys.stderr, 'Connecting {0}:{1} to {2}:{3}'.format(\
                     self._source_path_str, self._source_port,
                     self._dest_path_str, self._dest_port)
         source_comp = rtctree.get_node(self._source_path)
@@ -407,7 +409,7 @@ class DisconnectPortsAct(Action):
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print 'Disconnecting {0}:{1} from {2}:{3}'.format(\
+            print >>sys.stderr, 'Disconnecting {0}:{1} from {2}:{3}'.format(\
                     self._source_path_str, self._source_port,
                     self._dest_path_str, self._dest_port)
         source_comp = rtctree.get_node(self._source_path)
@@ -487,8 +489,8 @@ class StateChangeAct(Action):
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print '{0} {1} in {2}'.format(self._verbose_str, self._path_str,
-                                          self._ec_id)
+            print >>sys.stderr, '{0} {1} in {2}'.format(self._verbose_str,
+                    self._path_str, self._ec_id)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
             return False, 'Component missing: {0}'.format(self._path_str)

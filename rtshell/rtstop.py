@@ -104,12 +104,12 @@ The output format can be over-ridden with the --xml or --yaml options.'''
         try:
             result = plan.execute(tree)
         except RequiredActionFailedError, e:
-            print e
+            print >>sys.stderr, e
             plan.cancel()
             return 1
         if result:
-            print 'Error executing plan'
-            print result
+            print >>sys.stderr, 'Error executing plan'
+            print >>sys.stderr, result
             return 1
     return 0
 

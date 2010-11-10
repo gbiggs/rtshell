@@ -96,7 +96,7 @@ def base_main(description, action, argv=None, tree=None):
     try:
         options, args = parser.parse_args()
     except OptionError, e:
-        print 'OptionError:', e
+        print >>sys.stderr, 'OptionError:', e
         return 1
 
     if not args:

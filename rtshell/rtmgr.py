@@ -163,7 +163,7 @@ Delete a component instance from the manager, destroying it.
     try:
         options, args = parser.parse_args()
     except OptionError, e:
-        print 'OptionError:', e
+        print >>sys.stderr, 'OptionError:', e
         return 1
 
     if len(args) > 2:

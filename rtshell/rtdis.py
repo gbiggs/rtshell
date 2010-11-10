@@ -165,7 +165,7 @@ Ports are specified at the end of each path, preceeded by a colon (:).'''
     try:
         options, args = parser.parse_args()
     except OptionError, e:
-        print 'OptionError:', e
+        print >>sys.stderr, 'OptionError:', e
         return 1
 
     if len(args) == 1:

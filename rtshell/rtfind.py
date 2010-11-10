@@ -155,7 +155,7 @@ single entry, e.g. "--type dmn".')
     try:
         options, args = parser.parse_args()
     except OptionError, e:
-        print 'OptionError:', e
+        print >>sys.stderr, 'OptionError:', e
         return 1
 
     if len(args) == 1:

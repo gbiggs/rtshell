@@ -87,7 +87,7 @@ Make a component exit, cleaning up its execution contexts and children.
     try:
         options, args = parser.parse_args()
     except OptionError, e:
-        print 'OptionError:', e
+        print >>sys.stderr, 'OptionError:', e
         return 1
 
     if not args:

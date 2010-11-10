@@ -10,7 +10,7 @@ include rtconf
 include rtconf.bat
 include rtcryo
 include rtcryo.bat
-include rtcwd
+include rtcwd.py
 include rtcwd.bat
 include rtdeact
 include rtdeact.bat
@@ -40,3 +40,5 @@ include rtstop
 include rtstop.bat
 include rtteardown
 include rtteardown.bat
+include bash_completion
+include shell_support

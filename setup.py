@@ -74,8 +74,8 @@ if sys.platform == 'win32':
     scripts = base_scripts + batch_files
     data_files = []
 else:
-    scripts = base_scripts + ['rtcwd']
-    data_files = [('share/rtshell', ['bash_completion'])]
+    scripts = base_scripts
+    data_files = [('share/rtshell', ['bash_completion', 'shell_support'])]
 
 
 class InstallRename(install_scripts):

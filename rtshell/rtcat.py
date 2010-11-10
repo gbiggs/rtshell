@@ -310,9 +310,6 @@ Equivalent to the POSIX 'cat' command.
     parser.add_option('--ll', dest='really_long', action='store_true',
             default=False, help='Show even more information. Implies -l. \
 [Default: %default]')
-    parser.add_option('-d', '--debug', dest='debug', action='store_true',
-            default=False, help='Print debugging information. \
-[Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv

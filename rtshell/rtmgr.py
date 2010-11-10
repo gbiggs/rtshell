@@ -154,9 +154,6 @@ Delete a component instance from the manager, destroying it.
 ''' + RTSH_PATH_USAGE
     version = RTSH_VERSION
     parser = OptionParser(usage=usage, version=version)
-    parser.add_option('-d', '--debug', dest='debug', action='store_true',
-            default=False, help='Print debugging information. \
-[Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv

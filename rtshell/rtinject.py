@@ -109,9 +109,6 @@ compatible with the port.'''
             type='string', default='',
             help='The constant value to send, as a Python expression. \
 Required.')
-    parser.add_option('-d', '--debug', dest='debug', action='store_true',
-            default=False, help='Print debugging information. \
-[Default: %default]')
     parser.add_option('-m', '--type-mod', dest='type_mods', action='store',
             type='string', default='',
             help='Specify the module containing the data type. This option \

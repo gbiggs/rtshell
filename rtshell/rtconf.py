@@ -329,9 +329,6 @@ set to activate.
     parser.add_option('-a', '--all', dest='all', action='store_true',
             default=False,
             help='Do not ignore hidden sets. [Default: %default]')
-    parser.add_option('-d', '--debug', dest='debug', action='store_true',
-            default=False,
-            help='Print debugging information. [Default: %default]')
     parser.add_option('-l', dest='long', action='store_true', default=False,
             help='Show more information. [Default: %default]')
     parser.add_option('-s', '--set', dest='set_name', action='store',

@@ -83,9 +83,6 @@ def base_main(description, action, argv=None, tree=None):
 {1}'''.format(description, RTSH_PATH_USAGE)
     version = RTSH_VERSION
     parser = OptionParser(usage=usage, version=version)
-    parser.add_option('-d', '--debug', dest='debug', action='store_true',
-            default=False, help='Print debugging information. \
-[Default: %default]')
     parser.add_option('-e', '--exec_context', dest='ec_index', type='int',
             action='store', default=0,
             help='Index of the execution context to activate within. \

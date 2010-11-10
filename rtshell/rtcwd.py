@@ -76,14 +76,16 @@ object'.format(cmd_path)
     return 0
 
 
-def main(argv):
-    if len(argv) < 2:
+def main(argv=None, tree=None):
+    if argv:
+        sys.argv = [sys.argv[0]] + argv
+    if len(sys.argv) < 2:
         # Change to the root dir
         print '{0} {1}{3}{2}/{2}'.format(SET_CMD, ENV_VAR, QUOTE, EQUALS)
         return 0
     else:
         # Take the first argument only
-        cmd_path = argv[1]
+        cmd_path = sys.argv[1]
 
         if cmd_path == '.' or cmd_path == './':
             # Special case for '.': do nothing
@@ -108,10 +110,6 @@ def main(argv):
 
         full_path = cmd_path_to_full_path(cmd_path)
         return cd(cmd_path, full_path)
-
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv))
 
 
 # vim: tw=79

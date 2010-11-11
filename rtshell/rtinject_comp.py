@@ -19,15 +19,11 @@ Writer component used by rtinject
 '''
 
 
-import eval_const
 import gen_comp
 
 import OpenRTM_aist
 import RTC
-import select
 import sys
-import termios
-import traceback
 
 
 ###############################################################################
@@ -48,33 +44,22 @@ class Writer(gen_comp.GenComp):
 ## From-standard-input writer component for rtinject
 
 class StdinWriter(Writer):
-    def __init__(self, mgr, port_specs, mods=[], *args, **kwargs):
+    def __init__(self, mgr, port_specs, buf=None, mutex=None, *args,
+            **kwargs):
         Writer.__init__(self, mgr, port_specs, *args, **kwargs)
-        self._mods = mods
-        self._input = ''
-        self._val_buffer = []
+        if buf is None:
+            raise ValueError('buf cannot be None.')
+        if mutex is None:
+            raise ValueError('mutex cannot be None.')
+        self._val_buffer = buf
+        self._mutex = mutex
 
     def _behv(self, ec_id):
-        try:
-            self._read_stdin()
+        with self._mutex:
             if self._val_buffer:
                 self._val = self._val_buffer.pop(0)
                 result = Writer._behv(self, ec_id)
                 return result
             else:
                 return RTC.RTC_OK, False
-        except:
-            traceback.print_exc()
-
-    def _read_stdin(self):
-        if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
-            self._input += sys.stdin.read()
-            lines = self._input.split('\n')
-            if len(lines) > 1:
-                self._process_lines(lines[:-1])
-                self._input = lines[-1]
-
-    def _process_lines(self, lines):
-        for l in lines:
-            self._val_buffer.append(eval_const.eval_const(l, self._mods))
 

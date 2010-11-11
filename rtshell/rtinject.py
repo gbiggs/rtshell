@@ -78,29 +78,51 @@ def write_to_ports(raw_paths, options, tree=None):
                 rtinject_comp.Writer, port_specs, event=event, rate=options.rate,
                 max=max, val=val)
     else:
+        buffer = []
+        mutex = threading.RLock()
         comp_name, mgr = comp_mgmt.make_comp('rtinject_writer', tree,
                 rtinject_comp.StdinWriter, port_specs, event=event,
-                rate=options.rate, max=max, mods=mods)
+                rate=options.rate, max=max, buf=buffer, mutex=mutex)
     if options.verbose:
         print >>sys.stderr, 'Created component {0}'.format(comp_name)
     comp = comp_mgmt.find_comp_in_mgr(comp_name, mgr)
     comp_mgmt.connect(comp, port_specs, tree)
     comp_mgmt.activate(comp)
-    try:
-        if options.timeout != -1:
-            event.wait(options.timeout)
-            comp_mgmt.disconnect(comp)
-            comp_mgmt.deactivate(comp)
-        elif options.max != -1:
-            event.wait()
-            comp_mgmt.disconnect(comp)
-            comp_mgmt.deactivate(comp)
-        else:
-            raw_input()
-    except KeyboardInterrupt:
-        pass
-    except EOFError:
-        pass
+    if options.const:
+        try:
+            if options.timeout != -1:
+                event.wait(options.timeout)
+            elif options.max > -1:
+                event.wait()
+            else:
+                raw_input()
+        except KeyboardInterrupt:
+            pass
+        except EOFError:
+            pass
+    else:
+        # Read stdin until we receive max number of values or Ctrl-C is hit
+        val_cnt = 0
+        try:
+            while val_cnt < max or max < 0:
+                l = sys.stdin.readline()
+                if not l:
+                    break
+                if l[0] == '#':
+                    continue
+                val = eval_const.eval_const(l, mods)
+                with mutex:
+                    buffer.append(val)
+                val_cnt += 1
+        except KeyboardInterrupt:
+            pass
+        # Wait until the buffer has been cleared
+        while True:
+            with mutex:
+                if not buffer:
+                    break
+    comp_mgmt.disconnect(comp)
+    comp_mgmt.deactivate(comp)
     tree.give_away_orb()
     del tree
     comp_mgmt.shutdown(mgr)

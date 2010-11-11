@@ -20,8 +20,10 @@ Writer component used by rtinject
 
 
 import gen_comp
+
 import OpenRTM_aist
 import RTC
+import sys
 
 
 ###############################################################################
@@ -36,4 +38,28 @@ class Writer(gen_comp.GenComp):
         for p in self._ports:
             p.port.write(self._val)
         return RTC.RTC_OK, True
+
+
+###############################################################################
+## From-standard-input writer component for rtinject
+
+class StdinWriter(Writer):
+    def __init__(self, mgr, port_specs, buf=None, mutex=None, *args,
+            **kwargs):
+        Writer.__init__(self, mgr, port_specs, *args, **kwargs)
+        if buf is None:
+            raise ValueError('buf cannot be None.')
+        if mutex is None:
+            raise ValueError('mutex cannot be None.')
+        self._val_buffer = buf
+        self._mutex = mutex
+
+    def _behv(self, ec_id):
+        with self._mutex:
+            if self._val_buffer:
+                self._val = self._val_buffer.pop(0)
+                result = Writer._behv(self, ec_id)
+                return result
+            else:
+                return RTC.RTC_OK, False
 

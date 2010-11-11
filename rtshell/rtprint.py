@@ -35,17 +35,16 @@ import path
 import port_types
 import rtprint_comp
 import rtshell
-import user_mods
 
 
 def read_from_ports(raw_paths, options, tree=None):
     event = threading.Event()
 
-    mods = user_mods.load_mods_and_poas(options.type_mods) + \
-            [user_mods.PreloadedModule('RTC', RTC)]
+    evaluator = eval_const.Evaluator()
+    evaluator.load_mods_and_poas(options.type_mods)
     if options.verbose:
         print >>sys.stderr, \
-                'Loaded modules: {0}'.format([str(m) for m in mods])
+                'Loaded modules: {0}'.format(evaluator.loaded_mod_names)
     if options.timeout == -1:
         max = options.max
         if options.verbose:
@@ -59,7 +58,7 @@ def read_from_ports(raw_paths, options, tree=None):
     if not tree:
         paths = [t[0] for t in targets]
         tree = rtctree.tree.create_rtctree(paths=paths, filter=paths)
-    port_specs = port_types.make_port_specs(targets, mods, tree)
+    port_specs = port_types.make_port_specs(targets, evaluator, tree)
     port_types.require_all_input(port_specs)
     if options.verbose:
         print >>sys.stderr, \
@@ -78,7 +77,7 @@ def read_from_ports(raw_paths, options, tree=None):
             event.wait(options.timeout)
             comp_mgmt.disconnect(comp)
             comp_mgmt.deactivate(comp)
-        elif options.max != -1:
+        elif options.max > -1:
             event.wait()
             comp_mgmt.disconnect(comp)
             comp_mgmt.deactivate(comp)

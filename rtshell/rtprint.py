@@ -78,7 +78,7 @@ def read_from_ports(raw_paths, options, tree=None):
             event.wait(options.timeout)
             comp_mgmt.disconnect(comp)
             comp_mgmt.deactivate(comp)
-        elif options.max != -1:
+        elif options.max > -1:
             event.wait()
             comp_mgmt.disconnect(comp)
             comp_mgmt.deactivate(comp)

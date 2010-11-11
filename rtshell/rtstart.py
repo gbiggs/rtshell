@@ -31,7 +31,7 @@ import sys
 
 from rtshell import RTSH_VERSION
 from rtshell.actions import *
-from rtshell.exceptions import RequiredActionFailedError
+from rtshell.rts_exceptions import RequiredActionFailedError
 from rtshell.options import Options
 from rtshell.plan import Plan
 
@@ -97,21 +97,30 @@ If no file is given, the profile is read from standard input.'''
         return 1
     Options().verbose = options.verbose
 
-    if not args:
+    # Load the profile
+    if len(args) == 1:
+        # Read from a file
+        ext = splitext(args[0])[1]
+        # If the extension is yaml, force yaml mode. Otherwise assume XML or
+        # whatever the user set with an option.
+        if ext == '.yaml':
+            options.xml = False
+        with open(args[0]) as f:
+            if options.xml:
+                rtsprofile = RtsProfile(xml_spec=f)
+            else:
+                rtsprofile = RtsProfile(yaml_spec=f)
+    elif not args:
+        # Read from standard input
+        lines = sys.stdin.read()
+        if options.xml:
+            rtsprofile = RtsProfile(xml_spec=lines)
+        else:
+            rtsprofile = RtsProfile(yaml_spec=lines)
+    else:
         print >>sys.stderr, usage
         return 1
 
-    # Load the profile
-    ext = splitext(args[0])[1]
-    if ext == '.xml':
-        options.xml = True
-    elif ext == '.yaml':
-        options.xml = True
-    with open(args[0]) as f:
-        if options.xml:
-            rtsprofile = RtsProfile(xml_spec=f)
-        else:
-            rtsprofile = RtsProfile(yaml_spec=f)
     # Build a list of actions to perform that will start the system
     checks, activates = activate_actions(rtsprofile)
     plan = Plan()

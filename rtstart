@@ -21,11 +21,11 @@ rtstart command program.
 
 import sys
 
-from rtshell import rtprint
+from rtshell import rtstart
 
 
 if __name__ == '__main__':
-    sys.exit(rtprint.main())
+    sys.exit(rtstart.main())
 
 
 # vim: tw=79

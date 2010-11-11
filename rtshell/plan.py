@@ -28,7 +28,7 @@ import time
 from traceback import format_exc, print_stack
 from types import NoneType
 
-from rtshell.exceptions import PrecedingTimeoutError
+from rtshell.rts_exceptions import PrecedingTimeoutError
 
 
 class Counter:

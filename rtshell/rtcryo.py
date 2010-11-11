@@ -192,7 +192,7 @@ The output format can be over-ridden with the --xml or --yaml options.'''
             type='string', default='RTSystem',
             help='Name of the RT System. [Default: %default]')
     parser.add_option('-o', '--output', dest='output', action='store',
-            type='string', default='rtsystem.',
+            type='string', default='-',
             help='Output file name. Specify - for standard out. \
 [Default: standard out]')
     parser.add_option('-v', '--system-version', dest='version', action='store',

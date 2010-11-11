@@ -18,9 +18,11 @@ Function objects for actions that can be performed using rtctree.
 '''
 
 
+import sys
+
 from rtctree.exceptions import NoSuchConfSetError, NoSuchConfParamError
 from rtctree.path import parse_path
-from rtshell.exceptions import RequiredActionFailedError
+from rtshell.rts_exceptions import RequiredActionFailedError
 from rtshell.options import Options
 
 

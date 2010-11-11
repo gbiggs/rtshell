@@ -46,9 +46,14 @@ def write_to_ports(raw_paths, options, tree=None):
     if options.verbose:
         print >>sys.stderr, \
                 'Loaded modules: {0}'.format([str(m) for m in mods])
-    val = eval_const.eval_const(options.const, mods)
-    if options.verbose:
-        print >>sys.stderr, 'Evaluated constant to {0}'.format(val)
+    if options.const:
+        val = eval_const.eval_const(options.const, mods)
+        if options.verbose:
+            print >>sys.stderr, 'Evaluated value to {0}'.format(val)
+    else:
+        if options.verbose:
+            print >>sys.stderr, 'Reading values from stdin.'
+
     if options.timeout == -1:
         max = options.max
         if options.verbose:
@@ -68,9 +73,14 @@ def write_to_ports(raw_paths, options, tree=None):
         print >>sys.stderr, \
                 'Port specifications: {0}'.format([str(p) for p in port_specs])
 
-    comp_name, mgr = comp_mgmt.make_comp('rtinject_writer', tree,
-            rtinject_comp.Writer, port_specs, event=event, rate=options.rate,
-            max=max, val=val)
+    if options.const:
+        comp_name, mgr = comp_mgmt.make_comp('rtinject_writer', tree,
+                rtinject_comp.Writer, port_specs, event=event, rate=options.rate,
+                max=max, val=val)
+    else:
+        comp_name, mgr = comp_mgmt.make_comp('rtinject_writer', tree,
+                rtinject_comp.StdinWriter, port_specs, event=event,
+                rate=options.rate, max=max, mods=mods)
     if options.verbose:
         print >>sys.stderr, 'Created component {0}'.format(comp_name)
     comp = comp_mgmt.find_comp_in_mgr(comp_name, mgr)
@@ -79,16 +89,20 @@ def write_to_ports(raw_paths, options, tree=None):
     try:
         if options.timeout != -1:
             event.wait(options.timeout)
-        else:
+            comp_mgmt.disconnect(comp)
+            comp_mgmt.deactivate(comp)
+        elif options.max != -1:
             event.wait()
+            comp_mgmt.disconnect(comp)
+            comp_mgmt.deactivate(comp)
+        else:
+            raw_input()
     except KeyboardInterrupt:
         pass
     except EOFError:
         pass
     tree.give_away_orb()
     del tree
-    comp_mgmt.disconnect(comp)
-    comp_mgmt.deactivate(comp)
     comp_mgmt.shutdown(mgr)
     return 0
 
@@ -108,7 +122,7 @@ compatible with the port.'''
     parser.add_option('-c', '--const', dest='const', action='store',
             type='string', default='',
             help='The constant value to send, as a Python expression. \
-Required.')
+If not specified, values will be read from standard in.')
     parser.add_option('-m', '--type-mod', dest='type_mods', action='store',
             type='string', default='',
             help='Specify the module containing the data type. This option \

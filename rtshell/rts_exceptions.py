@@ -29,12 +29,12 @@ class RtShellError(Exception):
 
 class RequiredActionFailedError(RtShellError):
     '''Error raised when an action that must succeed fails.'''
-    def __init__(self, *args, **kwargs):
+    def __init__(self, msg, *args, **kwargs):
         super(RequiredActionFailedError, self).__init__(self, *args, **kwargs)
+        self._msg = msg
 
     def __str__(self):
-        return 'Required action failed: ' + \
-                super(RequiredActionFailedError, self).__str__()
+        return 'Required action failed: {0}'.format(self._msg)
 
 
 class NoSuchOptionError(RtShellError):

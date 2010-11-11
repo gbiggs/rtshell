@@ -352,35 +352,68 @@ class ConnectPortsAct(Action):
 
     def __str__(self):
         return self._action_string('Connect {0}:{1} to {2}:{3} with \
-properties {4}'.format(self._source_path_str, self._source_port,
-                self._dest_path_str, self._dest_port,
+ID {4} and properties {5}'.format(self._source_path_str, self._source_port,
+                self._dest_path_str, self._dest_port, self._id,
                 self._properties))
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print >>sys.stderr, 'Connecting {0}:{1} to {2}:{3}'.format(\
-                    self._source_path_str, self._source_port,
-                    self._dest_path_str, self._dest_port)
+            print >>sys.stderr, 'Connect {0}:{1} to {2}:{3} with \
+ID {4} and properties {5}'.format(self._source_path_str, self._source_port,
+                    self._dest_path_str, self._dest_port, self._id,
+                    self._properties)
         source_comp = rtctree.get_node(self._source_path)
         if not source_comp or not source_comp.is_component:
             return False, 'Source component missing: {0}'.format(\
                     self._source_path_str)
-        source_port_obj = source_comp.get_port_by_name(self._source_port)
-        if not source_port_obj:
+        s_port = source_comp.get_port_by_name(self._source_port)
+        if not s_port:
             return False, 'Source port missing: {0}:{1}'.format(\
                     self._source_path_str, self._source_port)
         dest_comp = rtctree.get_node(self._dest_path)
         if not dest_comp or not dest_comp.is_component:
             return False, 'Destination component missing: {0}'.format(\
                     self._dest_path_str)
-        dest_port_obj = dest_comp.get_port_by_name(self._dest_port)
-        if not dest_port_obj:
+        d_port = dest_comp.get_port_by_name(self._dest_port)
+        if not d_port:
             return False, 'Destination port missing: {0}:{1}'.format(\
                     self._dest_path_str, self._dest_port)
 
-        source_port_obj.connect(dest_port_obj, name=self._name, id=self._id,
-                                props=self._properties)
-        return True, None
+        conn = s_port.get_connection_by_id(self._id)
+        if not conn:
+            if d_port.get_connection_by_id(self._id) is None:
+                # No existing connection
+                s_port.connect(d_port, name=self._name, id=self._id,
+                                        props=self._properties)
+                return True, None
+            else:
+                # The destination port has a connection with that ID but
+                # different ports.
+                return False, \
+                    'Destination port has existing connection with ID {0}'.format(
+                            self._id)
+        else:
+            if len(conn.ports) != 2 or not conn.has_port(d_port):
+                # The source port has a connection with that ID but different
+                # ports.
+                return False, \
+                    'Source port has existing connection with ID {0}'.format(
+                            self._id)
+            else:
+                # The connection already exists - check the properties match
+                for k in self._properties:
+                    if self._properties[k] != conn.properties[k]:
+                        return False, \
+                                'Property {0} of existing connection from '\
+                                '{1}:{2} to {3}:{4} with ID {5} does not '\
+                                'match'.format(k, self._source_path_str,
+                                        self._source_port, self._dest_path_str,
+                                        self._dest_port, self._id)
+                if Options().verbose:
+                    print >>sys.stderr, \
+                            'Skipped existing connection with ID {0}'.format(
+                                    self._id)
+                return True, None
 
 
 ###############################################################################
@@ -394,7 +427,7 @@ class DisconnectPortsAct(Action):
     at the specified paths are the correct components.
 
     '''
-    def __init__(self, source_path, source_port, dest_path, dest_port,
+    def __init__(self, source_path, source_port, dest_path, dest_port, id,
                  callbacks=[]):
         super(DisconnectPortsAct, self).__init__(callbacks=callbacks)
         self._source_path_str = source_path
@@ -403,17 +436,19 @@ class DisconnectPortsAct(Action):
         self._dest_path_str = dest_path
         self._dest_path = parse_path(dest_path)[0]
         self._dest_port = dest_port
+        self._id = id
 
     def __str__(self):
-        return self._action_string('Disconnect {0}:{1} from {2}:{3}'.format(\
+        return self._action_string('Disconnect {0}:{1} from {2}:{3} with ID {4}'.format(\
                 self._source_path_str, self._source_port, self._dest_path_str,
-                self._dest_port))
+                self._dest_port, self._id))
 
     def _execute(self, rtctree):
         if Options().verbose:
-            print >>sys.stderr, 'Disconnecting {0}:{1} from {2}:{3}'.format(\
+            print >>sys.stderr, \
+                    'Disconnecting {0}:{1} from {2}:{3} with ID {4}'.format(\
                     self._source_path_str, self._source_port,
-                    self._dest_path_str, self._dest_port)
+                    self._dest_path_str, self._dest_port, self._id)
         source_comp = rtctree.get_node(self._source_path)
         if not source_comp or not source_comp.is_component:
             return False, 'Source component missing: {0}'.format(\
@@ -431,12 +466,15 @@ class DisconnectPortsAct(Action):
             return False, 'Destination port missing: {0}:{1}'.format(\
                     self._dest_path_str, self._dest_port)
 
-        conn = source_port_obj.get_connection_by_dest(dest_port_obj)
-        if not conn:
-            return False, 'No connection between {0}:{1} and {2}:{3}'.format(\
-                    self._source_path_str, self._source_port,
-                    self._dest_path_str, self._dest_port)
-        conn.disconnect()
+        s_conn = source_port_obj.get_connection_by_id(self._id)
+        if not s_conn:
+            return False, 'No connection from {0}:{1} with ID {2}'.format(
+                    self._source_path_str, self._source_port, self._id)
+        d_conn = dest_port_obj.get_connection_by_id(self._id)
+        if not d_conn:
+            return False, 'No connection to {0}:{1} with ID {2}'.format(
+                    self._dest_path_str, self._dest_port, self._id)
+        s_conn.disconnect()
         return True, None
 
 

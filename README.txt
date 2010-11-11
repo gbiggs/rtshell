@@ -823,6 +823,9 @@ Changelog
 - rtprint: Added support for user-defined formatters.
 - rtprint: Added ability to print raw Python code.
 - rtinject: Accept raw Python input from stdin.
+- rtresurrect: Don't recreate existing connections.
+- rtteardown: Fail if the connector ID doesn't match.
+- rtresurrect/rtstart/rtstop/rtteardown: Accept input from standard input.
 - Refactored former rtsshell commands into rtshell-style libraries.
 - Added some unit tests.
 

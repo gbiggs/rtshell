@@ -35,19 +35,19 @@ import path
 import port_types
 import rtinject_comp
 import rtshell
-import user_mods
 
 
 def write_to_ports(raw_paths, options, tree=None):
     event = threading.Event()
 
-    mods = user_mods.load_mods_and_poas(options.type_mods) + \
-            [user_mods.PreloadedModule('RTC', RTC)]
+    evaluator = eval_const.Evaluator()
+    evaluator.load_mods_and_poas(options.type_mods)
     if options.verbose:
         print >>sys.stderr, \
-                'Loaded modules: {0}'.format([str(m) for m in mods])
+                'Loaded modules: {0}'.format(evaluator.loaded_mod_names)
+
     if options.const:
-        val = eval_const.eval_const(options.const, mods)
+        val = evaluator.eval_const(options.const)
         if options.verbose:
             print >>sys.stderr, 'Evaluated value to {0}'.format(val)
     else:
@@ -67,7 +67,7 @@ def write_to_ports(raw_paths, options, tree=None):
     if not tree:
         paths = [t[0] for t in targets]
         tree = rtctree.tree.create_rtctree(paths=paths, filter=paths)
-    port_specs = port_types.make_port_specs(targets, mods, tree)
+    port_specs = port_types.make_port_specs(targets, evaluator, tree)
     port_types.require_all_output(port_specs)
     if options.verbose:
         print >>sys.stderr, \
@@ -110,7 +110,7 @@ def write_to_ports(raw_paths, options, tree=None):
                     break
                 if l[0] == '#':
                     continue
-                val = eval_const.eval_const(l, mods)
+                val = evaluator.eval_const(l)
                 with mutex:
                     buffer.append(val)
                 val_cnt += 1

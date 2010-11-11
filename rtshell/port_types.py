@@ -24,9 +24,8 @@ import re
 import rtctree.path
 
 import comp_mgmt
-import eval_const
+import fmt
 import rts_exceptions
-import user_mods
 
 
 ###############################################################################
@@ -90,7 +89,7 @@ def find_port_cons(class_name, mods):
     The first matching class's constructor is returned.
 
     @param type_name The name of the class to search for.
-    @mods A list of user_mod.Module objects.
+    @mods A list of Module objects.
 
     '''
     for m in mods:
@@ -110,7 +109,7 @@ def find_port_cons(class_name, mods):
     raise rts_exceptions.TypeNotFoundError(class_name)
 
 
-def make_port_specs(ports, mods, tree):
+def make_port_specs(ports, evaluator, tree):
     '''Create a list of PortSpec objects matching the ports given.
 
     The ports are searched for in the given RTCTree, and PortSpec objects are
@@ -122,6 +121,8 @@ def make_port_specs(ports, mods, tree):
     @param ports The paths to the target ports. Each must be a tuple of
                  (path, port, name, formatter) where path is a list of path
                  components in the format used by rtctree.
+    @param evaluator The Evaluator object to use to evaluate the format
+                     expression.
     @param tree An RTCTree to search for the ports in.
 
     '''
@@ -144,7 +145,7 @@ def make_port_specs(ports, mods, tree):
                 mods)
         if form:
             # Look up the formatter in one of the user-provided modules
-            formatter = user_mods.import_formatter(form, mods)
+            formatter = fmt.import_formatter(form, evaluator)
         else:
             formatter = None
         result.append(PortSpec(name, port_cons, (rtc, port), input=input,

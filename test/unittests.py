@@ -21,55 +21,55 @@ Unit tests.
 
 import unittest
 
-import rtsheel.eval_const
-import rtsheel.rts_exceptions
-import rtsheel.port_types
-import rtsheel.user_mods
+import rtshell.eval_const
+import rtshell.rts_exceptions
+import rtshell.port_types
+import rtshell.user_mods
 
 import blorg
 
 
 class TestUserMods(unittest.TestCase):
     def test_load_mods(self):
-        mods = rtsheel.user_mods.load_mods('test_mod1,test_mod2')
+        mods = rtshell.user_mods.load_mods('test_mod1,test_mod2')
         self.assertEqual(len(mods), 2)
         self.assertEqual(mods[0].name, 'test_mod1')
-        self.assertEqual(type(mods[0].mod), type(rtsheel.user_mods))
+        self.assertEqual(type(mods[0].mod), type(rtshell.user_mods))
         self.assertEqual(mods[1].name, 'test_mod2')
-        self.assertEqual(type(mods[1].mod), type(rtsheel.user_mods))
-        self.assertRaises(ImportError, rtsheel.user_mods.load_mods, 'blurgle')
+        self.assertEqual(type(mods[1].mod), type(rtshell.user_mods))
+        self.assertRaises(ImportError, rtshell.user_mods.load_mods, 'blurgle')
 
     def test_load_mods_and_poas(self):
-        mods = rtsheel.user_mods.load_mods_and_poas('test_mod1,test_mod2')
+        mods = rtshell.user_mods.load_mods_and_poas('test_mod1,test_mod2')
         self.assertEqual(len(mods), 4)
         self.assertEqual(mods[0].name, 'test_mod1')
-        self.assertEqual(type(mods[0].mod), type(rtsheel.user_mods))
+        self.assertEqual(type(mods[0].mod), type(rtshell.user_mods))
         self.assertEqual(mods[1].name, 'test_mod1__POA')
-        self.assertEqual(type(mods[1].mod), type(rtsheel.user_mods))
-        self.assertRaises(ImportError, rtsheel.user_mods.load_mods_and_poas,
+        self.assertEqual(type(mods[1].mod), type(rtshell.user_mods))
+        self.assertRaises(ImportError, rtshell.user_mods.load_mods_and_poas,
                 'blorg')
 
 
 class TestEvalConst(unittest.TestCase):
     def setUp(self):
-        self.mods = [rtsheel.user_mods.Module('test_mod1')]
+        self.mods = [rtshell.user_mods.Module('test_mod1')]
         self.const = 'test_mod1.Dummy(4,2)'
 
     def test_replace_mod_name(self):
-        self.assertEqual(rtsheel.eval_const.replace_mod_name(self.const,
+        self.assertEqual(rtshell.eval_const.replace_mod_name(self.const,
             self.mods), 'mods[0].mod.Dummy(4,2)')
 
     def test_replace_time(self):
         const = 'blurgle({time})'
-        self.assert_(len(rtsheel.eval_const.replace_time(const)) > len(const))
+        self.assert_(len(rtshell.eval_const.replace_time(const)) > len(const))
 
     def test_eval_const(self):
         class Data(object):
             def __init__(self, val):
                 self.val = val
 
-        self.assertEqual(rtsheel.eval_const.eval_const('1', self.mods), 1)
-        self.assertEqual(rtsheel.eval_const.eval_const('list((1, 2, 3))',
+        self.assertEqual(rtshell.eval_const.eval_const('1', self.mods), 1)
+        self.assertEqual(rtshell.eval_const.eval_const('list((1, 2, 3))',
             self.mods), [1, 2, 3])
 
 
@@ -85,7 +85,7 @@ class TestParseTargets(unittest.TestCase):
                 None, None)
 
     def test_parse_targets(self):
-        ps = rtsheel.port_types.parse_targets(['/localhost/my.host_cxt/comp0.rtc:input0.namae#blorg.format',
+        ps = rtshell.port_types.parse_targets(['/localhost/my.host_cxt/comp0.rtc:input0.namae#blorg.format',
             '/localhost/my.host_cxt/comp1.rtc:out_put1.namae2',
             '/localhost/my.host_cxt/comp1.rtc:out_put1#blorg.format',
             '/localhost/my.host_cxt/comp0.rtc:input0'])
@@ -93,12 +93,12 @@ class TestParseTargets(unittest.TestCase):
         self.assertEqual(ps[1], self.p2)
         self.assertEqual(ps[2], self.p3)
         self.assertEqual(ps[3], self.p4)
-        self.assertRaises(rtsheel.rts_exceptions.BadPortSpecError,
-                rtsheel.port_types.parse_targets, ['this_is_wrong'])
-        self.assertRaises(rtsheel.rts_exceptions.BadPortSpecError,
-                rtsheel.port_types.parse_targets, ['/localhost/comp0.rtc'])
-        self.assertRaises(rtsheel.rts_exceptions.BadPortSpecError,
-                rtsheel.port_types.parse_targets, [''])
+        self.assertRaises(rtshell.rts_exceptions.BadPortSpecError,
+                rtshell.port_types.parse_targets, ['this_is_wrong'])
+        self.assertRaises(rtshell.rts_exceptions.BadPortSpecError,
+                rtshell.port_types.parse_targets, ['/localhost/comp0.rtc'])
+        self.assertRaises(rtshell.rts_exceptions.BadPortSpecError,
+                rtshell.port_types.parse_targets, [''])
 
 
 if __name__ == '__main__':

@@ -21,7 +21,6 @@ Log writing and reading components used by rtlog
 
 import gen_comp
 import OpenRTM_aist
-import pickle
 import RTC
 import sys
 
@@ -30,15 +29,10 @@ import sys
 ## Log writer component for rtlog
 
 class LogWriter(gen_comp.GenComp):
-    def __init__(self, mgr, port_specs, log_file, text_mode=False,
+    def __init__(self, mgr, port_specs, log, text_mode=False,
             err_out=sys.stderr, *args, **kwargs):
         gen_comp.GenComp.__init__(self, mgr, port_specs, *args, **kwargs)
-        if text_mode:
-            self._log = self._log_text
-        else:
-            self._log = self._log_pickle
-        self._lf = log_file
-        self._tm = text_mode
+        self._lf = log
 
     def _behv(self, ec_id):
         execed = False
@@ -50,6 +44,9 @@ class LogWriter(gen_comp.GenComp):
                 if not self._log(p):
                     result = RTC.RTC_ERROR
         return result, execed
+
+    def _log(self, data):
+        self._lf.write(ts, data)
 
     def _log_text(self, port):
         '''Log the port's data in text format.'''

@@ -40,11 +40,11 @@ import rtshell
 def write_to_ports(raw_paths, options, tree=None):
     event = threading.Event()
 
-    mm = modmgr.ModuleMgr()
+    mm = modmgr.ModuleMgr(verbose=options.verbose)
     mm.load_mods_and_poas(options.modules)
     if options.verbose:
         print >>sys.stderr, \
-                'Loaded modules: {0}'.format(mm.loaded_mod_names)
+                'Pre-loaded modules: {0}'.format(mm.loaded_mod_names)
 
     if options.const:
         val = mm.evaluate(options.const)

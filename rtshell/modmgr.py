@@ -22,7 +22,9 @@ Objects for managing dynamically-loaded modules and evaluating strings.
 import imp
 import inspect
 import OpenRTM_aist
+import re
 import RTC
+import sys
 import time
 
 import rts_exceptions
@@ -72,16 +74,19 @@ class AutoModule(Module):
 ## evaluation of Python expressions
 
 class ModuleMgr(object):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, verbose=False, *args, **kwargs):
         super(ModuleMgr, self).__init__()
-        self._mods = [Module('RTC', mod=RTC)]
+        self._mods = {'RTC': Module('RTC', mod=RTC)}
+        self._verb = verbose
 
-    def evaluate(self, const_expr):
-        repl_const_expr = self._repl_mod_name(self._replace_time(const_expr))
-        print repl_const_expr
-        if not repl_const_expr:
+    def evaluate(self, expr):
+        self._auto_import(expr)
+        repl_expr = self._repl_mod_name(_replace_time(expr))
+        if not repl_expr:
             raise rts_exceptions.EmptyConstExprError
-        const = eval(repl_const_expr)
+        if self._verb:
+            print >>sys.stderr, 'Evaluating expression {0}'.format(repl_expr)
+        const = eval(repl_expr)
         return const
 
     def find_class(self, name):
@@ -92,7 +97,8 @@ class ModuleMgr(object):
         @param name The name of the class to search for.
 
         '''
-        for m in self._mods:
+        self._auto_import(name)
+        for m in self._mods.values():
             types = [member for member in inspect.getmembers(m.mod,
                     inspect.isclass) if member[0] == name]
             if len(types) == 0:
@@ -102,11 +108,19 @@ class ModuleMgr(object):
             else:
                 # Check for the POA module
                 if m.name != 'RTC':
-                    if not [other_m for other_m in self._mods \
+                    if not [other_m for other_m in self._mods.values() \
                             if other_m.name == m.name + '__POA']:
                         raise rts_exceptions.MissingPOAError(m.name)
+                if self._verb:
+                    print >>sys.stderr, 'Found class {0} in module {1}'.format(
+                            name, m.name)
                 return types[0][1]
         raise rts_exceptions.TypeNotFoundError(name)
+
+    def load_mod(self, mod):
+        '''Load a module.'''
+        m = AutoModule(mod)
+        self._mods[mod] = m
 
     def load_mods(self, mods):
         '''Load a list of modules.
@@ -114,7 +128,7 @@ class ModuleMgr(object):
         @param mods The module names, as a list of strings.
 
         '''
-        self._mods += [AutoModule(m) for m in mods]
+        [self.load_mod(m) for m in mods]
 
     def load_mods_and_poas(self, mods):
         '''Load a set of modules and their POA modules.
@@ -123,9 +137,9 @@ class ModuleMgr(object):
 
         '''
         for m in mods:
-            self._mods.append(AutoModule(m))
+            self.load_mod(m)
             try:
-                self._mods.append(AutoModule(m + '__POA'))
+                self.load_mod(m + '__POA')
             except ImportError:
                 print >>sys.stderr, '{0}: Failed to import module {1}'.format(\
                         sys.argv[0], m + '__POA')
@@ -133,27 +147,58 @@ class ModuleMgr(object):
 
     @property
     def loaded_mod_names(self):
-        return [str(m) for m in self._mods]
+        return self._mods.keys()
 
-    def _repl_mod_name(self, string):
+    def _auto_import(self, expr):
+        '''Tries to import all module names found in an expression.
+
+        A failure to import a module will cause a warning, not an error.
+
+        '''
+        names = [m for m in _find_module_names(expr) if m not in self._mods]
+        if self._verb:
+            print >>sys.stderr, 'Automatically importing modules {0}'.format(
+                    names)
+        for n in names:
+            try:
+                self.load_mod(n)
+            except ImportError:
+                print >>sys.stderr, \
+                        '{0}: Warning: failed to import module {1}'.format(
+                                sys.argv[0], n)
+                continue
+            try:
+                self.load_mod(n + '__POA')
+            except ImportError:
+                print >>sys.stderr, \
+                        '{0}: Warning: failed to import module {1}'.format(
+                                sys.argv[0], n + '__POA')
+                continue
+
+    def _repl_mod_name(self, expr):
         '''Replace the name of a module.
 
         Replaces a reference to a module in a string with its reference in
         the modules array.
 
-        @param string The constant string.
-        @param mods A list of Module objects.
-
         '''
         for m in self._mods:
-            if m.name in string:
-                string = string.replace(m.name,
-                        'self._mods[{0}].mod'.format(self._mods.index(m)))
-        return string
+            if m in expr:
+                expr = expr.replace(m, 'self._mods["{0}"].mod'.format(m))
+        return expr
 
-    def _replace_time(self, const):
-        '''Replaces any occurances with {time} with the system time.'''
-        now = time.time()
-        sys_time = RTC.Time(int(now), int((now - int(now)) * 1e9))
-        return const.format(time=sys_time)
+
+###############################################################################
+## Internal support functions
+
+def _replace_time(expr):
+    '''Replaces any occurances with {time} with the system time.'''
+    now = time.time()
+    sys_time = RTC.Time(int(now), int((now - int(now)) * 1e9))
+    return expr.format(time=sys_time)
+
+
+def _find_module_names(expr):
+    '''Finds all potential module names in an expression.'''
+    return re.findall(r'(?P<mod>[a-zA-Z][\w.]*)+\.[a-zA-Z]', expr)
 

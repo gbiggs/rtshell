@@ -41,7 +41,7 @@ def read_from_ports(raw_paths, options, tree=None):
     event = threading.Event()
 
     mm = modmgr.ModuleMgr()
-    mm.load_mods_and_poas(options.type_mods)
+    mm.load_mods_and_poas(options.modules)
     if options.verbose:
         print >>sys.stderr, \
                 'Loaded modules: {0}'.format(mm.loaded_mod_names)
@@ -107,11 +107,11 @@ A connection will be made to the port using the default connection settings
 compatible with the port.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
-    parser.add_option('-m', '--type-mod', dest='type_mods', action='store',
-            type='string', default='',
-            help='Specify the module containing the data type. This option \
-must be supplied if the data type is not defined in the RTC modules supplied \
-with OpenRTM-aist. This module and the __POA module will both be imported.')
+    parser.add_option('-m', '--mod', dest='modules', action='append',
+            type='string', default=[],
+            help='Extra modules to import. If automatic module loading '\
+            'struggles with your data types, try listing the modules here. '\
+            'The module and its __POA partner will be imported.')
     parser.add_option('-n', '--number', dest='max', action='store',
             type='int', default='-1',
             help='Specify the number of times to read from any ports. \

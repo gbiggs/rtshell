@@ -111,26 +111,18 @@ class ModuleMgr(object):
     def load_mods(self, mods):
         '''Load a list of modules.
 
-        @param mods The module names, a list of strings or a single
-                    comma-separated string of names.
+        @param mods The module names, as a list of strings.
 
         '''
-        if type(mods) == list:
-            self._mods += [AutoModule(m) for m in mods]
-        elif type(mods) == str:
-            self._mods += [AutoModule(m) for m in mods.split(',') if m]
-        else:
-            raise TypeError
+        self._mods += [AutoModule(m) for m in mods]
 
     def load_mods_and_poas(self, mods):
         '''Load a set of modules and their POA modules.
 
-        @param mods The module names, as a comma-separated string.
+        @param mods The module names, as a list of strings.
 
         '''
-        for m in mods.split(','):
-            if not m:
-                continue
+        for m in mods:
             self._mods.append(AutoModule(m))
             try:
                 self._mods.append(AutoModule(m + '__POA'))

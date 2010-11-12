@@ -14,11 +14,13 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-Functions for evaluating constants provided as strings.
+Objects for managing dynamically-loaded modules and evaluating strings.
 
 '''
 
 
+import imp
+import inspect
 import OpenRTM_aist
 import RTC
 import time
@@ -30,11 +32,10 @@ import rts_exceptions
 ## Module class - stores a dynamically imported module.
 
 class Module(object):
-    def __init__(self, name, *args, **kwargs):
+    def __init__(self, name, mod=None, *args, **kwargs):
         super(Module, self).__init__()
         self._name = name
-        self._mod = None
-        self._load_mod()
+        self._mod = mod
 
     def __str__(self):
         return '{0}: {1}'.format(self._name, self._mod)
@@ -60,20 +61,52 @@ class Module(object):
                 f.close()
 
 
-###############################################################################
-## Evaluator class - keeps track of loaded extra modules.
+class AutoModule(Module):
+    def __init__(self, name, *args, **kwargs):
+        super(AutoModule, self).__init__(name, *args, **kwargs)
+        self._load_mod()
 
-class Evaluator(object):
+
+###############################################################################
+## ModuleMgr class - keeps track of loaded extra modules and provides
+## evaluation of Python expressions
+
+class ModuleMgr(object):
     def __init__(self, *args, **kwargs):
-        super(Evaluator, self).__init__()
-        self._mods = []
+        super(ModuleMgr, self).__init__()
+        self._mods = [Module('RTC', mod=RTC)]
 
     def evaluate(self, const_expr):
-        repl_const_expr = self.repl_mod_name(replace_time(const_expr))
+        repl_const_expr = self._repl_mod_name(self._replace_time(const_expr))
+        print repl_const_expr
         if not repl_const_expr:
             raise rts_exceptions.EmptyConstExprError
         const = eval(repl_const_expr)
         return const
+
+    def find_class(self, name):
+        '''Find a class constructor in one of the modules.
+
+        The first matching class's constructor will be returned.
+
+        @param name The name of the class to search for.
+
+        '''
+        for m in self._mods:
+            types = [member for member in inspect.getmembers(m.mod,
+                    inspect.isclass) if member[0] == name]
+            if len(types) == 0:
+                continue
+            elif len(types) != 1:
+                raise rts_exceptions.AmbiguousTypeError(type_name)
+            else:
+                # Check for the POA module
+                if m.name != 'RTC':
+                    if not [other_m for other_m in self._mods \
+                            if other_m.name == m.name + '__POA']:
+                        raise rts_exceptions.MissingPOAError(m.name)
+                return types[0][1]
+        raise rts_exceptions.TypeNotFoundError(name)
 
     def load_mods(self, mods):
         '''Load a list of modules.
@@ -83,9 +116,9 @@ class Evaluator(object):
 
         '''
         if type(mods) == list:
-            self._mods += [Module(m) for m in mods]
+            self._mods += [AutoModule(m) for m in mods]
         elif type(mods) == str:
-            self._mods += [Module(m) for m in mods.split(',') if m]
+            self._mods += [AutoModule(m) for m in mods.split(',') if m]
         else:
             raise TypeError
 
@@ -98,9 +131,9 @@ class Evaluator(object):
         for m in mods.split(','):
             if not m:
                 continue
-            self._mods.append(Module(m))
+            self._mods.append(AutoModule(m))
             try:
-                self._mods.append(Module(m + '__POA'))
+                self._mods.append(AutoModule(m + '__POA'))
             except ImportError:
                 print >>sys.stderr, '{0}: Failed to import module {1}'.format(\
                         sys.argv[0], m + '__POA')
@@ -123,7 +156,7 @@ class Evaluator(object):
         for m in self._mods:
             if m.name in string:
                 string = string.replace(m.name,
-                        'self._mods[{0}].mod'.format(mods.index(m)))
+                        'self._mods[{0}].mod'.format(self._mods.index(m)))
         return string
 
     def _replace_time(self, const):

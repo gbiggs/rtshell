@@ -19,7 +19,6 @@ Classes and functions for managing port types.
 '''
 
 
-import inspect
 import re
 import rtctree.path
 
@@ -83,33 +82,7 @@ class PortSpec(object):
 ###############################################################################
 ## Functions for building port specifications.
 
-def find_port_cons(class_name, mods):
-    '''Search for a class in a list of modules and return its constructor.
-
-    The first matching class's constructor is returned.
-
-    @param type_name The name of the class to search for.
-    @mods A list of Module objects.
-
-    '''
-    for m in mods:
-        types = [member for member in inspect.getmembers(m.mod, 
-            inspect.isclass) if member[0] == class_name]
-        if len(types) == 0:
-            continue
-        elif len(types) != 1:
-            raise rts_exceptions.AmbiguousTypeError(type_name)
-        else:
-            # Check for the POA module
-            if m.name != 'RTC':
-                if not [other_m for other_m in mods \
-                        if other_m.name == m.name + '__POA']:
-                    raise rts_exceptions.MissingPOAError(m.name)
-            return types[0][1]
-    raise rts_exceptions.TypeNotFoundError(class_name)
-
-
-def make_port_specs(ports, evaluator, tree):
+def make_port_specs(ports, modmgr, tree):
     '''Create a list of PortSpec objects matching the ports given.
 
     The ports are searched for in the given RTCTree, and PortSpec objects are
@@ -121,8 +94,8 @@ def make_port_specs(ports, evaluator, tree):
     @param ports The paths to the target ports. Each must be a tuple of
                  (path, port, name, formatter) where path is a list of path
                  components in the format used by rtctree.
-    @param evaluator The Evaluator object to use to evaluate the format
-                     expression.
+    @param modmgr The ModuleMgr object to use to evaluate the format
+                  expression.
     @param tree An RTCTree to search for the ports in.
 
     '''
@@ -141,11 +114,10 @@ def make_port_specs(ports, evaluator, tree):
                 name = 'input{0}'.format(index)
             else:
                 name = 'output{0}'.format(index)
-        port_cons = find_port_cons(port_obj.properties['dataport.data_type'],
-                mods)
+        port_cons = modmgr.find_class(port_obj.properties['dataport.data_type'])
         if form:
             # Look up the formatter in one of the user-provided modules
-            formatter = fmt.import_formatter(form, evaluator)
+            formatter = fmt.import_formatter(form, modmgr)
         else:
             formatter = None
         result.append(PortSpec(name, port_cons, (rtc, port), input=input,

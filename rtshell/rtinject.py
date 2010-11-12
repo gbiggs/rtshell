@@ -30,7 +30,7 @@ import time
 import traceback
 
 import comp_mgmt
-import eval_const
+import modmgr
 import path
 import port_types
 import rtinject_comp
@@ -40,14 +40,14 @@ import rtshell
 def write_to_ports(raw_paths, options, tree=None):
     event = threading.Event()
 
-    evaluator = eval_const.Evaluator()
-    evaluator.load_mods_and_poas(options.type_mods)
+    mm = modmgr.ModuleMgr()
+    mm.load_mods_and_poas(options.type_mods)
     if options.verbose:
         print >>sys.stderr, \
-                'Loaded modules: {0}'.format(evaluator.loaded_mod_names)
+                'Loaded modules: {0}'.format(mm.loaded_mod_names)
 
     if options.const:
-        val = evaluator.eval_const(options.const)
+        val = mm.evaluate(options.const)
         if options.verbose:
             print >>sys.stderr, 'Evaluated value to {0}'.format(val)
     else:
@@ -67,7 +67,7 @@ def write_to_ports(raw_paths, options, tree=None):
     if not tree:
         paths = [t[0] for t in targets]
         tree = rtctree.tree.create_rtctree(paths=paths, filter=paths)
-    port_specs = port_types.make_port_specs(targets, evaluator, tree)
+    port_specs = port_types.make_port_specs(targets, mm, tree)
     port_types.require_all_output(port_specs)
     if options.verbose:
         print >>sys.stderr, \
@@ -110,7 +110,7 @@ def write_to_ports(raw_paths, options, tree=None):
                     break
                 if l[0] == '#':
                     continue
-                val = evaluator.eval_const(l)
+                val = mm.evaluate(l)
                 with mutex:
                     buffer.append(val)
                 val_cnt += 1
@@ -182,6 +182,8 @@ then stop. Specify -1 for no timeout. This option overrides --number. \
         write_to_ports([path.cmd_path_to_full_path(p) \
                 for p in args], options, tree=tree)
     except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
         print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
         return 1
     return 0

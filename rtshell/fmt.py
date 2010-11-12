@@ -29,7 +29,7 @@ def rawpy(data):
 ###############################################################################
 ## Formatter importer
 
-def import_formatter(form, evaluator):
+def import_formatter(form, modmgr):
     '''Import a formatter.
 
     This function attempts to evaluate an expression specifying a function
@@ -37,15 +37,14 @@ def import_formatter(form, evaluator):
     must receive one positional argument, which is the data to format.
 
     @param form The formatter expression.
-    @param evaluator The evaluator (with loaded modules) to use to evaluate
-                     @ref form.
+    @param modmgr The module manager to use to evaluate @ref form.
 
     '''
     # Special case for internal formatters: replace 'rtshell' with 'fmt'
     if form.startswith('rtshell.'):
         form_rpl = 'fmt.' + form[8:]
     try:
-        form_fun = evaluator.evaluate(form_rpl)
+        form_fun = modmgr.evaluate(form_rpl)
     except Exception, e:
         raise rts_exceptions.ImportFormatterError(e)
     # Check if the formatter is a function

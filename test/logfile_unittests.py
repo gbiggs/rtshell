@@ -14,25 +14,17 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-Unit tests for the log file classes
+Unit tests for the log classes
 
 '''
 
 
 import os
 import os.path
+import sys
 import unittest
 
 import rtshell.simpkl_log
-
-
-# Test writing a complete file (write 10 entries or so)
-# Test reading them all back, in order
-# Test backing up
-# Test backing up at the start of the file
-# Test backing up at the end of the file
-# Test iterator (for entry in log:)
-# Test with statement
 
 
 METADATA=[1, 'lot', 'of', ('meta', 'data')]
@@ -49,7 +41,6 @@ class WriteBase(unittest.TestCase):
                 meta=METADATA, verbose=True)
 
     def tearDown(self):
-        self.log.finalise()
         self.log.close()
         if os.path.isfile(os.path.join(os.getcwd(), 'test.log')):
             os.remove(os.path.join(os.getcwd(), 'test.log'))
@@ -57,43 +48,66 @@ class WriteBase(unittest.TestCase):
 
 class ReadBase(unittest.TestCase):
     def setUp(self):
+        self.write_test_log()
         self.log = log_class(filename='test.log', mode='r',
                 meta=METADATA, verbose=True)
-        self.write_test_log()
 
     def tearDown(self):
-        self.log.finalise()
         self.log.close()
         if os.path.isfile(os.path.join(os.getcwd(), 'test.log')):
             os.remove(os.path.join(os.getcwd(), 'test.log'))
 
     def write_test_log(self):
+        log = log_class(filename='test.log', mode='w', meta=METADATA,
+                verbose=True)
         for t, d in zip(TIMESTAMPS, DATA):
-            self.log.write(t, d)
+            log.write(t, d)
+        log.close()
 
 
 class WriteTests(WriteBase):
-    pass
+    def test_write(self):
+        print >>sys.stderr, '===== write ====='
+        for t, d in zip(TIMESTAMPS, DATA):
+            self.log.write(t, d)
 
 
 class ReadTests(ReadBase):
-    pass
+# Test reading them all back, in order
+# Test backing up
+# Test backing up at the start of the file
+# Test backing up at the end of the file
+# Test rewinding
+# Test shifting at various points in the file.
+
+    def test_read_whole_log(self):
+        print >>sys.stderr, '===== read_whole_log ====='
+        for ii in range(10):
+            ind, ts, d = self.log.read()[0]
+            self.assertEqual(ind, ii + 1)
+            self.assertEqual(ts, TIMESTAMPS[ii])
+            self.assertEqual(d, DATA[ii])
+            self.assertEqual(self.log.pos, (ii + 1, TIMESTAMPS[ii]))
+        self.assert_(not self.log.eof)
+        self.assertEqual(self.log.read(), [])
+        self.assert_(self.log.eof)
 
 
 class OtherTests(unittest.TestCase):
+# Test iterator (for entry in log:)
+# Test with statement
     def make_log(self):
-        self.log = log_class(filename='test.log', mode='r',
+        self.log = log_class(filename='test.log', mode='w',
                 meta=METADATA, verbose=True)
         for t, d in zip(TIMESTAMPS, DATA):
             self.log.write(t, d)
-        self.log.finalise()
         self.log.close()
 
     def test_with(self):
-        pass
+        print >>sys.stderr, '===== with ====='
 
     def test_iterator(self):
-        pass
+        print >>sys.stderr, '===== iterator ====='
 
 
 def write_suite():

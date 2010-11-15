@@ -14,31 +14,36 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-Log file interface.
+Log interface.
 
 '''
 
 
+import sys
+
+
 ###############################################################################
-## Log file exceptions.
+## Log exceptions.
 
 class EndOfLogError(EOFError):
-    '''The end of the log file has been reached while reading.'''
+    '''The end of the log has been reached while reading.'''
     pass
 
 
 ###############################################################################
-## Log file interface. All loggers must conform to this.
+## Log interface. All loggers must conform to this.
 
-class LogFile(object):
+class Log(object):
     def __init__(self, mode='r', meta=None, verbose=False, *args, **kwargs):
         '''Base constructor.
 
-        @param filename The name of the log file.
+        The log will be opened on construction. It should be closed manually,
+        as Python does not guarantee that __del__() will be called.
+
         @param mode Permissions. Specificy 'r' for read, 'w' for write or 'rw'
-                    for read/write. Not all log files support all permissions.
+                    for read/write. Not all logs support all permissions.
                     Read/write permissions are particularly uncommon.
-        @param meta A block of data to write into the log file. Implementations
+        @param meta A block of data to write into the log. Implementations
                     are free to deal with this any way they wish, as long as it
                     can be retrieved in read mode. However, there is no
                     requirement that it can be changed after opening the log
@@ -46,20 +51,21 @@ class LogFile(object):
         @param verbose Print verbose output to stderr.
 
         '''
-        super(LogFile, self).__init__(self)
+        super(Log, self).__init__()
         self._mode = mode
         self._meta = meta
         self._vb = verbose
         self._eof = False
+        self.open()
+
+    def __del__(self):
+        self.close()
 
     def __enter__(self):
-        self.open()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type == None:
-            self._finalise()
-        self.close()
+        self.close(finalise=(exc_type == None))
         return False
 
     def __iter__(self):
@@ -72,11 +78,11 @@ class LogFile(object):
         return res
 
     def __str__(self):
-        return 'Log file interface object.'
+        return 'Log interface object.'
 
     @property
     def end(self):
-        '''The position of the final entry in the log file.
+        '''The position of the final entry in the log.
 
         A tuple of (index, timestamp).
 
@@ -85,12 +91,12 @@ class LogFile(object):
 
     @property
     def eof(self):
-        '''True if the log file has reached the end.'''
+        '''True if the log has reached the end.'''
         return self._eof
 
     @property
     def metadata(self):
-        '''Return the metadata from the log file (if any).'''
+        '''Return the metadata from the log (if any).'''
         return self._meta
 
     @metadata.setter
@@ -99,17 +105,17 @@ class LogFile(object):
 
     @property
     def mode(self):
-        '''The mode of the log file.'''
+        '''The mode of the log.'''
         return self._mode
 
     @property
     def name(self):
-        '''The name of the log file.'''
+        '''The name of the log.'''
         return self._name
 
     @property
-    def position(self):
-        '''The current position in the log file.
+    def pos(self):
+        '''The current position in the log.
 
         A tuple of (index, timestamp).
 
@@ -121,7 +127,7 @@ class LogFile(object):
 
     @property
     def start(self):
-        '''The position of the first entry in the log file.
+        '''The position of the first entry in the log.
 
         A tuple of (index, timestamp).
 
@@ -129,34 +135,37 @@ class LogFile(object):
         return self._get_start()
 
     def open(self):
-        '''Opens the log file.'''
+        '''Opens the log.'''
         pass
 
     def finalise(self):
-        '''Prepare the log file to be closed.
+        '''Prepare the log to be closed.
 
-        Any cleaning up that needs to be done before closing the log file should
+        Any cleaning up that needs to be done before closing the log should
         be done here.
 
-        This function is meant to be called just before closing the log file.
+        This function is called just before closing the log by @ref close.
         If using the context manager statement (the 'with' statement), it will
-        be called automatically before @ref close is called, unless an exception
-        has occured.
+        be called automatically, unless an exception has occured.
 
-        It is not required for objects implementing the LogFile interface to
+        It is not required for objects implementing the Log interface to
         implement this function.
 
         '''
         pass
 
-    def close(self):
-        '''Closes the log file.
+    def close(self, finalise=True):
+        '''Closes the log.
+
+        @param finalise Whether the log should be finalised before closing.
+                        Defaults to True.
 
         '''
-        pass
+        if finalise:
+            self.finalise()
 
     def write(self, timestamp, data):
-        '''Writes an entry to the log file.
+        '''Writes an entry to the log.
 
         The timestamp is necessary to allow reading back data at the
         same rate as it was recorded. It must be an object that
@@ -166,7 +175,7 @@ class LogFile(object):
         raise NotImplementedError
 
     def read(self, time_limit=None, number=None):
-        '''Read entries from the log file.
+        '''Read entries from the log.
 
         If a time limit is given, all entries until that time limit is
         reached will be read.
@@ -185,11 +194,11 @@ class LogFile(object):
         raise NotImplementedError
 
     def rewind(self):
-        '''Rewind the log file to the first entry.'''
+        '''Rewind the log to the first entry.'''
         self._eof = False
 
     def shift(self, timestamp=None, index=None):
-        '''Rewind or fast-forward the log file.
+        '''Rewind or fast-forward the log.
 
         If the timestamp or index is earlier than the current position, the log
         will be rewound. If it is later, the log will be fast-forwarded.
@@ -233,4 +242,9 @@ class LogFile(object):
 
         '''
         raise NotImplementedError
+
+    def _vb_print(self, string):
+        '''Print verbose information when self._vb is True.'''
+        if self._vb:
+            print >>sys.stderr, string
 

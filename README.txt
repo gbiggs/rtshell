@@ -804,8 +804,9 @@ Changelog
 
 3.0
 - Merged rtcshell and rtsshell into a single toolkit.
-- New command: rtexit.
-- New command: rtlog.
+- New command: rtexit (Make a component exit).
+- New command: rtlog (Log and replay data streams).
+- New command: rtcheck (Check a system matches an RtsProfile file).
 - rtconf bash completion now completes set names, parameter names and values.
 - Merged rtcwd and bash_completion bash files into a single file.
 - Overhauled rtconf command line, added option to get a parameter value

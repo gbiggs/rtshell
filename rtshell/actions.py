@@ -109,7 +109,7 @@ class BaseCallback(object):
     - An error message to optionally be printed on failure. None if no message.
 
     '''
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super(BaseCallback, self).__init__()
 
     def __call__(self, result, err_msg):
@@ -134,8 +134,8 @@ class RequiredActionCB(BaseCallback):
     action failed.
 
     '''
-    def __init__(self):
-        super(RequiredActionCB, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(RequiredActionCB, self).__init__(*args, **kwargs)
 
     def __call__(self, result, err_msg):
         if not result:
@@ -240,6 +240,45 @@ component at path {1}'.format(self._port_name, self._path_str))
 
 
 ###############################################################################
+## Check the active configuration set of a component.
+
+class CheckActiveConfigSetAct(Action):
+    '''Checks if a configuration set is active in a component.
+
+    This action checks if the active configuration set of a component is as
+    expected. It will check if the set exists first; if no such set exists,
+    the action will fail.
+
+    This action will not fail if the specified component does not exist or is
+    incorrect. To cause an abort in these situations, use @ref
+    CheckForRequiredCompAct.
+
+    '''
+    def __init__(self, path_str, set, callbacks=[]):
+        super(CheckActiveConfigSetAct, self).__init__(callbacks=callbacks)
+        self._path_str = path_str
+        self._path = parse_path(path_str)[0]
+        self._set = str(set) # Cannot send unicode strings to CORBA
+
+    def __str__(self):
+        return self._action_string('Check configuration set "{0}" is active '\
+                'on component {1}'.format(self._set, self._path_str))
+
+    def _execute(self, rtctree):
+        if Options().verbose:
+            print >>sys.stderr, 'Checking configuration set "{0}" is active '\
+                    'on component {1}'.format(self._set, self._path_str)
+        comp = rtctree.get_node(self._path)
+        if not comp or not comp.is_component:
+            return False, 'Component missing: {0}'.format(self._path_str)
+        if comp.active_conf_set_name != self._set:
+            return False, 'Wrong configuration set is active on {0} '\
+                    '(Active set: {1})'.format(self._path_str,
+                            comp.active_conf_set_name)
+        return True, None
+
+
+###############################################################################
 ## Set the active configuration set of a component
 
 class SetActiveConfigSetAct(Action):
@@ -275,6 +314,54 @@ component {1}'.format(self._set, self._path_str)
             comp.activate_conf_set(self._set)
         except NoSuchConfSetError:
             return False, 'Invalid configuration set: {0}'.format(self._set)
+        return True, None
+
+
+###############################################################################
+## Set a configuration parameter in a configuration set
+
+class CheckConfigParamAct(Action):
+    '''Check the value of a configuration parameter.
+
+    This action checks that the value of a configuration parameter is correct.
+    It will fail if the set or the parameter does not exist.
+
+    This action will not fail if the specified component does not exist or is
+    incorrect. To cause an abort in these situations, use @ref
+    CheckForRequiredCompAct.
+
+    '''
+    def __init__(self, path_str, set, param, value, callbacks=[]):
+        super(CheckConfigParamAct, self).__init__(callbacks=callbacks)
+        self._path_str = path_str
+        self._path = parse_path(path_str)[0]
+        self._set = str(set) # Cannot send unicode strings to CORBA
+        self._param = str(param)
+        self._value = str(value)
+
+    def __str__(self):
+        return self._action_string('Check parameter "{0}" in set "{1}" on '\
+                'component at path "{2}" is "{3}"'.format(self._param,
+                    self._set, self._path_str, self._value))
+
+    def _execute(self, rtctree):
+        if Options().verbose:
+            print >>sys.stderr, 'Checking parameter "{0}" in set "{1}" on '\
+                    'component "{2}" is "{3}"'.format(self._param, self._set,
+                            self._path_str, self._value)
+        comp = rtctree.get_node(self._path)
+        if not comp or not comp.is_component:
+            return False, 'Component missing: {0}'.format(self._path_str)
+        if not self._set in comp.conf_sets:
+            return False, 'Invalid configuration set: {0}'.format(self._set)
+        if not comp.conf_sets[self._set].has_param(self._param):
+            return False, 'Invalid configuration parameter: '\
+                    '{0}'.format(self._param)
+        if comp.conf_sets[self._set].data[self._param] != self._value:
+            return False, 'Configuration parameter {0} in set {1} on '\
+                    'component {2} is incorrect (value: {3})'.format(
+                            self._param, self._set, self._path_str,
+                            comp.conf_sets[self._set].data[self._param])
         return True, None
 
 
@@ -324,6 +411,87 @@ component at path "{2}" to "{3}"'.format(self._param, self._set,
         if self._set == comp.active_conf_set_name:
             comp.activate_conf_set(self._set)
         return True, None
+
+
+###############################################################################
+## Check if a connection between two components exists and is correct
+
+class CheckForConnAct(Action):
+    '''Check for a correct connection between two components.
+
+    This action checks if there is a connection between the specified source
+    and destination ports. If there is, it will check that any given properties
+    are also correct.
+
+    No check is performed to ensure that the correct component is at that path;
+    for that, use the @ref CheckForRequiredCompAct action.
+
+    This action will not fail if the specified component does not exist or is
+    incorrect. To cause an abort in these situations, use @ref
+    CheckForRequiredCompAct.
+
+    '''
+    def __init__(self, source, dest, id, props={}, callbacks=[]):
+        super(CheckForConnAct, self).__init__(callbacks=callbacks)
+        self._source = source
+        self._s_path = parse_path(self._source[0])[0]
+        self._dest = dest
+        self._d_path = parse_path(self._dest[0])[0]
+        self._id = id
+        self._props = props
+
+    def __str__(self):
+        return self._action_string('Check for connection from {0}:{1} to ' \
+                '{2}:{3} with properties {4}'.format(self._source[0],
+                    self._source[1], self._dest[0], self._dest[1],
+                    self._props))
+
+    def _execute(self, rtctree):
+        if Options().verbose:
+            print 'Checking for connection between {0}:{1} and ' \
+                    '{2}:{3}'.format(self._source[0], self._source[1],
+                            self._dest[0], self._dest[1])
+        # Get the source component
+        s_comp = rtctree.get_node(self._s_path)
+        if not s_comp or not s_comp.is_component:
+            return False, 'Source component missing: {0}'.format(\
+                    self._source[0])
+        s_port = s_comp.get_port_by_name(self._source[1])
+        if not s_port:
+            return False, 'Source port missing: {0}:{1}'.format(\
+                    self._source[0], self._source[1])
+        # Get the destination component
+        d_comp = rtctree.get_node(self._d_path)
+        if not d_comp or not d_comp.is_component:
+            return False, 'Destination component missing: {0}'.format(\
+                    self._dest[0])
+        d_port = d_comp.get_port_by_name(self._dest[1])
+        if not d_port:
+            return False, 'Destination port missing: {0}:{1}'.format(\
+                    self._dest[0], self._dest[1])
+
+        conn = s_port.get_connection_by_id(self._id)
+        if not conn:
+            # No connection: fail
+            return False, 'No connection between {0}:{1} and {2}:{3}'.format(
+                    self._source[0], self._source[1], self._dest[0],
+                    self._dest[1])
+        conn = d_port.get_connection_by_id(self._id)
+        if not conn:
+            # No connection: fail
+            return False, 'No connection between {0}:{1} and {2}:{3}'.format(
+                    self._source[0], self._source[1], self._dest[0],
+                    self._dest[1])
+        # Check the properties
+        for k in self._props:
+            if self._props[k] != conn.properties[k]:
+                return False, 'Property {0} of connection from {1}:{2} to '\
+                        '{3}:{4} is incorrect.'.format(k, self._source[0],
+                                self._source[1], self._dest[0], self._dest[1])
+
+        # All good
+        return True, None
+
 
 ###############################################################################
 ## Connect two ports
@@ -538,6 +706,39 @@ class StateChangeAct(Action):
         if ec_index < 0:
             return False, 'Invalid execution context: {0}'.format(self._ec_id)
         return self._action_impl(comp, ec_index)
+
+
+###############################################################################
+## Check component state
+
+class CheckCompStateAct(StateChangeAct):
+    '''Check component state in an execution context.
+
+    This action checks that the state of an execution context is as expected.
+
+    '''
+    def __init__(self, path_str, comp_id, instance_name, ec_id, expected,
+            callbacks=[]):
+        super(CheckCompStateAct, self).__init__(path_str, comp_id,
+                instance_name, ec_id, callbacks=callbacks)
+        self._expected = expected
+        self._action_str = 'Check state is {0} for'.format(self._expected)
+        self._verbose_str = 'Checking state is {0} for'.format(self._expected)
+
+    def _action_impl(self, comp, ec_index):
+        if (self._expected.lower() == 'active' and \
+                comp.state_in_ec(ec_index) == comp.ACTIVE) or \
+            (self._expected.lower() == 'inactive' and \
+                comp.state_in_ec(ec_index) == comp.INACTIVE) or \
+            (self._expected.lower() == 'error' and \
+                comp.state_in_ec(ec_index) == comp.ERROR) or \
+            (self._expected.lower() == 'created' and \
+                comp.state_in_ec(ec_index) == comp.CREATED) or \
+            (self._expected.lower() == 'unknown' and \
+                comp.state_in_ec(ec_index) == comp.UNKNOWN):
+            return True, None
+        return False, 'Component {0} is in incorrect state {1}'.format(
+                self._path_str, comp.state_in_ec(ec_index))
 
 
 ###############################################################################

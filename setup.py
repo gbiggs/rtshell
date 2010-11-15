@@ -32,6 +32,7 @@ import sys
 
 base_scripts = ['rtact',
                 'rtcat',
+                'rtcheck',
                 'rtcon',
                 'rtconf',
                 'rtcryo',
@@ -53,6 +54,7 @@ base_scripts = ['rtact',
 if sys.platform == 'win32':
     batch_files = ['rtact.bat',
                    'rtcat.bat',
+                   'rtcheck.bat',
                    'rtcon.bat',
                    'rtconf.bat',
                    'rtcryo.bat',

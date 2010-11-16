@@ -30,6 +30,11 @@ class EndOfLogError(EOFError):
     pass
 
 
+class InvalidIndexError(EOFError):
+    '''An invalid index was requested.'''
+    pass
+
+
 ###############################################################################
 ## Log interface. All loggers must conform to this.
 
@@ -55,7 +60,6 @@ class Log(object):
         self._mode = mode
         self._meta = meta
         self._vb = verbose
-        self._eof = False
         self.open()
 
     def __del__(self):
@@ -65,17 +69,21 @@ class Log(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close(finalise=(exc_type == None))
+        if exc_type == None:
+            self.close(finalise=True)
+        else:
+            self.close(finalise=False)
         return False
 
     def __iter__(self):
         return self
 
-    def __next__(self):
-        res = self.read()
-        if not res:
+    def next(self):
+        d = self.read()
+        print d
+        if not d:
             raise StopIteration
-        return res
+        return d[0]
 
     def __str__(self):
         return 'Log interface object.'
@@ -92,7 +100,7 @@ class Log(object):
     @property
     def eof(self):
         '''True if the log has reached the end.'''
-        return self._eof
+        return self._eof()
 
     @property
     def metadata(self):
@@ -136,7 +144,7 @@ class Log(object):
 
     def open(self):
         '''Opens the log.'''
-        pass
+        self._open()
 
     def finalise(self):
         '''Prepare the log to be closed.
@@ -152,7 +160,7 @@ class Log(object):
         implement this function.
 
         '''
-        pass
+        self._finalise()
 
     def close(self, finalise=True):
         '''Closes the log.
@@ -163,6 +171,7 @@ class Log(object):
         '''
         if finalise:
             self.finalise()
+        self._close()
 
     def write(self, timestamp, data):
         '''Writes an entry to the log.
@@ -174,7 +183,7 @@ class Log(object):
         '''
         raise NotImplementedError
 
-    def read(self, time_limit=None, number=None):
+    def read(self, timestamp=None, number=None):
         '''Read entries from the log.
 
         If a time limit is given, all entries until that time limit is
@@ -195,9 +204,9 @@ class Log(object):
 
     def rewind(self):
         '''Rewind the log to the first entry.'''
-        self._eof = False
+        raise NotImplementedError
 
-    def shift(self, timestamp=None, index=None):
+    def seek(self, timestamp=None, index=None):
         '''Rewind or fast-forward the log.
 
         If the timestamp or index is earlier than the current position, the log
@@ -214,7 +223,13 @@ class Log(object):
         that the next value read will be that entry.
 
         '''
-        self._eof = False
+        raise NotImplementedError
+
+    def _close(self):
+        raise NotImplementedError
+
+    def _finalise(self):
+        pass
 
     def _get_cur_pos(self):
         '''Get the current position in the log.
@@ -241,6 +256,9 @@ class Log(object):
         @ref end property.
 
         '''
+        raise NotImplementedError
+
+    def _open(self):
         raise NotImplementedError
 
     def _vb_print(self, string):

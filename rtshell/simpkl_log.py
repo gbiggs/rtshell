@@ -19,10 +19,29 @@ Pickle-based log.
 '''
 
 
+import copy
 import os
 import pickle
 
 import ilog
+
+
+###############################################################################
+## Current position pointer
+
+class CurPos(object):
+    def __init__(self, index=0, timestamp=0, prev_pos=0, cache=0, file_pos=0):
+        super(CurPos, self).__init__()
+        self.index = index
+        self.ts = timestamp
+        self.prev = prev_pos
+        self.cache = cache
+        self.fp = file_pos
+
+    def __str__(self):
+        return 'Index: {0}, timestamp: {1}, previous position: {2}, cache '\
+                'position: {3}, file position: {4}'.format(self.index, self.ts,
+                        self.prev, self.cache, self.fp)
 
 
 ###############################################################################
@@ -35,23 +54,140 @@ import ilog
 ## [Data entries: (Index, Time stamp, Data)]
 
 class SimplePickleLog(ilog.Log):
+    # Indices in data entries for bits of data
+    INDEX = 0
+    TS = 1
+    DATA = 2
+    FP = 3
+    PREV = 4
+
     def __init__(self, filename='', *args, **kwargs):
         self._is_open = False
         self._fn = filename
-        self._cur_pos = None
+        self._cur_pos = CurPos()
         self._start = None
         self._end = None
         self._next = None
-        self._write_ind = 1
+        self._write_ind = 0
+        self._prev_pos = 0
         super(SimplePickleLog, self).__init__(*args, **kwargs)
 
     def __str__(self):
-        return 'PickleLog({0}, {1})'.format(self._fn, self._mode)
+        return 'PickleLog({0}, {1}) at position {2}.'.format(self._fn,
+                self._mode, self._cur_pos)
 
-    def open(self):
+    def write(self, timestamp, data):
+        val = (self._write_ind, timestamp, data, self._file.tell(), self._prev_pos)
+        self._prev_pos = self._file.tell()
+        self._write(val)
+        self._cur_pos.index = val[self.INDEX] + 1
+        self._cur_pos.ts = -1
+        self._cur_pos.prev = self._prev_pos
+        self._cur_pos.cache = self._prev_pos
+        self._cur_pos.fp = self._file.tell()
+        self._write_ind += 1
+        self._vb_print('Wrote entry at ({0}, {1}, {2}, {3}).'.format(
+            val[self.INDEX], val[self.TS], val[self.FP], val[self.PREV]))
+
+    def read(self, timestamp=None, number=None):
+        if number is not None:
+            return self._read_number(number)
+        elif timestamp is not None:
+            return self._read_to_timestamp(timestamp)
+        else:
+            return self._read_single_entry()
+
+    def rewind(self):
+        self._vb_print('Rewinding log from position {0}.'.format(
+                self._cur_pos))
+        if self._mode == 'r':
+            self._file.seek(0)
+        else:
+            self._file.truncate()
+        self._write_ind = 0
+        self._init_log()
+
+    def seek(self, timestamp=None, index=None):
+        self._vb_print('Seeking log from position {0}.'.format(self._cur_pos))
+        if index is not None:
+            self._seek_to_index(index)
+        elif timestamp is not None:
+            self._seek_to_timestamp(timestamp)
+        # Do nothing if neither is set
+        self._vb_print('New current position: {0}.'.format(self._cur_pos))
+
+    def _backup_one(self):
+        '''Reverses in the log one entry.
+
+        This function is neither fast nor efficient. It involves stepping back
+        one byte at a time to find the start of the previous entry.
+
+        '''
+        self._vb_print('Backing up one entry from {0}.'.format(self._cur_pos))
+        if self._cur_pos.index == 0:
+            # Already at the start
+            self._vb_print('Backup already at start.')
+            return
+        else:
+            self._next = None
+            target = self._cur_pos.prev
+            # Move back in the file one entry
+            self._file.seek(target)
+            # Update the next pointer
+            self._next = self._read()
+            self._update_cur_pos(self._next)
+        self._vb_print('New current position: {0}.'.format(self._cur_pos))
+
+    def _close(self):
+        if not self._is_open:
+            return
+        self._file.close()
+        self._is_open = False
+        self._start = None
+        self._end = None
+        self._vb_print('Closed file.')
+
+    def _eof(self):
+        return self._next is None
+
+    def _get_cur_pos(self):
+        self._vb_print('Current position: {0}'.format(self._cur_pos))
+        return self._cur_pos.index, self._cur_pos.ts
+
+    def _get_start(self):
+        if self._start is None:
+            self._set_start()
+        self._vb_print('Start position: {0}'.format(self._start))
+        return (self._start.index, self._start.ts)
+
+    def _get_end(self):
+        if self._end is None:
+            self._set_end()
+        self._vb_print('End position: {0}'.format(self._end))
+        return (self._end.index, self._end.ts)
+
+    def _init_log(self):
+        if self._mode == 'r':
+            self._vb_print('Initialising log for reading.')
+            # Read out the metadata
+            self._meta = self._read()
+            # Grab the position of the first entry and make it the current
+            self._set_start()
+            self._cur_pos = copy.copy(self._start)
+            self._end = None
+            # Get the first entry
+            self._next = self._read()
+        else:
+            self._vb_print('Initialising log for writing.')
+            # Write the metadata
+            self._write(self._meta)
+            self._write_ind = 0
+            self._prev_pos = 0
+            self._cur_pos = CurPos(file_pos=self._file.tell())
+
+    def _open(self):
         if self._is_open:
             return
-        super(SimplePickleLog, self).open()
         if self._mode == 'r':
             flags = 'rb'
         elif self._mode == 'w':
@@ -64,160 +200,189 @@ class SimplePickleLog(ilog.Log):
         self._vb_print('Opened file {0} in mode {1}.'.format(self._fn,
             self._mode))
 
-    def close(self):
-        if not self._is_open:
-            return
-        super(SimplePickleLog, self).close()
-        self._file.close()
-        self._is_open = False
-        self._vb_print('Closed file.')
+    def _read(self):
+        '''Read a single entry from the log.'''
+        self._vb_print('Reading one data block at {0}.'.format(
+            self._file.tell()))
+        try:
+            data = pickle.load(self._file)
+        except EOFError:
+            self._vb_print('End of log reached.')
+            raise ilog.EndOfLogError
+        return data
 
-    def write(self, timestamp, data):
-        val = (self._write_ind, timestamp, data)
-        self._write(val)
-        self._update_cur_pos(val)
-        self._write_ind += 1
-        self._vb_print('Wrote entry at ({0}, {1}).'.format(val[0], val[1]))
-
-    def read(self, time_limit=None, number=None):
-        if number is not None:
-            self._vb_print('Reading {0} entries.'.format(number))
-            res = []
-            if self._next:
-                self._vb_print('Starting with _next.')
-                res.append(self._next)
-                self._update_cur_pos(self._next)
-                self._next = None
-                number -= 1
-            try:
-                for ii in range(number):
-                    val = self._read()
-                    res.append(val)
-                    self._update_cur_pos(val)
-                    self._vb_print('Read entry {0} of {1}, current position ' \
-                            'is {2}.'.format(ii, number, self._cur_pos))
-            except ilog.EndOfLogError:
-                self._vb_print('End of log.')
-                pass
-            return res
-        elif time_limit is not None:
-            self._vb_print('Reading until time stamp {0}.'.format(time_limit))
-            res = []
-            if self._next:
-                self._vb_print('Starting with _next.')
-                if self._next[0] > time_limit:
-                    # The time limit is before the next item - nothing to read
-                    self._vb_print('_next is beyond the time limit.')
-                    return []
-                else:
-                    res.append(self._next)
-                    self._update_cur_pos(self._next)
-                    # In case there is an immediate exception, clear next now
-                    self._vb_print('Used _next at position ({0}, {1}), ' \
-                            'current position is {2}.'.format(self._next[0],
-                                self._next[1], self._cur_pos))
-                    self._next = None
-            try:
+    def _read_number(self, number):
+        self._vb_print('Reading {0} entries.'.format(number))
+        res = []
+        if number < 0:
+            raise ValueError
+        if not self._next:
+            self._vb_print('End of log before reading.')
+            return []
+        try:
+            for ii in range(number):
+                res.append((self._next[self.INDEX], self._next[self.TS],
+                    self._next[self.DATA]))
                 self._next = self._read()
-                while self._next[0] <= time_limit:
-                    res.append(self._next)
-                    self._update_cur_pos(self._next)
-                    self._vb_print('Read entry, current position is {0}.'.format(
-                            self._cur_pos))
-                    # In case there is an immediate exception, clear next now
-                    self._next = None
-                    self._next = self._read()
-                self._vb_print('Finished reading; current position is ' \
-                        '{0}.'.format(self._cur_pos))
-            except ilog.EndOfLogError:
-                self._vb_print('End of log.')
-                pass
-            return res
-        else:
-            self._vb_print('Reading a single entry.')
-            if self._next:
-                self._vb_print('Using _next.')
-                res = [self._next]
-                self._update_cur_pos(self._next)
-                self._vb_print('Current position is {0}'.format(self._cur_pos))
-                self._next = None
-                return res
-            else:
-                try:
-                    val = self._read()
-                    self._update_cur_pos(val)
-                    self._vb_print('Read entry, current position is ' \
-                            '{0}.'.format(self._cur_pos))
-                    return [val]
-                except ilog.EndOfLogError:
-                    self._vb_print('End of log.')
-                    return []
-
-    def rewind(self):
-        self._vb_print('Rewinding log from position {0}.'.format(
-                self._cur_pos))
-        super(SimplePickleLog, self).rewind()
-        if self._mode == 'r':
-            self._file.seek(0)
-        else:
-            self._file.truncate()
-        self._next = None
-        self._write_ind = 1
-        self._init_log()
-
-    def shift(self, timestamp=None, index=None):
-        self._vb_print('Shifting log from position {0}.'.format(self._cur_pos))
-        super(SimplePickleLog, self).shift_to()
-        if index is not None:
-            self._shift_to_index(index)
-        elif timestamp is not None:
-            self._shift_to_timestamp(timestamp)
-        # Do nothing if neither is set
-        self._vb_print('New current position: {0}.'.format(self._cur_pos))
-
-    def _backup_one(self):
-        '''Reverses in the log one entry.
-
-        This function is neither fast nor efficient. It involves stepping back
-        one byte at a time to find the start of the previous entry.
-
-        '''
-        def backup():
-            # Start by going back one byte
-            self._file.seek(-1, os.SEEK_CUR)
-            size = 1
-            while True:
-                try:
-                    # Attempt to read and unpickle
-                    self._next = self._read()
-                    # Unpickle was a success
+                if not self._next:
+                    self._set_eof_pos()
+                    self._vb_print('End of log during reading, current '\
+                            'position is {1}.'.format(self._cur_pos))
                     break
-                except ilog.EndOfLogError:
-                    # Read or unpickle failed, so move back one byte
-                    self._file.seek(-1, os.SEEK_CUR)
-                    size += 1
-        self._vb_print('Backing up one entry from {0}.'.format(self._cur_pos))
-        # Back up two entries to get the new current position, then forward one
-        backup()
-        backup()
-        self._cur_pos = (self._next[0], self._next[1])
-        # This effectively moves the next entry to read forward one
-        self._next = None
-        self._vb_print('New current position: {0}.'.format(self._cur_pos))
+                self._update_cur_pos(self._next)
+                self._vb_print('Read entry {0} of {1}, current position '\
+                        'is {2}.'.format(ii + 1, number, self._cur_pos))
+        except ilog.EndOfLogError:
+            self._set_eof_pos()
+            self._next = None
+            self._vb_print('End of log while reading, current '\
+                    'position is {0}.'.format(self._cur_pos))
+        self._vb_print('Finished reading; current position is ' \
+                '{0}.'.format(self._cur_pos))
+        return res
 
-    def _get_cur_pos(self):
-        if self._cur_pos is None:
-            if self._next is None:
+    def _read_to_timestamp(self, timestamp):
+        self._vb_print('Reading until time stamp {0}.'.format(timestamp))
+        res = []
+        if timestamp < 0:
+            raise ValueError
+        if not self._next:
+            self._vb_print('End of log before reading.')
+            return []
+        if self._cur_pos.ts > timestamp:
+            # The time limit is before the next item - nothing to read
+            self._vb_print('Current position is beyond the time limit.')
+            return []
+        try:
+            while self._next[self.TS] <= timestamp:
+                res.append((self._next[self.INDEX], self._next[self.TS],
+                    self._next[self.DATA]))
                 self._next = self._read()
-            self._cur_pos = (self._next[0], self._next[1])
-        self._vb_print('Current position: {0}'.format(self._cur_pos))
-        return self._cur_pos
+                if not self._next:
+                    self._set_eof_pos()
+                    self._vb_print('End of log during reading, current '\
+                            'position is {1}.'.format(self._cur_pos))
+                    break
+                self._update_cur_pos(self._next)
+                self._vb_print('Read entry at time index {0}, current '\
+                        'position is {1}.'.format(res[-1][1], self._cur_pos))
+        except ilog.EndOfLogError:
+            self._set_eof_pos()
+            self._next = None
+            self._vb_print('End of log while reading, current '\
+                    'position is {0}.'.format(self._cur_pos))
+        self._vb_print('Finished reading; current position is ' \
+                '{0}.'.format(self._cur_pos))
+        return res
 
-    def _get_start(self):
-        if self._start is not None:
-            # Return the cached value
-            self._vb_print('Cached start position: {0}'.format(self._start))
-            return self._start
+    def _read_single_entry(self):
+        self._vb_print('Reading a single entry.')
+        if not self._next:
+            self._vb_print('End of log before reading.')
+            return []
+        else:
+            res = [(self._next[self.INDEX], self._next[self.TS],
+                self._next[self.DATA])]
+            try:
+                self._next = self._read()
+            except ilog.EndOfLogError:
+                self._next = None
+            if not self._next:
+                self._set_eof_pos()
+                self._vb_print('End of log during reading, current '\
+                        'position is {0}.'.format(self._cur_pos))
+            else:
+                self._update_cur_pos(self._next)
+                self._vb_print('Read entry, current position is ' \
+                        '{0}.'.format(self._cur_pos))
+            self._vb_print('Cached next entry is {0}'.format(self._next))
+            return res
+
+    def _seek_to_index(self, ind):
+        '''Seeks forward or backward in the log to find the given index.'''
+        if ind == self._cur_pos.index:
+            self._vb_print('Seek by index: already at destination.')
+            return
+        if ind < 0:
+            raise ilog.InvalidIndexError
+        elif ind < self._cur_pos.index:
+            # Rewind
+            # TODO: Rewinding may be more efficient in many cases if done by
+            # fast-forwarding from the start of the file rather than traversing
+            # backwards.
+            self._vb_print('Rewinding to index {0}.'.format(ind))
+            while self._cur_pos.index > ind and self._cur_pos.index > 0:
+                self._backup_one()
+        else:
+            # Fast-forward
+            self._vb_print('Fast-forwarding to index {0}.'.format(ind))
+            while self._cur_pos.index < ind:
+                if not self.read():
+                    break # EOF
+        self._vb_print('New current position is {0}.'.format(self._cur_pos))
+
+    def _seek_to_timestamp(self, ts):
+        '''Seeks forward or backward in the log to find the given timestamp.'''
+        if ts == self._cur_pos.ts and not self.eof:
+            self._vb_print('Seek by timestamp: already at destination.')
+            return
+        elif ts < self._cur_pos.ts or self.eof:
+            # Rewind
+            self._vb_print('Rewinding to timestamp {0}.'.format(ts))
+            while (self._cur_pos.ts > ts and self._cur_pos.index > 0) or \
+                    self.eof:
+                self._backup_one()
+            # Need to move one forward again, unless have hit the beginning
+            if self._cur_pos.ts < ts:
+                self.read()
+        else:
+            self._vb_print('Fast-forwarding to timestamp {0}.'.format(ts))
+            # Fast-forward
+            while self._cur_pos.ts < ts:
+                if not self.read():
+                    break # EOF
+        self._vb_print('New current position is {0}.'.format(self._cur_pos))
+
+    def _set_end(self):
+        # Save the current position
+        current = self._file.tell()
+        # Move to the end of the file
+        self._file.seek(-1, os.SEEK_END)
+        # Begin searching backwards
+        offset = 0
+        pos = 0
+        while True:
+            self._file.seek(offset, os.SEEK_END)
+            try:
+                pos = self._file.tell()
+                entry = self._read()
+            except KeyError:
+                offset -= 1
+                continue
+            except IndexError:
+                offset -= 1
+                continue
+            except EOFError:
+                offset -= 1
+                continue
+            break
+        self._end = CurPos(index=entry[self.INDEX], timestamp=entry[self.TS],
+                prev_pos=entry[self.PREV], cache=pos - 2, file_pos=self._file.tell())
+        # Restore the file position
+        self._file.seek(current)
+        self._vb_print('Measured end position: {0}'.format(self._end))
+
+    def _set_eof_pos(self):
+        '''Sets the current position to the end-of-file value.'''
+        print 'Setting EOF at file position {0}, prev cur pos {1}'.format(
+                self._file.tell(), self._cur_pos)
+        self._cur_pos.index += 1 # The "next" index
+        # Don't touch the time stamp (indicates the end time of the file)
+        self._cur_pos.prev = self._cur_pos.cache # This is the final entry
+        self._cur_pos.cache = 0 # No valid entry at current file position
+        self._cur_pos.fp = self._file.tell() # This is the end of the file
+
+    def _set_start(self):
         # Save the current position
         current = self._file.tell()
         # Move to the start
@@ -225,110 +390,20 @@ class SimplePickleLog(ilog.Log):
         # Skip the metadata block
         self._read()
         # Read the first entry
-        index, timestamp, data = self._read()
-        self._start = (index, timestamp)
-        # Go back to the previous position
+        pos = self._file.tell()
+        entry = self._read()
+        self._start = CurPos(entry[self.INDEX], entry[self.TS],
+                entry[self.PREV], pos, self._file.tell())
         self._file.seek(current)
         self._vb_print('Measured start position: {0}'.format(self._start))
-        return self._start
-
-    def _get_end(self):
-        if self._end is not None:
-            # Return the cached value
-            self._vb_print('Cached end position: {0}'.format(self._start))
-            return self._end
-        # Save the current position and the current next
-        current = self._file.tell()
-        next = self._next
-        cur_pos = self._cur_pos
-        # Move to the end
-        self._file.seek(-1, os.SEEK_END)
-        # Move back one entry
-        self._backup_one()
-        # self._next now contains the final entry in the log
-        self._end = (self._next[0], self._next[1])
-        # Go back to the previous position
-        self._file.seek(current)
-        self._next = next
-        self.cur_pos = cur_pos
-        self._vb_print('Measured end position: {0}'.format(self._start))
-        return self._end
-
-    def _init_log(self):
-        if self._mode == 'r':
-            self._vb_print('Initialising log for reading.')
-            # Read out the metadata
-            self._meta = self._read()
-            # Grab the position of the first entry and make it the current
-            self._cur_pos = self._get_start()
-            self._start = self._cur_pos
-            self._end = None
-            self._next = None
-        else:
-            self._vb_print('Initialising log for writing.')
-            # Write the metadata
-            self._write(self._meta)
-            self._write_ind = 1
-
-    def _read(self):
-        '''Read a single entry from the log.'''
-        self._vb_print('Reading one data block.')
-        try:
-            data = pickle.load(self._file)
-        except EOFError:
-            self._vb_print('End of log reached.')
-            self._eof = True
-            raise ilog.EndOfLogError
-        return data
-
-    def _shift_to_index(self, ind):
-        '''Shifts forward or backward in the log to find the given index.'''
-        if ind == cur[0]:
-            self._vb_print('Shift by index: already at destination.')
-            return
-        elif ind < cur[0]:
-            # Rewind
-            # TODO: Rewinding may be more efficient in many cases if done by
-            # fast-forwarding from the start of the file rather than traversing
-            # backwards.
-            self._vb_print('Rewinding to index {0}.'.format(ind))
-            self._backup_one()
-            while self._next[0] > ind:
-                self._backup_one()
-        else:
-            # Fast-forward
-            self._vb_print('Fast-forwarding to index {0}.'.format(ind))
-            if self._next is None:
-                self._next = self._read()
-            while self._next[0] < ind:
-                self._next = self._read()
-            self._update_cur_pos(self._next)
-        self._vb_print('New current position is {0}.'.format(self._cur_pos))
-
-    def _shift_to_timestamp(self, ts):
-        '''Shifts forward or backward in the log to find the given timestamp.'''
-        if ts == cur[1]:
-            self._vb_print('Shift by timestamp: already at destination.')
-            return
-        elif ts < cur[1]:
-            # Rewind
-            self._vb_print('Rewinding to timestamp {0}.'.format(ts))
-            self._backup_one()
-            while self._next[1] > ts:
-                self._backup_one()
-        else:
-            self._vb_print('Fast-forwarding to timestamp {0}.'.format(ts))
-            # Fast-forward
-            if self._next is None:
-                self._next = self._read()
-            while self._next[0] < ind:
-                self._next = self._read()
-            self._update_cur_pos(self._next)
-        self._vb_print('New current position is {0}.'.format(self._cur_pos))
 
     def _update_cur_pos(self, val):
         '''Updates the current pos from a data entry.'''
-        self._cur_pos = (val[0], val[1])
+        self._cur_pos.index = val[self.INDEX]
+        self._cur_pos.ts = val[self.TS]
+        self._cur_pos.prev = val[self.PREV]
+        self._cur_pos.cache = self._cur_pos.fp
+        self._cur_pos.fp = self._file.tell()
 
     def _write(self, data):
         '''Pickle some data and write it to the file.'''

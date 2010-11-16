@@ -80,7 +80,6 @@ class Log(object):
 
     def next(self):
         d = self.read()
-        print d
         if not d:
             raise StopIteration
         return d[0]

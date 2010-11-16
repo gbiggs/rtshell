@@ -33,11 +33,14 @@ DATA=['Val1', 'Value2', 'Entry 3', 'Data block 4', 'Value 5', 'Entry6',
         'Data 7', 'Val8', 'Entry 9', 'Val 10']
 
 
+VERBOSITY=False
+
+
 #class WriteBase(unittest.TestCase):
 class WriteBase():
     def setUp(self):
         self.log = rtshell.simpkl_log.SimplePickleLog(filename='test.log',
-                mode='w', meta=METADATA, verbose=True)
+                mode='w', meta=METADATA, verbose=VERBOSITY)
 
     def tearDown(self):
         self.log.close()
@@ -49,7 +52,7 @@ class ReadBase(unittest.TestCase):
     def setUp(self):
         self.write_test_log()
         self.log = rtshell.simpkl_log.SimplePickleLog(filename='test.log',
-                mode='r', meta=METADATA, verbose=True)
+                mode='r', meta=METADATA, verbose=VERBOSITY)
 
     def tearDown(self):
         self.log.close()
@@ -58,7 +61,7 @@ class ReadBase(unittest.TestCase):
 
     def write_test_log(self):
         log = rtshell.simpkl_log.SimplePickleLog(filename='test.log', mode='w',
-                meta=METADATA, verbose=True)
+                meta=METADATA, verbose=VERBOSITY)
         for t, d in zip(TIMESTAMPS, DATA):
             log.write(t, d)
         log.close()
@@ -66,15 +69,18 @@ class ReadBase(unittest.TestCase):
 
 class WriteTests(WriteBase):
     def test_write(self):
-        print >>sys.stderr, '===== write ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== write ====='
         for t, d in zip(TIMESTAMPS, DATA):
             self.log.write(t, d)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
 
 class ReadTests(ReadBase):
     def test_read_whole_log(self):
-        print >>sys.stderr, '===== read_whole_log ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_whole_log ====='
         for ii in range(10):
             entry = self.log.read()
             if not entry:
@@ -90,10 +96,12 @@ class ReadTests(ReadBase):
                 else:
                     self.assertEqual(self.log.pos, (ii + 1, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_get_start_at_start(self):
-        print >>sys.stderr, '===== get_start_at_start ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== get_start_at_start ====='
         self.assertEqual(self.log.start, (0, TIMESTAMPS[0]))
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         ind, ts, d = self.log.read()[0]
@@ -101,10 +109,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_get_start_at_mid(self):
-        print >>sys.stderr, '===== get_start_at_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== get_start_at_mid ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.start, (0, TIMESTAMPS[0]))
@@ -114,20 +124,24 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[5])
         self.assertEqual(d, DATA[5])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_get_start_at_eof(self):
-        print >>sys.stderr, '===== get_start_at_eof ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== get_start_at_eof ====='
         for ii in range(11):
             self.log.read()
         self.assertEqual(self.log.start, (0, TIMESTAMPS[0]))
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assertEqual(self.log.read(), [])
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_get_end_at_start(self):
-        print >>sys.stderr, '===== get_end_at_start ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== get_end_at_start ====='
         self.assertEqual(self.log.end, (9, TIMESTAMPS[-1]))
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         ind, ts, d = self.log.read()[0]
@@ -135,10 +149,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_get_end_at_mid(self):
-        print >>sys.stderr, '===== get_end_at_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== get_end_at_mid ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.end, (9, TIMESTAMPS[-1]))
@@ -148,20 +164,24 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[5])
         self.assertEqual(d, DATA[5])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_get_end_at_eof(self):
-        print >>sys.stderr, '===== get_end_at_eof ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== get_end_at_eof ====='
         for ii in range(11):
             self.log.read()
         self.assertEqual(self.log.end, (9, TIMESTAMPS[9]))
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assertEqual(self.log.read(), [])
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_eof(self):
-        print >>sys.stderr, '===== read_eof ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_eof ====='
         for ii in range(10):
             self.log.read()
         self.assert_(self.log.eof)
@@ -169,18 +189,22 @@ class ReadTests(ReadBase):
         self.assertEqual(self.log.read(), [])
         self.assert_(self.log.eof)
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_num_start_start(self):
-        print >>sys.stderr, '===== read_num_start_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_num_start_mid ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.assertEqual([], self.log.read(number=0))
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_num_start_mid(self):
-        print >>sys.stderr, '===== read_num_start_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_num_start_mid ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         d = self.log.read(number=4)
         self.assertEqual(4, len(d))
@@ -190,10 +214,12 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii])
         self.assertEqual(self.log.pos, (4, TIMESTAMPS[4]))
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_num_start_end(self):
-        print >>sys.stderr, '===== read_num_start_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_num_start_mid ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         d = self.log.read(number=10)
         self.assertEqual(10, len(d))
@@ -203,10 +229,12 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii])
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_num_start_eof(self):
-        print >>sys.stderr, '===== read_num_start_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_num_start_mid ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         d = self.log.read(number=11)
         self.assertEqual(10, len(d))
@@ -216,19 +244,23 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii])
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_num_mid_start(self):
-        print >>sys.stderr, '===== read_num_mid_start ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_num_mid_start ====='
         for ii in range(3):
             self.log.read()
         self.assertEqual(self.log.pos, (3, TIMESTAMPS[3]))
-        self.assertRaises(ValueError, self.log.read, {'number': -1})
+        self.assertRaises(ValueError, self.log.read, number=-1)
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_num_mid_mid(self):
-        print >>sys.stderr, '===== read_num_mid_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_num_mid_mid ====='
         for ii in range(3):
             self.log.read()
         self.assertEqual(self.log.pos, (3, TIMESTAMPS[3]))
@@ -240,10 +272,12 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii + 3])
         self.assertEqual(self.log.pos, (7, TIMESTAMPS[7]))
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_num_mid_end(self):
-        print >>sys.stderr, '===== read_num_mid_end ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_num_mid_end ====='
         for ii in range(3):
             self.log.read()
         self.assertEqual(self.log.pos, (3, TIMESTAMPS[3]))
@@ -255,10 +289,12 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii + 3])
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_num_mid_eof(self):
-        print >>sys.stderr, '===== read_num_mid_eof ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_num_mid_eof ====='
         for ii in range(3):
             self.log.read()
         self.assertEqual(self.log.pos, (3, TIMESTAMPS[3]))
@@ -270,20 +306,24 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii + 3])
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_num_end_eof(self):
-        print >>sys.stderr, '===== read_num_end_eof ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_num_end_eof ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assertEqual([], self.log.read(number=2))
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_ts_start_start(self):
-        print >>sys.stderr, '===== read_ts_start_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_ts_start_mid ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.assertEqual([], self.log.read(timestamp=0.1))
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
@@ -293,10 +333,12 @@ class ReadTests(ReadBase):
         self.assertEqual(d[0][2], DATA[0])
         self.assertEqual(self.log.pos, (1, TIMESTAMPS[1]))
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_ts_start_mid(self):
-        print >>sys.stderr, '===== read_ts_start_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_ts_start_mid ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         d = self.log.read(timestamp=1.3)
         self.assertEqual(4, len(d))
@@ -306,10 +348,12 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii])
         self.assertEqual(self.log.pos, (4, TIMESTAMPS[4]))
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_ts_start_mid_between(self):
-        print >>sys.stderr, '===== read_ts_start_mid_between ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_ts_start_mid_between ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         d = self.log.read(timestamp=1.45)
         self.assertEqual(4, len(d))
@@ -319,10 +363,12 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii])
         self.assertEqual(self.log.pos, (4, TIMESTAMPS[4]))
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_ts_start_end(self):
-        print >>sys.stderr, '===== read_ts_start_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_ts_start_mid ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         d = self.log.read(timestamp=5.3)
         self.assertEqual(10, len(d))
@@ -332,10 +378,12 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii])
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_ts_start_eof(self):
-        print >>sys.stderr, '===== read_ts_start_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_ts_start_mid ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         d = self.log.read(timestamp=5.4)
         self.assertEqual(10, len(d))
@@ -345,20 +393,24 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii])
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_ts_mid_start(self):
-        print >>sys.stderr, '===== read_ts_mid_start ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_ts_mid_start ====='
         for ii in range(3):
             self.log.read()
         self.assertEqual(self.log.pos, (3, TIMESTAMPS[3]))
-        self.assertRaises(ValueError, self.log.read, {'timestamp': -1})
+        self.assertRaises(ValueError, self.log.read, timestamp=-1)
         self.assertEqual([], self.log.read(timestamp=0.1))
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_ts_mid_mid(self):
-        print >>sys.stderr, '===== read_ts_mid_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_ts_mid_mid ====='
         for ii in range(3):
             self.log.read()
         self.assertEqual(self.log.pos, (3, TIMESTAMPS[3]))
@@ -370,10 +422,12 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii + 3])
         self.assertEqual(self.log.pos, (7, TIMESTAMPS[7]))
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_ts_mid_end(self):
-        print >>sys.stderr, '===== read_ts_mid_end ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_ts_mid_end ====='
         for ii in range(3):
             self.log.read()
         self.assertEqual(self.log.pos, (3, TIMESTAMPS[3]))
@@ -385,10 +439,12 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii + 3])
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_ts_mid_eof(self):
-        print >>sys.stderr, '===== read_ts_mid_eof ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_ts_mid_eof ====='
         for ii in range(3):
             self.log.read()
         self.assertEqual(self.log.pos, (3, TIMESTAMPS[3]))
@@ -400,10 +456,12 @@ class ReadTests(ReadBase):
             self.assertEqual(d[ii][2], DATA[ii + 3])
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_read_ts_end_eof(self):
-        print >>sys.stderr, '===== read_ts_end_eof ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== read_ts_end_eof ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
@@ -411,10 +469,12 @@ class ReadTests(ReadBase):
         self.assertEqual([], self.log.read(timestamp=5.4))
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_backup_start(self):
-        print >>sys.stderr, '===== backup_start ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== backup_start ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log._backup_one()
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
@@ -424,10 +484,12 @@ class ReadTests(ReadBase):
         self.assertEqual(d, DATA[0])
         self.assertEqual(self.log.pos, (1, TIMESTAMPS[1]))
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_backup_to_start(self):
-        print >>sys.stderr, '===== backup_to_start ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== backup_to_start ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.read()
         self.assertEqual(self.log.pos, (1, TIMESTAMPS[1]))
@@ -447,10 +509,12 @@ class ReadTests(ReadBase):
         self.assertEqual(d, DATA[0])
         self.assertEqual(self.log.pos, (1, TIMESTAMPS[1]))
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_backup_mid(self):
-        print >>sys.stderr, '===== backup_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== backup_mid ====='
         for ii in range(3):
             self.log.read()
         self.assertEqual(self.log.pos, (3, TIMESTAMPS[3]))
@@ -461,10 +525,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_backup_end(self):
-        print >>sys.stderr, '===== backup_end ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== backup_end ====='
         for ii in range(9):
             self.log.read()
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -475,10 +541,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[8])
         self.assertEqual(d, DATA[8])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_backup_eof(self):
-        print >>sys.stderr, '===== backup_eof ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== backup_eof ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
@@ -491,10 +559,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[9])
         self.assertEqual(d, DATA[9])
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_rewind_at_start(self):
-        print >>sys.stderr, '===== rewind_at_start ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== rewind_at_start ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.rewind()
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
@@ -503,10 +573,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_rewind_at_mid(self):
-        print >>sys.stderr, '===== rewind_at_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== rewind_at_mid ====='
         for ii in range(4):
             self.log.read()
         self.assertEqual(self.log.pos, (4, TIMESTAMPS[4]))
@@ -517,10 +589,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_rewind_at_end(self):
-        print >>sys.stderr, '===== rewind_at_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== rewind_at_mid ====='
         for ii in range(9):
             self.log.read()
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -531,10 +605,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_rewind_at_eof(self):
-        print >>sys.stderr, '===== rewind_at_mid ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== rewind_at_mid ====='
         for ii in range(10):
             self.log.read()
         self.assert_(self.log.eof)
@@ -547,10 +623,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_start_start_ind(self):
-        print >>sys.stderr, '===== seek_start_start_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_start_start_ind ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.seek(index=0)
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
@@ -559,10 +637,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_start_mid_ind(self):
-        print >>sys.stderr, '===== seek_start_mid_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_start_mid_ind ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.seek(index=2)
         self.assertEqual(self.log.pos, (2, TIMESTAMPS[2]))
@@ -571,10 +651,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_start_end_ind(self):
-        print >>sys.stderr, '===== seek_start_end_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_start_end_ind ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.seek(index=9)
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -583,19 +665,23 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[9])
         self.assertEqual(d, DATA[9])
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_start_eof_ind(self):
-        print >>sys.stderr, '===== seek_start_eof_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_start_eof_ind ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.seek(index=11)
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assertEqual([], self.log.read())
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_start_ind(self):
-        print >>sys.stderr, '===== seek_mid_start_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_start_ind ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -606,10 +692,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_rewind_ind(self):
-        print >>sys.stderr, '===== seek_mid_rewind_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_rewind_ind ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -620,10 +708,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_mid_ind(self):
-        print >>sys.stderr, '===== seek_mid_mid_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_mid_ind ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -634,10 +724,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[5])
         self.assertEqual(d, DATA[5])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_ff_ind(self):
-        print >>sys.stderr, '===== seek_mid_ff_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_ff_ind ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -648,10 +740,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[7])
         self.assertEqual(d, DATA[7])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_end_ind(self):
-        print >>sys.stderr, '===== seek_mid_end_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_end_ind ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -662,10 +756,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[9])
         self.assertEqual(d, DATA[9])
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_eof_ind(self):
-        print >>sys.stderr, '===== seek_mid_eof_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_eof_ind ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -673,10 +769,12 @@ class ReadTests(ReadBase):
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assertEqual([], self.log.read())
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_end_start_ind(self):
-        print >>sys.stderr, '===== seek_end_start_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_end_start_ind ====='
         for ii in range(9):
             self.log.read()
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -687,10 +785,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_end_mid_ind(self):
-        print >>sys.stderr, '===== seek_end_mid_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_end_mid_ind ====='
         for ii in range(9):
             self.log.read()
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -701,10 +801,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_end_end_ind(self):
-        print >>sys.stderr, '===== seek_end_end_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_end_end_ind ====='
         for ii in range(9):
             self.log.read()
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -716,10 +818,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[9])
         self.assertEqual(d, DATA[9])
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_end_eof_ind(self):
-        print >>sys.stderr, '===== seek_end_eof_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_end_eof_ind ====='
         for ii in range(9):
             self.log.read()
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -727,10 +831,12 @@ class ReadTests(ReadBase):
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assertEqual([], self.log.read())
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_eof_start_ind(self):
-        print >>sys.stderr, '===== seek_eof_start_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_eof_start_ind ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
@@ -742,10 +848,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_eof_mid_ind(self):
-        print >>sys.stderr, '===== seek_eof_mid_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_eof_mid_ind ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
@@ -757,10 +865,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_eof_end_ind(self):
-        print >>sys.stderr, '===== seek_eof_end_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_eof_end_ind ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
@@ -773,10 +883,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[9])
         self.assertEqual(d, DATA[9])
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_eof_eof_ind(self):
-        print >>sys.stderr, '===== seek_eof_eof_ind ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_eof_eof_ind ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
@@ -785,10 +897,12 @@ class ReadTests(ReadBase):
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assertEqual([], self.log.read())
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_start_before_start_ts(self):
-        print >>sys.stderr, '===== seek_start_before_start_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_start_before_start_ts ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.seek(timestamp=TIMESTAMPS[0] - 1)
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
@@ -797,10 +911,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_start_start_ts(self):
-        print >>sys.stderr, '===== seek_start_start_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_start_start_ts ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.seek(timestamp=TIMESTAMPS[0])
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
@@ -809,10 +925,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_start_before_mid_ts(self):
-        print >>sys.stderr, '===== seek_start_before_mid_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_start_before_mid_ts ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.seek(timestamp=TIMESTAMPS[2] - \
                 (TIMESTAMPS[2] - TIMESTAMPS[1]) * 0.6)
@@ -822,10 +940,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_start_mid_ts(self):
-        print >>sys.stderr, '===== seek_start_mid_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_start_mid_ts ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.seek(timestamp=TIMESTAMPS[2])
         self.assertEqual(self.log.pos, (2, TIMESTAMPS[2]))
@@ -834,10 +954,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_start_end_ts(self):
-        print >>sys.stderr, '===== seek_start_end_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_start_end_ts ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.seek(timestamp=TIMESTAMPS[9])
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -846,19 +968,23 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[9])
         self.assertEqual(d, DATA[9])
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_start_eof_ts(self):
-        print >>sys.stderr, '===== seek_start_eof_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_start_eof_ts ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         self.log.seek(timestamp=TIMESTAMPS[9] + 1)
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assertEqual([], self.log.read())
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_before_start_ts(self):
-        print >>sys.stderr, '===== seek_mid_before_start_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_before_start_ts ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -869,10 +995,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_start_ts(self):
-        print >>sys.stderr, '===== seek_mid_start_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_start_ts ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -883,10 +1011,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_rewind_ts(self):
-        print >>sys.stderr, '===== seek_mid_rewind_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_rewind_ts ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -897,10 +1027,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_before_mid_ts(self):
-        print >>sys.stderr, '===== seek_mid_before_mid_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_before_mid_ts ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -912,10 +1044,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_mid_ts(self):
-        print >>sys.stderr, '===== seek_mid_mid_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_mid_ts ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -926,10 +1060,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[5])
         self.assertEqual(d, DATA[5])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_after_mid_ts(self):
-        print >>sys.stderr, '===== seek_mid_after_mid_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_after_mid_ts ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -941,10 +1077,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[7])
         self.assertEqual(d, DATA[7])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_ff_ts(self):
-        print >>sys.stderr, '===== seek_mid_ff_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_ff_ts ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -955,10 +1093,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[7])
         self.assertEqual(d, DATA[7])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_end_ts(self):
-        print >>sys.stderr, '===== seek_mid_end_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_end_ts ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -969,10 +1109,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[9])
         self.assertEqual(d, DATA[9])
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_mid_eof_ts(self):
-        print >>sys.stderr, '===== seek_mid_eof_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_mid_eof_ts ====='
         for ii in range(5):
             self.log.read()
         self.assertEqual(self.log.pos, (5, TIMESTAMPS[5]))
@@ -980,10 +1122,12 @@ class ReadTests(ReadBase):
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assertEqual([], self.log.read())
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_end_start_ts(self):
-        print >>sys.stderr, '===== seek_end_start_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_end_start_ts ====='
         for ii in range(9):
             self.log.read()
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -994,10 +1138,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_end_before_mid_ts(self):
-        print >>sys.stderr, '===== seek_end_before_mid_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_end_before_mid_ts ====='
         for ii in range(9):
             self.log.read()
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -1009,10 +1155,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_end_mid_ts(self):
-        print >>sys.stderr, '===== seek_end_mid_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_end_mid_ts ====='
         for ii in range(9):
             self.log.read()
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -1023,10 +1171,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_end_end_ts(self):
-        print >>sys.stderr, '===== seek_end_end_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_end_end_ts ====='
         for ii in range(9):
             self.log.read()
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -1038,10 +1188,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[9])
         self.assertEqual(d, DATA[9])
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_end_eof_ts(self):
-        print >>sys.stderr, '===== seek_end_eof_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_end_eof_ts ====='
         for ii in range(9):
             self.log.read()
         self.assertEqual(self.log.pos, (9, TIMESTAMPS[9]))
@@ -1049,10 +1201,12 @@ class ReadTests(ReadBase):
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assertEqual([], self.log.read())
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_eof_start_ts(self):
-        print >>sys.stderr, '===== seek_eof_start_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_eof_start_ts ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[9]))
@@ -1064,10 +1218,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[0])
         self.assertEqual(d, DATA[0])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_eof_before_mid_ts(self):
-        print >>sys.stderr, '===== seek_eof_before_mid_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_eof_before_mid_ts ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
@@ -1080,10 +1236,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_eof_mid_ts(self):
-        print >>sys.stderr, '===== seek_eof_mid_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_eof_mid_ts ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
@@ -1095,10 +1253,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[2])
         self.assertEqual(d, DATA[2])
         self.assert_(not self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_eof_end_ts(self):
-        print >>sys.stderr, '===== seek_eof_end_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_eof_end_ts ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
@@ -1111,10 +1271,12 @@ class ReadTests(ReadBase):
         self.assertEqual(ts, TIMESTAMPS[9])
         self.assertEqual(d, DATA[9])
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_seek_eof_eof_ts(self):
-        print >>sys.stderr, '===== seek_eof_eof_ts ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== seek_eof_eof_ts ====='
         for ii in range(10):
             self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
@@ -1123,10 +1285,12 @@ class ReadTests(ReadBase):
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assertEqual([], self.log.read())
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_get_cur_pos(self):
-        print >>sys.stderr, '===== get_cur_pos ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== get_cur_pos ====='
         self.assertEqual(self.log.pos, (0, TIMESTAMPS[0]))
         for ii in range(4):
             self.log.read()
@@ -1138,7 +1302,8 @@ class ReadTests(ReadBase):
         self.log.read()
         self.assertEqual(self.log.pos, (10, TIMESTAMPS[-1]))
         self.assert_(self.log.eof)
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
 
 
@@ -1152,15 +1317,16 @@ class OtherTests(unittest.TestCase):
 
     def write_test_log(self):
         log = rtshell.simpkl_log.SimplePickleLog(filename='test.log', mode='w',
-                meta=METADATA, verbose=True)
+                meta=METADATA, verbose=VERBOSITY)
         for t, d in zip(TIMESTAMPS, DATA):
             log.write(t, d)
         log.close()
 
     def test_with(self):
-        print >>sys.stderr, '===== with ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== with ====='
         with rtshell.simpkl_log.SimplePickleLog(filename='test.log',
-                mode='r', meta=METADATA, verbose=True) as log:
+                mode='r', meta=METADATA, verbose=VERBOSITY) as log:
             for ii in range(10):
                 entry = log.read()
                 if not entry:
@@ -1175,12 +1341,14 @@ class OtherTests(unittest.TestCase):
                         self.assertEqual(log.pos, (ii + 1, TIMESTAMPS[ii + 1]))
                     else:
                         self.assertEqual(log.pos, (ii + 1, TIMESTAMPS[-1]))
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
     def test_iterator(self):
-        print >>sys.stderr, '===== iterator ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== iterator ====='
         log = rtshell.simpkl_log.SimplePickleLog(filename='test.log',
-                mode='r', meta=METADATA, verbose=True)
+                mode='r', meta=METADATA, verbose=VERBOSITY)
         for (ii, entry) in enumerate(log):
             if not entry:
                 # End of log
@@ -1195,7 +1363,8 @@ class OtherTests(unittest.TestCase):
                 else:
                     self.assertEqual(log.pos, (ii + 1, TIMESTAMPS[-1]))
         log.close()
-        print >>sys.stderr, '===== ===== ====='
+        if VERBOSITY:
+            print >>sys.stderr, '===== ===== ====='
 
 
 def write_suite():

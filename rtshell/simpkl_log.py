@@ -367,15 +367,16 @@ class SimplePickleLog(ilog.Log):
                 continue
             break
         self._end = CurPos(index=entry[self.INDEX], timestamp=entry[self.TS],
-                prev_pos=entry[self.PREV], cache=pos - 2, file_pos=self._file.tell())
+                prev_pos=entry[self.PREV], cache=pos - 2,
+                file_pos=self._file.tell())
         # Restore the file position
         self._file.seek(current)
         self._vb_print('Measured end position: {0}'.format(self._end))
 
     def _set_eof_pos(self):
         '''Sets the current position to the end-of-file value.'''
-        print 'Setting EOF at file position {0}, prev cur pos {1}'.format(
-                self._file.tell(), self._cur_pos)
+        self._vb_print('Setting EOF at file position {0}, prev cur pos '\
+                '{1}'.format(self._file.tell(), self._cur_pos))
         self._cur_pos.index += 1 # The "next" index
         # Don't touch the time stamp (indicates the end time of the file)
         self._cur_pos.prev = self._cur_pos.cache # This is the final entry

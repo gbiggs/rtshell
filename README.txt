@@ -807,6 +807,7 @@ Changelog
 - New command: rtexit (Make a component exit).
 - New command: rtlog (Log and replay data streams).
 - New command: rtcheck (Check a system matches an RtsProfile file).
+- New command: rtcomp (Create composite components).
 - rtconf bash completion now completes set names, parameter names and values.
 - Merged rtcwd and bash_completion bash files into a single file.
 - Overhauled rtconf command line, added option to get a parameter value

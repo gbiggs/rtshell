@@ -818,6 +818,7 @@ Changelog
 - Support path filters in rtctree to speed up tree creation.
 - rtcat: Option to print a single port's information.
 - rtcat: Changes --ll to -ll.
+- rtcat: Display information about composite components.
 - rtcryo: Print RtsProfile to standard output by default.
 - rtdis: Disconnect-by-ID allows removing only one connection.
 - rtinject/rtprint: Added support for user data types.

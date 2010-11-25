@@ -19,28 +19,29 @@ Implementation of the command to display component information.
 '''
 
 
-from optparse import OptionParser, OptionError
+import optparse
 import os
-from rtctree.exceptions import RtcTreeError
-from rtctree.tree import create_rtctree
-from rtctree.path import parse_path
-from rtctree.utils import build_attr_string, get_num_columns_and_rows, \
-                            get_terminal_size
+import rtctree.exceptions
+import rtctree.tree
+import rtctree.path
+import rtctree.utils
+import SDOPackage
 import sys
 
-from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
-from rtshell.path import cmd_path_to_full_path
+import rtshell
+import rtshell.path
 
 
 def format_port(port, comp, start_indent=0, use_colour=True, long=0):
     result = []
-    indent = 1 + start_indent
+    indent = start_indent
     if long > 0:
         tag = '-'
     else:
         tag = '+'
-    name_string = build_attr_string('bold', supported=use_colour) + \
-            port.name + build_attr_string('reset', supported=use_colour)
+    name_string = rtctree.utils.build_attr_string('bold',
+            supported=use_colour) + port.name + \
+                rtctree.utils.build_attr_string('reset', supported=use_colour)
     result.append('{0}{1}: {2}'.format(tag.rjust(indent), port.porttype,
                                        name_string))
     if long > 0:
@@ -83,18 +84,19 @@ def format_port(port, comp, start_indent=0, use_colour=True, long=0):
                     dest_ports.append(name)
                     num_conns -= 1
             if dest_ports:
-                result.append('{0}Connected to  {1}'.format(\
-                        tag2.rjust(indent),
-                        build_attr_string('bold', supported=use_colour) +\
-                        dest_ports[0] + \
-                        build_attr_string('reset', supported=use_colour)))
+                result.append('{0}Connected to  {1}'.format(
+                    tag2.rjust(indent), rtctree.utils.build_attr_string('bold',
+                        supported=use_colour) + dest_ports[0] + \
+                        rtctree.utils.build_attr_string('reset',
+                            supported=use_colour)))
                 if len(dest_ports) > 1:
                     for dp in dest_ports[1:]:
                         result.append('{0}{1}{2}'.format(''.ljust(indent),
-                                                         ''.ljust(14),
-                        build_attr_string('bold', supported=use_colour) +\
-                        dp + \
-                        build_attr_string('reset', supported=use_colour)))
+                            ''.ljust(14),
+                        rtctree.utils.build_attr_string('bold',
+                            supported=use_colour) + dp + \
+                                rtctree.utils.build_attr_string('reset',
+                                    supported=use_colour)))
                 if long > 1:
                     indent += 2
                     keys = [k for k in conn.properties.keys() \
@@ -122,7 +124,152 @@ def format_port(port, comp, start_indent=0, use_colour=True, long=0):
     return result
 
 
-def format_component(object, use_colour=True, long=0):
+def find_composite_comp(tree, member, inst_name):
+    def get_fp(mgr, args):
+        for c in mgr.components:
+            if c.instance_name == inst_name:
+                return c.full_path
+        return None
+    def is_correct_mgr(node):
+        has_member = False
+        has_inst_name = False
+        for c in node.components:
+            if c.instance_name == inst_name:
+                has_inst_name = True
+            elif c.instance_name == member.instance_name:
+                has_member = True
+        return has_member and has_inst_name
+    return tree.iterate(get_fp, filter=['is_manager', is_correct_mgr])
+
+
+def format_composite(object, tree, start_indent=0, use_colour=True, long=0):
+    result = []
+    indent = start_indent
+    print object.orgs
+    for o in object.orgs:
+        if not o.sdo_id:
+            sdo_id = 'Unknown'
+        else:
+            sdo_id = o.sdo_id
+        id_str = rtctree.utils.build_attr_string('bold',
+                supported=use_colour) + sdo_id + \
+                        rtctree.utils.build_attr_string('reset',
+                        supported=use_colour)
+        if long > 0:
+            tag = '-'
+        else:
+            tag = '+'
+        result.append('{0}Composition {1}'.format(tag.rjust(indent),
+            id_str))
+        if long > 0:
+            indent += 2
+            padding = 8 # = len('Member') + 2
+            result.append('{0}{1}{2}'.format(''.ljust(indent),
+                'ID'.ljust(padding), o.org_id))
+            for m in o.members:
+                c_path = find_composite_comp(tree, object, m)
+                if c_path:
+                    result.append('{0}{1}{2}'.format(''.ljust(indent),
+                        'Member'.ljust(padding), c_path[0]))
+                else:
+                    result.append('{0}{1}{2}'.format(''.ljust(indent),
+                        'Member'.ljust(padding), 'Unknown'))
+            indent -= 2
+    return result
+
+
+def format_comp_member(object, tree, start_indent=0, use_colour=True, long=0):
+    result = []
+    indent = start_indent
+    for po in object.parent_orgs:
+        if not po.sdo_id:
+            sdo_id = 'Unknown'
+        else:
+            sdo_id = po.sdo_id
+        id_str = rtctree.utils.build_attr_string('bold',
+                supported=use_colour) + sdo_id + \
+                        rtctree.utils.build_attr_string('reset',
+                        supported=use_colour)
+        if long > 0:
+            tag = '-'
+        else:
+            tag = '+'
+        result.append('{0}Parent composition {1}'.format(tag.rjust(indent),
+            id_str))
+        if long > 0:
+            indent += 2
+            padding = 6 # = len('Path') + 2
+            result.append('{0}{1}{2}'.format(''.ljust(indent),
+                'ID'.ljust(padding), po.org_id))
+            composite_path = find_composite_comp(tree, object, po.sdo_id)
+            if composite_path:
+                result.append('{0}{1}{2}'.format(''.ljust(indent),
+                    'Path'.ljust(padding), composite_path[0]))
+            else:
+                result.append('{0}{1}{2}'.format(''.ljust(indent),
+                    'Path'.ljust(padding), 'Unknown'))
+            indent -= 2
+    return result
+
+
+def format_ec(ec, object, start_indent=0, use_colour=True, long=0):
+    result = []
+    indent = start_indent
+    handle_str = rtctree.utils.build_attr_string('bold',
+            supported=use_colour) + str(ec.handle) + \
+                    rtctree.utils.build_attr_string('reset',
+                    supported=use_colour)
+    if long > 0:
+        result.append('{0}Execution Context {1}'.format(\
+                '-'.rjust(indent), handle_str))
+        padding = 7 # = len('State') + 2
+        indent += 2
+        result.append('{0}{1}{2}'.format(''.ljust(indent),
+            'State'.ljust(padding),
+            ec.running_as_string(add_colour=use_colour)))
+        result.append('{0}{1}{2}'.format(''.ljust(indent),
+            'Kind'.ljust(padding),
+            ec.kind_as_string(add_colour=use_colour)))
+        result.append('{0}{1}{2}'.format(''.ljust(indent),
+            'Rate'.ljust(padding), ec.rate))
+        if ec.owner_name:
+            result.append('{0}{1}{2}'.format(''.ljust(indent),
+                'Owner'.ljust(padding), ec.owner_name))
+        if ec.participant_names:
+            if long > 1:
+                    result.append('{0}{1}'.format('-'.rjust(indent),
+                        'Participants'.ljust(padding)))
+                    indent += 2
+                    for pn in ec.participant_names:
+                        result.append('{0}{1}'.format(''.ljust(indent),
+                            pn))
+                    indent -= 2
+            else:
+                result.append('{0}{1}'.format('+'.rjust(indent),
+                    'Participants'.ljust(padding)))
+        if ec.properties:
+            if long > 1:
+                result.append('{0}{1}'.format('-'.rjust(indent),
+                    'Extra properties'.ljust(padding)))
+                indent += 2
+                keys = ec.properties.keys()
+                keys.sort()
+                pad_length = max([len(key) for key in keys]) + 2
+                for key in keys:
+                    result.append('{0}{1}{2}'.format(''.ljust(indent),
+                         key.ljust(pad_length), ec.properties[key]))
+                indent -= 2
+            else:
+                result.append('{0}{1}'.format('+'.rjust(indent),
+                    'Extra properties'.ljust(padding)))
+        indent -= 2
+    else:
+        result.append('{0}Execution Context {1}'.format(\
+                '+'.rjust(indent), handle_str))
+    return result
+
+
+def format_component(object, tree, use_colour=True, long=0):
     result = []
     result.append('{0}  {1}'.format(object.name,
             object.get_state_string(add_colour=use_colour)))
@@ -136,6 +283,15 @@ def format_component(object, use_colour=True, long=0):
                      ('Version', object.version)]
     if object.parent:
         profile_items.append(('Parent', object.parent_object))
+    if object.is_composite:
+        if object.is_composite_member:
+            profile_items.append(('Type', 'Composite composite member'))
+        else:
+            profile_items.append(('Type', 'Composite'))
+    elif object.is_composite_member:
+        profile_items.append(('Type', 'Monolithic composite member'))
+    else:
+        profile_items.append(('Type', 'Monolithic'))
     pad_length = max([len(item[0]) for item in profile_items]) + 2
     for item in profile_items:
         result.append('{0}{1}{2}'.format(''.ljust(indent),
@@ -155,58 +311,17 @@ def format_component(object, use_colour=True, long=0):
                                              extra_props[key]))
         indent -= 2
 
+    if object.is_composite:
+        result += format_composite(object, tree, start_indent=indent,
+                use_colour=use_colour, long=long)
+    if object.is_composite_member:
+        result += format_comp_member(object, tree, start_indent=indent,
+                use_colour=use_colour, long=long)
     for ec in object.owned_ecs:
-        if long > 0:
-            result.append('{0}Execution Context {1}'.format(\
-                    '-'.rjust(indent), ec.handle))
-            padding = 7 # = len('State') + 2
-            indent += 2
-            result.append('{0}{1}{2}'.format(''.ljust(indent),
-                'State'.ljust(padding),
-                ec.running_as_string(add_colour=use_colour)))
-            result.append('{0}{1}{2}'.format(''.ljust(indent),
-                'Kind'.ljust(padding),
-                ec.kind_as_string(add_colour=use_colour)))
-            result.append('{0}{1}{2}'.format(''.ljust(indent),
-                'Rate'.ljust(padding), ec.rate))
-            if ec.owner_name:
-                result.append('{0}{1}{2}'.format(''.ljust(indent),
-                    'Owner'.ljust(padding), ec.owner_name))
-            if ec.participant_names:
-                if long > 1:
-                        result.append('{0}{1}'.format('-'.rjust(indent),
-                            'Participants'.ljust(padding)))
-                        indent += 2
-                        for pn in ec.participant_names:
-                            result.append('{0}{1}'.format(''.ljust(indent),
-                                pn))
-                        indent -= 2
-                else:
-                    result.append('{0}{1}'.format('+'.rjust(indent),
-                        'Participants'.ljust(padding)))
-            if ec.properties:
-                if long > 1:
-                    result.append('{0}{1}'.format('-'.rjust(indent),
-                        'Extra properties'.ljust(padding)))
-                    indent += 2
-                    keys = ec.properties.keys()
-                    keys.sort()
-                    pad_length = max([len(key) for key in keys]) + 2
-                    for key in keys:
-                        result.append('{0}{1}{2}'.format(''.ljust(indent),
-                             key.ljust(pad_length), ec.properties[key]))
-                    indent -= 2
-                else:
-                    result.append('{0}{1}'.format('+'.rjust(indent),
-                        'Extra properties'.ljust(padding)))
-            indent -= 2
-        else:
-            result.append('{0}Execution Context {1}'.format(\
-                    '+'.rjust(indent), ec.handle))
-    indent -= 2
-
+        result += format_ec(ec, object, start_indent=indent,
+                use_colour=use_colour, long=long)
     for p in object.ports:
-        result += format_port(p, object, start_indent=indent + 1,
+        result += format_port(p, object, start_indent=indent,
                 use_colour=use_colour, long=long)
 
     return result
@@ -253,7 +368,7 @@ missing. Possible version conflict between rtshell and OpenRTM-aist.'.format(\
     # List loadable libraries
     result.append('Loadable modules:')
     for lm in object.loadable_modules:
-        result.append('  {0}'.format(lm))
+        result.append('  {0}'.format(lm['module_file_path']))
 
     return result
 
@@ -261,14 +376,13 @@ missing. Possible version conflict between rtshell and OpenRTM-aist.'.format(\
 def cat_target(cmd_path, full_path, options, tree=None):
     use_colour = sys.stdout.isatty()
 
-    path, port = parse_path(full_path)
-
-    trailing_slash = False
+    path, port = rtctree.path.parse_path(full_path)
     if not path[-1]:
         # There was a trailing slash
-        print >>sys.stderr, '{0}: {1}: Not an \
-object'.format(sys.argv[0], cmd_path)
-        return 1
+        trailing_slash = True
+        path = path[:-1]
+    else:
+        trailing_slash = False
 
     if not tree:
         if options.long > 0:
@@ -276,31 +390,39 @@ object'.format(sys.argv[0], cmd_path)
             filter = []
         else:
             filter = [path]
-        tree = create_rtctree(paths=path, filter=filter)
+        tree = rtctree.tree.create_rtctree(paths=path, filter=filter)
     if not tree:
         return tree
 
     if not tree.has_path(path):
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
+        print >>sys.stderr, '{0}: Cannot access {1}: No such object.'.format(
+                sys.argv[0], cmd_path)
         return 1
     object = tree.get_node(path)
     if port:
         if not object.is_component:
-            print >>sys.stderr, '{0}: Cannot access {1}: Not a \
-component.'.format(sys.argv[0], cmd_path)
+            print >>sys.stderr, '{0}: Cannot access {1}: Not a '\
+                    'component.'.format(sys.argv[0], cmd_path)
+            return 1
+        if trailing_slash:
+            print >>sys.stderr, '{0}: {1}: Not an object'.format(
+                    sys.argv[0], cmd_path)
             return 1
         p = object.get_port_by_name(port)
         if not p:
-            print >>sys.stderr, '{0}: Cannot access {1}: No such \
-port'.format(sys.argv[0], source_cmd_path)
+            print >>sys.stderr, '{0}: Cannot access {1}: No such port'.format(
+                    sys.argv[0], source_cmd_path)
             return 1
         for l in format_port(p, object, start_indent=0,
                 use_colour=sys.stdout.isatty(), long=options.long):
             print l
     else:
         if object.is_component:
-            for l in format_component(object, use_colour=sys.stdout.isatty(),
+            if trailing_slash:
+                print >>sys.stderr, '{0}: {1}: Not an object'.format(
+                        sys.argv[0], cmd_path)
+                return 1
+            for l in format_component(object, tree, use_colour=sys.stdout.isatty(),
                     long=options.long):
                 print l
         elif object.is_manager:
@@ -311,8 +433,8 @@ port'.format(sys.argv[0], source_cmd_path)
             print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
             return 1
         else:
-            print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
+            print >>sys.stderr, '{0}: Cannot access {1}: No such '\
+                    'object.'.format(sys.argv[0], cmd_path)
             return 1
 
     return 0
@@ -324,9 +446,9 @@ Display information about a manager or component.
 
 Equivalent to the POSIX 'cat' command.
 
-''' + RTSH_PATH_USAGE
-    version = RTSH_VERSION
-    parser = OptionParser(usage=usage, version=version)
+''' + rtshell.RTSH_PATH_USAGE
+    version = rtshell.RTSH_VERSION
+    parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-l', dest='long', action='count', default=0,
             help='Show more information. Specify multiple times for even \
 more information. [Default: False]')
@@ -335,7 +457,7 @@ more information. [Default: False]')
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except OptionError, e:
+    except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError:', e
         return 1
 
@@ -348,7 +470,7 @@ more information. [Default: False]')
     else:
         print >>sys.stderr, usage
         return 1
-    full_path = cmd_path_to_full_path(cmd_path)
+    full_path = rtshell.path.cmd_path_to_full_path(cmd_path)
 
     return cat_target(cmd_path, full_path, options, tree=tree)
 

@@ -30,6 +30,7 @@ import sys
 import rtshell
 import rtshell.path
 import rtshell.rtmgr
+import rtshell.rts_exceptions
 
 
 def get_paths(comps, ports):
@@ -53,7 +54,7 @@ def get_paths(comps, ports):
         cp = fp[:fp.rfind(':')]
         if (cp, p_path) not in comp_paths:
             comp_paths.append((cp, p_path))
-        port_paths.append((cp, fp, p_path, p_port))
+        port_paths.append((cp, p_path, p_port))
     return comp_paths, port_paths
 
 
@@ -62,20 +63,20 @@ def get_comp_objs(paths, tree):
     for fp, pp in paths:
         c = tree.get_node(pp)
         if not c:
-            raise rts_exceptions.NoObjectAtPathError(fp)
+            raise rtshell.rts_exceptions.NoObjectAtPathError(pp)
         if not c.is_component:
-            raise rts_exceptions.NotAComponentError(fp)
+            raise rtshell.rts_exceptions.NotAComponentError(pp)
         cs[fp] = c
     return cs
 
 
 def get_port_objs(paths, comps, tree):
     ps = []
-    for cp, fp, path, port_name in paths:
+    for cp, path, port_name in paths:
         c = comps[cp]
         p = c.get_port_by_name(port_name)
         if not p:
-            raise rts_exceptions.PortNotFoundError(cp, port_name)
+            raise rtshell.rts_exceptions.PortNotFoundError(cp, port_name)
         ps.append(p)
     return ps
 

@@ -139,8 +139,8 @@ def make_composite(mgr_path, mgr_full_path, comps, ports, options, tree=None):
     if not mgr:
         return 1
     # Call the manager to create the composite component
-    mgr.create_component('{0}?&instance_name={1}&conf.default.members={2}&conf.default.exported_ports={3}'.format(options.type,
-        options.name, comp_opts, port_opts))
+    mgr.create_component('{0}?&instance_name={1}&conf.default.members={2}&conf.default.exported_ports={3}{4}'.format(options.type,
+        options.name, comp_opts, port_opts, options.options))
     return 0
 
 
@@ -161,6 +161,9 @@ Ports are specified at the end of each path, preceeded by a colon (:).
     parser.add_option('-n', '--name', dest='name', action='store',
             type='string', default='CompositeRTC',
             help='Instance name of the new component. [Default: %default]')
+    parser.add_option('-o', '--options', dest='options', action='store',
+            type='string', default='', help='Extra options to pass to the '\
+            'component on creation. Must begin with an "&"')
     parser.add_option('-p', '--port', dest='ports', action='append',
             type='string', default=[], help='Port to export from the '\
             'composite component. All components with exported ports are '\

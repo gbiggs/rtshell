@@ -58,6 +58,8 @@ _rtsbc_rtopts()
                     ;;
         *rtcat)     opts="--version -h --help -l --ll"
                     ;;
+        *rtcheck)   opts="--version -h --help --dry-run -s --state= -v --verbose -x --xml -y --yaml"
+                    ;;
         *rtcwd)     opts=""
                     ;;
         *rtcomp)    opts="--version -h --help -c --comp= -n --name= -o --options= -p --port= -t --type="
@@ -65,6 +67,8 @@ _rtsbc_rtopts()
         *rtcon)     opts="--version -h --help -i --id= -n --name= -p --property="
                     ;;
         *rtconf)    opts="--version -h --help -l -s --set= -a --all"
+                    ;;
+        *rtcryo)    opts="--version -h --help -a --abstract= -n --system-name= -o --output= -v --system-version= -e --vendor= --verbose"
                     ;;
         *rtdeact)   opts="--version -h --help -e --exec_context="
                     ;;
@@ -76,25 +80,23 @@ _rtsbc_rtopts()
                     ;;
         *rtfind)    opts="--version -h --help --maxdepth= --iname= --name= --type="
                     ;;
+        *rtinject)  opts="--version -h --help -c --const= -m --mod= -n --number= -r --rate= -t --timeout= -v --verbose"
+                    ;;
         *rtls)      opts="--version -h --help -l -r --recurse"
                     ;;
         *rtmgr)     opts="--version -h --help -c --create= -d --delete= -i --init-func= -l --load= -u --unload="
                     ;;
+        *rtprint)   opts="--version -h --help -m --mod= -n --number= -r --rate= -t --timeout= -v --verbose"
+                    ;;
         *rtreset)   opts="--version -h --help -e --exec_context="
+                    ;;
+        *rtresurrect)    opts="--version -h --help --dry-run -v --verbose"
                     ;;
         *rtstart)   opts="--version -h --help --dry-run -v --verbose"
                     ;;
         *rtstop)    opts="--version -h --help --dry-run -v --verbose"
                     ;;
         *rtteardown)opts="--version -h --help --dry-run -v --verbose"
-                    ;;
-        *rtcryo)    opts="--version -h --help -a --abstract= -n --system-name= -o --output= -v --system-version= -e --vendor= --verbose"
-                    ;;
-        *rtresurrect)    opts="--version -h --help --dry-run -v --verbose"
-                    ;;
-        *rtprint)   opts="--version -h --help"
-                    ;;
-        *rtinject)  opts="--version -h --help"
                     ;;
         *)          ;;
     esac
@@ -206,11 +208,45 @@ _rtsbc_rtcomp()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
+    if [[ ${prev} == *rtcomp ]]
+    then
+        _rtsbc_rtobj ${cur}
+        return 0
+    fi
+
     if [[ ${cur} == -* ]] ;
     then
         _rtsbc_rtopts ${cur}
         return 0
     fi
+
+    if [[ ${cur} == : ]] ; then
+        colonopt=$(rtcat ${prev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }')
+        COMPREPLY=(${colonopt})
+        return 0
+    fi
+
+    case "${prev}" in
+        --comp|-c)
+            # Component path
+            _rtsbc_rtobj "${cur}"
+            return 0
+            ;;
+        --port|-p)
+            # Port path
+            _rtsbc_rtobj "${cur}" port
+            return 0
+            ;;
+        :)
+            preprev="${COMP_WORDS[COMP_CWORD-2]}"
+            colonopt=`rtcat ${preprev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }'`
+            COMPREPLY=($(compgen -W "${colonopt}" -- ${cur}))
+            return 0
+            ;;
+        *)
+            return 0
+            ;;
+    esac
 
     return 0
 }
@@ -470,7 +506,7 @@ _rtsbc_mgr_get_module_path()
 
 _rtsbc_rtmgr()
 {
-    local cur prev modules basenames rtcs inst_names module_path
+    local cur prev modules name basenames rtcs inst_names module_path
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
@@ -494,7 +530,8 @@ _rtsbc_rtmgr()
                 grep Filepath | awk '{print $2;}')"
             for mod in "${modules}" ;
             do
-                basenames="${basenames} $(basename ${mod})"
+                name=$(basename ${mod})
+                basenames="${basenames} ${name%.*}"
             done
             COMPREPLY=($(compgen -W "${basenames}" -- ${cur}))
             return 0
@@ -580,4 +617,5 @@ complete -F _rtsbc_rtshell -A file rtstop
 complete -F _rtsbc_rtshell -A file rtteardown
 complete -F _rtsbc_rtshell -A file rtresurrect
 complete -F _rtsbc_rtshell -A file rtcryo
+complete -F _rtsbc_rtshell -A file rtcheck
 

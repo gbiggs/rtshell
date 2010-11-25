@@ -36,6 +36,74 @@ class InvalidIndexError(EOFError):
 
 
 ###############################################################################
+## Entry timestamps
+
+class EntryTS(object):
+    def __init__(self, sec=0, nsec=0):
+        super(EntryTS, self).__init__()
+        self._sec = sec
+        self._nsec = nsec
+
+    def __lt__(self, other):
+        if self._sec < other.sec:
+            return True
+        elif self._sec == other.sec:
+            if self._nsec < other.nsec:
+                return True
+        return False
+
+    def __le__(self, other):
+        if self._sec < other.sec:
+            return True
+        elif self._sec == other.sec:
+            if self._nsec <= other.nsec:
+                return True
+        return False
+
+    def __eq__(self, other):
+        if self._sec == other.sec and self._nsec == other.nsec:
+            return True
+        return False
+
+    def __ne__(self, other):
+        if self._sec != other.sec or self._nsec != other.nsec:
+            return True
+        return False
+
+    def __gt__(self, other):
+        if self._sec > other.sec:
+            return True
+        elif self._sec == other.sec:
+            if self._nsec > other.nsec:
+                return True
+        return False
+
+    def __ge__(self, other):
+        if self._sec > other.sec:
+            return True
+        elif self._sec == other.sec:
+            if self._nsec >= other.nsec:
+                return True
+        return False
+
+    @property
+    def sec(self):
+        return self._sec
+
+    @sec.setter
+    def sec(self, sec):
+        self._sec = sec
+
+    @property
+    def nsec(self):
+        return self._nsec
+
+    @nsec.setter
+    def nsec(self, nsec):
+        self._nsec = nsec
+
+
+###############################################################################
 ## Log interface. All loggers must conform to this.
 
 class Log(object):
@@ -177,7 +245,8 @@ class Log(object):
 
         The timestamp is necessary to allow reading back data at the
         same rate as it was recorded. It must be an object that
-        supports comparisons using <, <=, =, >= and >.
+        supports comparisons using <, <=, =, >= and >. ilog.EntryTS
+        provides a suitable object.
 
         '''
         raise NotImplementedError

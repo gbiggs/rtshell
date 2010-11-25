@@ -24,6 +24,7 @@ import os.path
 import sys
 import unittest
 
+import rtshell.ilog
 import rtshell.simpkl_log
 
 
@@ -1365,6 +1366,104 @@ class OtherTests(unittest.TestCase):
         log.close()
         if VERBOSITY:
             print >>sys.stderr, '===== ===== ====='
+
+
+class TimestampTests(unittest.TestCase):
+    def test_lt(self):
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) < \
+                rtshell.ilog.EntryTS(sec=2, nsec=2), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) < \
+                rtshell.ilog.EntryTS(sec=2, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) < \
+                rtshell.ilog.EntryTS(sec=1, nsec=2), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) < \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) < \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) < \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) < \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+
+    def test_le(self):
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) <= \
+                rtshell.ilog.EntryTS(sec=2, nsec=2), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) <= \
+                rtshell.ilog.EntryTS(sec=2, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) <= \
+                rtshell.ilog.EntryTS(sec=1, nsec=2), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) <= \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) <= \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) <= \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) <= \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+
+    def test_eq(self):
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) == \
+                rtshell.ilog.EntryTS(sec=2, nsec=2), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) == \
+                rtshell.ilog.EntryTS(sec=2, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) == \
+                rtshell.ilog.EntryTS(sec=1, nsec=2), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) == \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) == \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) == \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) == \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+
+    def test_ne(self):
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) != \
+                rtshell.ilog.EntryTS(sec=2, nsec=2), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) != \
+                rtshell.ilog.EntryTS(sec=2, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) != \
+                rtshell.ilog.EntryTS(sec=1, nsec=2), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) != \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) != \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) != \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) != \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+
+    def test_gt(self):
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) > \
+                rtshell.ilog.EntryTS(sec=2, nsec=2), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) > \
+                rtshell.ilog.EntryTS(sec=2, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) > \
+                rtshell.ilog.EntryTS(sec=1, nsec=2), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) > \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) > \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) > \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) > \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+
+    def test_gt(self):
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) >= \
+                rtshell.ilog.EntryTS(sec=2, nsec=2), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) >= \
+                rtshell.ilog.EntryTS(sec=2, nsec=1), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) >= \
+                rtshell.ilog.EntryTS(sec=1, nsec=2), False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) >= \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) >= \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) >= \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) >= \
+                rtshell.ilog.EntryTS(sec=1, nsec=1), True)
 
 
 def write_suite():

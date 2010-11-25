@@ -538,8 +538,8 @@ _rtsbc_rtmgr()
             ;;
         --delete|-d)
             # Component instance name
-            rtcs="$(rtls ${COMP_WORDS[1]})"
-            for rtc in "${rtcs}" ;
+            rtcs=$(rtls ${COMP_WORDS[1]})
+            for rtc in ${rtcs} ;
             do
                 inst_names="${inst_names} ${rtc%.rtc}"
             done
@@ -556,15 +556,16 @@ _rtsbc_rtmgr()
             ;;
         --load|-l)
             # File name
-            #COMPREPLY=($(compgen -f ${cur}))
+            COMPREPLY=($(compgen -f ${cur}))
+            compopt -o filenames
             return 0
             ;;
         --unload|-u)
             # Loaded module path
-            #modules="$(rtcat ${COMP_WORDS[1]} | \
-                #sed -n '/Loaded modules/,/Loadable modules/p' | \
-                #grep Filepath | awk '{print $2;}')"
-            #COMPREPLY=($(compgen -W "${modules}" -- ${cur}))
+            modules="$(rtcat ${COMP_WORDS[1]} | \
+                sed -n '/Loaded modules/,/Loadable modules/p' | \
+                grep Filepath | awk '{print $2;}')"
+            COMPREPLY=($(compgen -W "${modules}" -- ${cur}))
             return 0
             ;;
         *)
@@ -610,7 +611,7 @@ complete -F _rtsbc_rtdis rtdis
 
 complete -F _rtsbc_rtconf rtconf
 
-complete -F _rtsbc_rtmgr -f rtmgr
+complete -F _rtsbc_rtmgr rtmgr
 
 complete -F _rtsbc_rtshell -A file rtstart
 complete -F _rtsbc_rtshell -A file rtstop

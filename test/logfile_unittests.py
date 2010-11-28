@@ -1370,6 +1370,7 @@ class OtherTests(unittest.TestCase):
 
 class TimestampTests(unittest.TestCase):
     def test_lt(self):
+        # EntryTS type
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) < \
                 rtshell.ilog.EntryTS(sec=2, nsec=2), True)
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) < \
@@ -1384,8 +1385,24 @@ class TimestampTests(unittest.TestCase):
                 rtshell.ilog.EntryTS(sec=1, nsec=1), False)
         self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) < \
                 rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        # Float type
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) < 2.000000002,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) < 2.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) < 1.000000002,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) < 1.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) < 1.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) < 1.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) < 1.000000001,
+                False)
 
     def test_le(self):
+        # EntryTS type
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) <= \
                 rtshell.ilog.EntryTS(sec=2, nsec=2), True)
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) <= \
@@ -1400,8 +1417,24 @@ class TimestampTests(unittest.TestCase):
                 rtshell.ilog.EntryTS(sec=1, nsec=1), False)
         self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) <= \
                 rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        # Float type
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) <= 2.000000002,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) <= 2.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) <= 1.000000002,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) <= 1.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) <= 1.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) <= 1.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) <= 1.000000001,
+                False)
 
     def test_eq(self):
+        # EntryTS type
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) == \
                 rtshell.ilog.EntryTS(sec=2, nsec=2), False)
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) == \
@@ -1416,8 +1449,24 @@ class TimestampTests(unittest.TestCase):
                 rtshell.ilog.EntryTS(sec=1, nsec=1), False)
         self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) == \
                 rtshell.ilog.EntryTS(sec=1, nsec=1), False)
+        # Float type
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) == 2.000000002,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) == 2.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) == 1.000000002,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) == 1.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) == 1.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) == 1.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) == 1.000000001,
+                False)
 
     def test_ne(self):
+        # EntryTS type
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) != \
                 rtshell.ilog.EntryTS(sec=2, nsec=2), True)
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) != \
@@ -1432,8 +1481,23 @@ class TimestampTests(unittest.TestCase):
                 rtshell.ilog.EntryTS(sec=1, nsec=1), True)
         self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) != \
                 rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        # Float type
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) != 2.000000002,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) != 2.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) != 1.000000002,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) != 1.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) != 1.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) != 1.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) != 1.000000001, True)
 
     def test_gt(self):
+        # EntryTS type
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) > \
                 rtshell.ilog.EntryTS(sec=2, nsec=2), False)
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) > \
@@ -1448,8 +1512,24 @@ class TimestampTests(unittest.TestCase):
                 rtshell.ilog.EntryTS(sec=1, nsec=1), True)
         self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) > \
                 rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        # Float type
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) > 2.000000002,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) > 2.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) > 1.000000002,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) > 1.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) > 1.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) > 1.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) > 1.000000001,
+                True)
 
     def test_gt(self):
+        # EntryTS type
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) >= \
                 rtshell.ilog.EntryTS(sec=2, nsec=2), False)
         self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) >= \
@@ -1464,6 +1544,21 @@ class TimestampTests(unittest.TestCase):
                 rtshell.ilog.EntryTS(sec=1, nsec=1), True)
         self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) >= \
                 rtshell.ilog.EntryTS(sec=1, nsec=1), True)
+        # Float type
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) >= 2.000000002,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) >= 2.000000001,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) >= 1.000000002,
+                False)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=1) >= 1.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=1, nsec=2) >= 1.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=1) >= 1.000000001,
+                True)
+        self.assertEqual(rtshell.ilog.EntryTS(sec=2, nsec=2) >= 1.000000001,
+                True)
 
 
 def write_suite():

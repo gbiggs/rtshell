@@ -39,50 +39,62 @@ class InvalidIndexError(EOFError):
 ## Entry timestamps
 
 class EntryTS(object):
-    def __init__(self, sec=0, nsec=0):
+    def __init__(self, sec=0, nsec=0, time=None):
         super(EntryTS, self).__init__()
-        self._sec = sec
-        self._nsec = nsec
+        if time is not None:
+            self._sec, self._nsec = self._get_values(time)
+        else:
+            self._sec = sec
+            self._nsec = nsec
+
+    def __str__(self):
+        return '{0}.{1:09}'.format(self._sec, self._nsec)
 
     def __lt__(self, other):
-        if self._sec < other.sec:
+        sec, nsec = self._get_values(other)
+        if self._sec < sec:
             return True
-        elif self._sec == other.sec:
-            if self._nsec < other.nsec:
+        elif self._sec == sec:
+            if self._nsec < nsec:
                 return True
         return False
 
     def __le__(self, other):
-        if self._sec < other.sec:
+        sec, nsec = self._get_values(other)
+        if self._sec < sec:
             return True
-        elif self._sec == other.sec:
-            if self._nsec <= other.nsec:
+        elif self._sec == sec:
+            if self._nsec <= nsec:
                 return True
         return False
 
     def __eq__(self, other):
-        if self._sec == other.sec and self._nsec == other.nsec:
+        sec, nsec = self._get_values(other)
+        if self._sec == sec and self._nsec == nsec:
             return True
         return False
 
     def __ne__(self, other):
-        if self._sec != other.sec or self._nsec != other.nsec:
+        sec, nsec = self._get_values(other)
+        if self._sec != sec or self._nsec != nsec:
             return True
         return False
 
     def __gt__(self, other):
-        if self._sec > other.sec:
+        sec, nsec = self._get_values(other)
+        if self._sec > sec:
             return True
-        elif self._sec == other.sec:
-            if self._nsec > other.nsec:
+        elif self._sec == sec:
+            if self._nsec > nsec:
                 return True
         return False
 
     def __ge__(self, other):
-        if self._sec > other.sec:
+        sec, nsec = self._get_values(other)
+        if self._sec > sec:
             return True
-        elif self._sec == other.sec:
-            if self._nsec >= other.nsec:
+        elif self._sec == sec:
+            if self._nsec >= nsec:
                 return True
         return False
 
@@ -101,6 +113,12 @@ class EntryTS(object):
     @nsec.setter
     def nsec(self, nsec):
         self._nsec = nsec
+
+    def _get_values(self, other):
+        if type(other) == EntryTS:
+            return other.sec, other.nsec
+        else:
+            return int(other), int((other * 1000000000) % 1000000000)
 
 
 ###############################################################################

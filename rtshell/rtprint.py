@@ -82,7 +82,10 @@ def read_from_ports(raw_paths, options, tree=None):
             comp_mgmt.disconnect(comp)
             comp_mgmt.deactivate(comp)
         else:
-            raw_input()
+            while True:
+                raw_input()
+            # The manager will catch the Ctrl-C and shut down itself, so don't
+            # disconnect/deactivate the component
     except KeyboardInterrupt:
         pass
     except EOFError:

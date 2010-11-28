@@ -31,11 +31,13 @@ import traceback
 
 class Port(object):
     '''Class to store the objects used for a port.'''
-    def __init__(self, data, port, formatter=None, *args, **kwargs):
+    def __init__(self, data, port, formatter=None, raw_spec=None, *args,
+            **kwargs):
         super(Port, self).__init__()
         self._data = data
         self._port = port
         self._formatter = formatter
+        self._raw = raw_spec
         members = [m for m in dir(self.data) if not m.startswith('_')]
         if len(members) == 2 and 'tm' in members and \
                 'data' in members and self.data.tm.__class__ == RTC.Time:
@@ -57,6 +59,16 @@ class Port(object):
     def formatter(self):
         '''Get the formatter function for the port, if any.'''
         return self._formatter
+
+    @property
+    def name(self):
+        '''Get the port's name.'''
+        return self._port.getName()
+
+    @property
+    def raw(self):
+        '''Get the raw port spec for this port, if any.'''
+        return self._raw
 
     @property
     def standard_type(self):
@@ -121,7 +133,7 @@ class GenComp(OpenRTM_aist.DataFlowComponentBase):
 
     def onInitialize(self):
         try:
-            self._ports = []
+            self._ports = {}
             for p in self._port_specs:
                 args, varargs, varkw, defaults = \
                 inspect.getargspec(p.type.__init__)
@@ -139,7 +151,8 @@ class GenComp(OpenRTM_aist.DataFlowComponentBase):
                 p_data = p.type(*init_args)
                 p_port = port_con(p.name, p_data)
                 port_reg(p.name, p_port)
-                self._ports.append(Port(p_data, p_port, formatter=p.formatter))
+                self._ports[p.name] = Port(p_data, p_port,
+                        formatter=p.formatter, raw_spec=p)
         except:
             print >>sys.stderr, traceback.format_exc()
             return RTC.RTC_ERROR

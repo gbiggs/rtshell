@@ -35,7 +35,7 @@ class Writer(gen_comp.GenComp):
         self._val = val
 
     def _behv(self, ec_id):
-        for p in self._ports:
+        for p in self._ports.values():
             p.port.write(self._val)
         return RTC.RTC_OK, True
 

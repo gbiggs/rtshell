@@ -33,7 +33,7 @@ class Reader(gen_comp.GenComp):
 
     def _behv(self, ec_id):
         execed = False
-        for p in self._ports:
+        for p in self._ports.values():
             if p.port.isNew():
                 execed = True
                 p.read()

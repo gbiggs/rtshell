@@ -21,11 +21,11 @@ Command to print data being sent by an output port.
 
 import sys
 
-from rtshell import rtprint
+import rtshell.rtprint
 
 
 if __name__ == '__main__':
-    sys.exit(rtprint.main())
+    sys.exit(rtshell.rtprint.main())
 
 
 # vim: tw=79

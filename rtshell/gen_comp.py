@@ -163,9 +163,9 @@ class GenComp(OpenRTM_aist.DataFlowComponentBase):
         res = RTC.RTC_OK
         if self._count < self._max or self._max < 0:
             res, executed = self._behv(ec_id)
-            if executed:
-                self._count += 1
-                if self._count == self._max:
+            if executed > 0:
+                self._count += executed
+                if self._max > -1 and self._count >= self._max:
                     self._set()
         return res
 
@@ -174,10 +174,11 @@ class GenComp(OpenRTM_aist.DataFlowComponentBase):
 
         Deriving classes must implement this function. It will be called by
         onExecute. It must return a tuple of (RTC result code, _behv result
-        code). The RTC result code is used to create the result of onExecute;
+        value). The RTC result code is used to create the result of onExecute;
         if no errors occur, it must be RTC.RTC_OK. The _behv result code is
         used to tell the component if the behaviour was able to execute
         (whether it succeeded or not), for the purposes of execution counting.
+        It should be the number of iterations executed.
 
         '''
         pass

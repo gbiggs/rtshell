@@ -32,10 +32,10 @@ class Reader(gen_comp.GenComp):
         gen_comp.GenComp.__init__(self, mgr, port_specs, *args, **kwargs)
 
     def _behv(self, ec_id):
-        execed = False
+        execed = 0
         for p in self._ports.values():
             if p.port.isNew():
-                execed = True
+                execed = 1
                 p.read()
                 print p.format()
         return RTC.RTC_OK, execed

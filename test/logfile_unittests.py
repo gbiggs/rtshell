@@ -1568,6 +1568,14 @@ class TimestampTests(unittest.TestCase):
         self.assertEqual(ts.sec, 1)
         self.assertEqual(ts.nsec, 2)
 
+    def test_to_float(self):
+        ts = rtshell.ilog.EntryTS(sec=1, nsec=0)
+        self.assertEqual(ts.float, 1.0)
+        ts = rtshell.ilog.EntryTS(sec=1, nsec=2)
+        self.assertEqual(ts.float, 1.000000002)
+        ts = rtshell.ilog.EntryTS(sec=0, nsec=200)
+        self.assertEqual(ts.float, 0.0000002)
+
 
 def write_suite():
     return unittest.TestLoader().loadTestsFromTestCase(WriteTests)

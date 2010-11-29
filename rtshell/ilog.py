@@ -99,6 +99,11 @@ class EntryTS(object):
         return False
 
     @property
+    def float(self):
+        '''Get the time value as a float.'''
+        return float(self._sec) + float(self._nsec) / 1e9
+
+    @property
     def sec(self):
         return self._sec
 

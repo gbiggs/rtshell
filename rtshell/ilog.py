@@ -47,6 +47,9 @@ class EntryTS(object):
             self._sec = sec
             self._nsec = nsec
 
+    def __repr__(self):
+        return 'EntryTS(_sec={0}, _nsec={1})'.format(self._sec, self._nsec)
+
     def __str__(self):
         return '{0}.{1:09}'.format(self._sec, self._nsec)
 

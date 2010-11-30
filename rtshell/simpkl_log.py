@@ -73,7 +73,7 @@ class SimplePickleLog(ilog.Log):
         super(SimplePickleLog, self).__init__(*args, **kwargs)
 
     def __str__(self):
-        return 'PickleLog({0}, {1}) at position {2}.'.format(self._fn,
+        return 'SimplePickleLog({0}, {1}) at position {2}.'.format(self._fn,
                 self._mode, self._cur_pos)
 
     def write(self, timestamp, data):

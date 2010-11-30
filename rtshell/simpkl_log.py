@@ -344,6 +344,8 @@ class SimplePickleLog(ilog.Log):
         self._vb_print('New current position is {0}.'.format(self._cur_pos))
 
     def _set_end(self):
+        # TODO: Store a pointer to the final entry at the start of the file so
+        # it can be retrieved instantly.
         # Save the current position
         current = self._file.tell()
         # Move to the end of the file
@@ -363,6 +365,15 @@ class SimplePickleLog(ilog.Log):
                 offset -= 1
                 continue
             except EOFError:
+                offset -= 1
+                continue
+            except TypeError:
+                offset -= 1
+                continue
+            except ImportError:
+                offset -= 1
+                continue
+            except ValueError:
                 offset -= 1
                 continue
             break

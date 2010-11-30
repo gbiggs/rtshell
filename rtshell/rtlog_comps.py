@@ -99,14 +99,18 @@ class Recorder(gen_comp.GenComp):
 
 class Player(gen_comp.GenComp):
     def __init__(self, mgr, port_specs, logger_type=None, filename='',
-            lims_are_ind=False, start=-1, end=-1, rate=1.0, abs_times=False,
+            lims_are_ind=False, start=0, end=-1, rate=1.0, abs_times=False,
             ignore_times=False, verbose=False, *args, **kwargs):
         if lims_are_ind:
-            max = end
+            max = end - start
             self._end = -1
+            self._start_ind = start
+            self._start_time = -1
         else:
             max = -1
             self._end = end
+            self._start_ind = -1
+            self._start_time = start
         try:
             del kwargs['max']
         except KeyError:
@@ -130,8 +134,6 @@ class Player(gen_comp.GenComp):
             self._vprint('Log started at {0}'.format(start))
             self._vprint('Log port specs are {0}'.format(
                 [str(s) for s in log_port_specs]))
-            self._offset = time.time() - start
-            self._vprint('Time offset is {0}'.format(self._offset))
 
             # Check ports match
             for name in self._ports:
@@ -151,7 +153,29 @@ class Player(gen_comp.GenComp):
                                     type(self._ports[name].data))
                     return RTC.RTC_ERROR
 
-            # Fast-forward to the start time
+            # Sanity-check the end time
+            if self._end >= 0 and self._end < self._l.start[1]:
+                print >>sys.stderr, 'WARNING: Specified end time is before '\
+                        'the first entry time.'
+
+            # Fast-forward to the start time (with a sanity-check)
+            if self._start_ind >= 0:
+                if self._start_ind > self._l.end[0]:
+                    print >>sys.stderr, 'ERROR: Specified start index is '\
+                            'after the last entry index.'
+                    return RTC.RTC_ERROR
+                self._l.seek(index=self._start_ind)
+                self._offset = time.time() - self._l.pos[1]
+            elif self._start_time >= 0:
+                if self._start_time > self._l.end[1]:
+                    print >>sys.stderr, 'ERROR: Specified start time is '\
+                            'after the last entry time.'
+                    return RTC.RTC_ERROR
+                self._l.seek(timestamp=self._start_time)
+                self._offset = time.time() - self._l.pos[1]
+            else:
+                self._offset = time.time() - start
+            self._vprint('Time offset is {0}'.format(self._offset))
         except:
             traceback.print_exc()
             return RTC.RTC_ERROR
@@ -188,8 +212,8 @@ class Player(gen_comp.GenComp):
                         self._vprint(
                                 'Reached maximum number of results to play.')
                         break
-                    if self._end > -1 and self._l.pos[1] > self._end:
-                        self._bprint('Reached end time (current position: '\
+                    if self._end >= 0 and self._l.pos[1] > self._end:
+                        self._vprint('Reached end time (current position: '\
                                 '{0}).'.format(self._l.pos))
                         break
                     if not self._pub_log_item():
@@ -213,6 +237,9 @@ class Player(gen_comp.GenComp):
         index, ts, entry = entries[0]
         p_name, data = entry
         if p_name in self._ports:
+            if not self._abs and self._ports[p_name].standard_type:
+                data.tm.sec += int(self._offset)
+                data.tm.nsec += int((self._offset * 1000000000) % 1000000000)
             self._ports[p_name].port.write(data)
         return True
 

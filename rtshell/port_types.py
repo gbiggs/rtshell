@@ -31,14 +31,16 @@ import rts_exceptions
 ## Class for managing port specifications.
 
 class PortSpec(object):
-    def __init__(self, name, type, target, input=True, formatter=None, *args,
-            **kwargs):
+    def __init__(self, name, type, target, input=True, formatter=None,
+            type_name='', raw='', *args, **kwargs):
         super(PortSpec, self).__init__()
-        self._name = name
-        self._type = type
-        self._target = target
-        self._input = input
         self._formatter = formatter
+        self._input = input
+        self._name = name
+        self._raw = raw
+        self._target = target
+        self._type = type
+        self._type_name = type_name
 
     def __str__(self):
         if self.input:
@@ -49,19 +51,9 @@ class PortSpec(object):
                 port_dir, self.name)
 
     @property
-    def name(self):
-        '''The name of the port.'''
-        return self._name
-
-    @property
-    def type(self):
-        '''The port's data type constructor function.'''
-        return self._type
-
-    @property
-    def target(self):
-        '''The target port of this port, as (path, port_name).'''
-        return self._target
+    def formatter(self):
+        '''Get the port's formatter function.'''
+        return self._formatter
 
     @property
     def input(self):
@@ -69,14 +61,34 @@ class PortSpec(object):
         return self._input
 
     @property
+    def name(self):
+        '''The name of the port.'''
+        return self._name
+
+    @property
     def output(self):
         '''If the port is an output port or not.'''
         return not self._input
 
     @property
-    def formatter(self):
-        '''Get the port's formatter function.'''
-        return self._formatter
+    def raw(self):
+        '''The raw port specification that created this PortSpec.'''
+        return self._raw
+
+    @property
+    def target(self):
+        '''The target port of this port, as (path, port_name).'''
+        return self._target
+
+    @property
+    def type(self):
+        '''The port's data type constructor function.'''
+        return self._type
+
+    @property
+    def type_name(self):
+        '''The port's data type name.'''
+        return self._type_name
 
 
 ###############################################################################
@@ -101,7 +113,7 @@ def make_port_specs(ports, modmgr, tree):
     '''
     result = []
     index = 0
-    for (rtc, port, name, form) in ports:
+    for (rtc, port, name, form, raw) in ports:
         port_obj = comp_mgmt.find_port(rtc, port, tree)
         if port_obj.porttype == 'DataInPort':
             input = False
@@ -121,7 +133,8 @@ def make_port_specs(ports, modmgr, tree):
         else:
             formatter = None
         result.append(PortSpec(name, port_cons, (rtc, port), input=input,
-            formatter=formatter))
+            formatter=formatter,
+            type_name=port_obj.properties['dataport.data_type'], raw=raw))
         index += 1
     return result
 
@@ -130,15 +143,17 @@ def parse_targets(targets):
     '''Parse target ports, as specified on the command line.
 
     Parses target ports specified onto the command line into a tuple of
-    (path, port, name), where path is in the rtctree format.
+    (path, port, name, formatter, target), where path is in the rtctree
+    format.
 
     @param targets A list of target ports, as strings. Each string should
                    be in the format "path:port.name#formatter", e.g.
                    "/localhost/blurg.host_cxt/comp0.rtc:input.stuff#print_stuff".
-                   The name component is optional; if it is not present, neither should
-                   the '.' character be. The formatter component is optional;
-                   if it is not present, neither should the '#' character be. A
-                   name is not required to use a formatter.
+                   The name component is optional; if it is not present,
+                   neither should the '.' character be. The formatter
+                   component is optional; if it is not present, neither
+                   should the '#' character be. A name is not required
+                   to use a formatter.
 
     '''
     regex = re.compile(r'^(?P<path>[:\w/.]+?)(?:\.(?P<name>\w+))?(?:#(?P<form>[\w.]+))?$')
@@ -151,7 +166,7 @@ def parse_targets(targets):
         path, port = rtctree.path.parse_path(raw_path)
         if not port or not path[-1]:
             raise rts_exceptions.BadPortSpecError(t)
-        result.append((path, port, name, formatter))
+        result.append((path, port, name, formatter, t))
     return result
 
 

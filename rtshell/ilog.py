@@ -322,6 +322,9 @@ class Log(object):
     def _close(self):
         raise NotImplementedError
 
+    def _eof(self):
+        return True
+
     def _finalise(self):
         pass
 

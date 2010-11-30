@@ -21,6 +21,7 @@ Implementation of the logging command.
 
 import OpenRTM_aist
 import optparse
+import os
 import RTC
 import rtctree.tree
 import rtctree.utils
@@ -155,10 +156,10 @@ def play_log(raw_paths, options, tree=None):
         paths = [t[0] for t in targets]
         tree = rtctree.tree.create_rtctree(paths=paths, filter=paths)
     port_specs = port_types.make_port_specs(targets, mm, tree)
-    port_types.require_all_output(port_specs)
     if options.verbose:
         print >>sys.stderr, \
                 'Port specifications: {0}'.format([str(p) for p in port_specs])
+    port_types.require_all_output(port_specs)
 
     comp_name, mgr = comp_mgmt.make_comp('rtlog_player', tree,
             rtlog_comps.Player, port_specs, event=event, logger_type=l_type,
@@ -171,9 +172,6 @@ def play_log(raw_paths, options, tree=None):
     comp = comp_mgmt.find_comp_in_mgr(comp_name, mgr)
     comp_mgmt.connect(comp, port_specs, tree)
     comp_mgmt.activate(comp)
-    #if comp_mgmt.activate(comp) != RTC.RTC_OK:
-        #print >>sys.stderr, '{0}: Error activating player.'.format(sys.argv[0])
-        #return 1
     try:
         if options.timeout != -1:
             event.wait(options.timeout)
@@ -195,6 +193,58 @@ def play_log(raw_paths, options, tree=None):
     tree.give_away_orb()
     del tree
     comp_mgmt.shutdown(mgr)
+    return 0
+
+
+def display_info(options):
+    if not options.filename:
+        print >>sys.stderr, \
+                '{0}: No log file specified.'.format(sys.argv[0])
+        return 1
+
+    if options.logger == 'simpkl':
+        l_type = simpkl_log.SimplePickleLog
+    elif options.logger == 'text':
+        print >>sys.stderr, '{0}: Logger type "text" does not support '\
+                'playback.'.format(sys.argv[0])
+        return 1
+    else:
+        print >>sys.stderr, '{0}: Invalid logger type: {1}',format(sys.argv[0],
+                options.logger)
+        return 1
+
+    mm = modmgr.ModuleMgr(verbose=options.verbose)
+    mm.load_mods_and_poas(options.modules)
+    if options.verbose:
+        print >>sys.stderr, \
+                'Pre-loaded modules: {0}'.format(mm.loaded_mod_names)
+
+    statinfo = os.stat(options.filename)
+    size = statinfo.st_size
+    log = l_type(filename=options.filename, mode='r', verbose=options.verbose)
+
+    start_time, port_specs = log.metadata
+    start_time_str = time.strftime('%Y-%m-%d %H:%M:%S',
+            time.localtime(start_time))
+    first_ind, first_time = log.start
+    first_time_str = time.strftime('%Y-%m-%d %H:%M:%S',
+            time.localtime(first_time.float))
+    end_ind, end_time = log.end
+    end_time_str = time.strftime('%Y-%m-%d %H:%M:%S',
+            time.localtime(end_time.float))
+
+    print 'Name: {0}'.format(options.filename)
+    print 'Size: {0}B'.format(size)
+    print 'Start time: {0} ({1})'.format(start_time_str, start_time)
+    print 'First entry time: {0} ({1})'.format(first_time_str, first_time)
+    print 'End time: {0} ({1})'.format(end_time_str, end_time)
+    print 'Number of entries: {0}'.format(end_ind + 1)
+    for ii, p in enumerate(port_specs):
+        print 'Channel {0}'.format(ii + 1)
+        print '  Name: {0}'.format(p.name)
+        print '  Data type: {0} ({1})'.format(p.type_name, p.type)
+        print '  Origin: {0}'.format(p.raw)
+
     return 0
 
 
@@ -282,7 +332,7 @@ settings compatible with the port.'''
         print >>sys.stderr, 'OptionError:', e
         return 1
 
-    if len(args) < 1:
+    if len(args) < 1 and not options.display_info:
         print >>sys.stderr, usage
         return 1
 

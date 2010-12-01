@@ -85,7 +85,7 @@ def find_port(rtc, port, tree=None, orb=None):
     comp = get_comp(rtc, tree=tree, orb=orb)
     port_obj = comp.get_port_by_name(port)
     if not port_obj:
-        raise PortNotFoundError(rtc, port)
+        raise rts_exceptions.PortNotFoundError(rtc, port)
     return port_obj
 
 

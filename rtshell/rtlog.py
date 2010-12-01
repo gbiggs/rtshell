@@ -35,6 +35,7 @@ import modmgr
 import path
 import port_types
 import rtlog_comps
+import rts_exceptions
 import rtshell
 import simpkl_log
 
@@ -42,21 +43,31 @@ import simpkl_log
 def record_log(raw_paths, options, tree=None):
     event = threading.Event()
 
+    if options.end is not None and options.end < 0:
+        print >>sys.stderr, '{0}: End time/index cannot be '\
+                'negative.'.format(sys.argv[0])
+        return 1
+    if options.end is None and options.index:
+        print >>sys.stderr, '{0}: WARNING: --index has no effect without '\
+                '--end'.format(sys.argv[0])
+
     mm = modmgr.ModuleMgr(verbose=options.verbose)
     mm.load_mods_and_poas(options.modules)
     if options.verbose:
         print >>sys.stderr, \
                 'Pre-loaded modules: {0}'.format(mm.loaded_mod_names)
 
-    if options.timeout != -1:
+    if options.timeout is not None:
         print >>sys.stderr, 'Record for {0}s'.format(options.timeout)
     else:
-        if options.end != -1:
+        if options.end is not None:
             if options.index:
                 print >>sys.stderr, 'Record {0} entries.'.format(
-                        options.end)
+                        int(options.end))
             else:
-                print >>sys.stderr, 'Record until {0}.'.format(options.end)
+                end_str = time.strftime('%Y-%m-%d %H:%M:%S',
+                        time.localtime(options.end))
+                print >>sys.stderr, 'Record until {0}.'.format(end_str)
 
     if options.logger == 'simpkl':
         l_type = simpkl_log.SimplePickleLog
@@ -77,10 +88,14 @@ def record_log(raw_paths, options, tree=None):
         print >>sys.stderr, \
                 'Port specifications: {0}'.format([str(p) for p in port_specs])
 
+    if options.end is None:
+        end = -1 # Send -1 as the default
+    else:
+        end = options.end
     comp_name, mgr = comp_mgmt.make_comp('rtlog_recorder', tree,
             rtlog_comps.Recorder, port_specs, event=event,
             logger_type=l_type, filename=options.filename,
-            lims_are_ind=options.index, end=options.end,
+            lims_are_ind=options.index, end=end,
             verbose=options.verbose)
     if options.verbose:
         print >>sys.stderr, 'Created component {0}'.format(comp_name)
@@ -92,11 +107,11 @@ def record_log(raw_paths, options, tree=None):
         #comp_mgmt.shutdown(mgr)
         raise e
     try:
-        if options.timeout != -1:
+        if options.timeout is not None:
             event.wait(options.timeout)
             comp_mgmt.disconnect(comp)
             comp_mgmt.deactivate(comp)
-        elif options.end > -1:
+        elif options.end is not None:
             event.wait()
             comp_mgmt.disconnect(comp)
             comp_mgmt.deactivate(comp)
@@ -122,6 +137,17 @@ def play_log(raw_paths, options, tree=None):
         print >>sys.stderr, \
                 '{0}: No log file specified.'.format(sys.argv[0])
         return 1
+    if options.start is not None and options.start < 0:
+        print >>sys.stderr, '{0}: Start time/index cannot be '\
+                'negative.'.format(sys.argv[0])
+        return 1
+    if options.end is not None and options.end < 0:
+        print >>sys.stderr, '{0}: End time/index cannot be '\
+                'negative.'.format(sys.argv[0])
+        return 1
+    if options.end is None and options.start is None and options.index:
+        print >>sys.stderr, '{0}: WARNING: --index has no effect without '\
+                '--start or --end'.format(sys.argv[0])
 
     mm = modmgr.ModuleMgr(verbose=options.verbose)
     mm.load_mods_and_poas(options.modules)
@@ -129,15 +155,40 @@ def play_log(raw_paths, options, tree=None):
         print >>sys.stderr, \
                 'Pre-loaded modules: {0}'.format(mm.loaded_mod_names)
 
-    if options.timeout != -1:
-        print >>sys.stderr, 'Play for {0}s'.format(options.timeout)
+    if options.timeout is not None:
+        print >>sys.stderr, 'Playing for {0}s.'.format(options.timeout)
     else:
-        if options.end != -1:
-            if options.index:
-                print >>sys.stderr, 'Play {0} entries.'.format(
-                        options.end)
+        if options.end is not None:
+            if options.start is not None:
+                if options.index:
+                    print >>sys.stderr, 'Playing from entry {0} to entry '\
+                            '{1}.'.format(int(options.start), int(options.end))
+                else:
+                    start_str = time.strftime('%Y-%m-%d %H:%M:%S',
+                            time.localtime(options.start))
+                    end_str = time.strftime('%Y-%m-%d %H:%M:%S',
+                            time.localtime(options.end))
+                    print >>sys.stderr, 'Playing from {0} ({1}) to {2} '\
+                            '({3}).'.format(start_str, options.start, end_str,
+                                    options.end)
             else:
-                print >>sys.stderr, 'Play until {0}.'.format(options.end)
+                if options.index:
+                    print >>sys.stderr, 'Playing {0} entries.'.format(
+                            int(options.end))
+                else:
+                    end_str = time.strftime('%Y-%m-%d %H:%M:%S',
+                            time.localtime(options.end))
+                    print >>sys.stderr, 'Playing until {0} ({1}).'.format(
+                            end_str, options.end)
+        elif options.start is not None:
+            if options.index:
+                print >>sys.stderr, 'Playing from entry {0}.'.format(
+                        int(options.start), int(options.end))
+            else:
+                start_str = time.strftime('%Y-%m-%d %H:%M:%S',
+                        time.localtime(options.start))
+                print >>sys.stderr, 'Playing from {0} ({1}).'.format(start_str,
+                        options.start)
 
     if options.logger == 'simpkl':
         l_type = simpkl_log.SimplePickleLog
@@ -161,26 +212,43 @@ def play_log(raw_paths, options, tree=None):
                 'Port specifications: {0}'.format([str(p) for p in port_specs])
     port_types.require_all_output(port_specs)
 
+    if options.start is None:
+        start = 0 # Send 0 as the default
+    else:
+        start = options.start
+    if options.end is None:
+        end = -1 # Send -1 as the default
+    else:
+        end = options.end
     comp_name, mgr = comp_mgmt.make_comp('rtlog_player', tree,
             rtlog_comps.Player, port_specs, event=event, logger_type=l_type,
-            filename=options.filename, lims_are_ind=options.index,
-            start=options.start, end=options.end, rate=options.rate,
-            abs_times=options.abs_times, ignore_times=options.ig_times,
-            verbose=options.verbose)
+            filename=options.filename, lims_are_ind=options.index, start=start,
+            end=end, rate=options.rate, abs_times=options.abs_times,
+            ignore_times=options.ig_times, verbose=options.verbose)
     if options.verbose:
         print >>sys.stderr, 'Created component {0}'.format(comp_name)
     comp = comp_mgmt.find_comp_in_mgr(comp_name, mgr)
     comp_mgmt.connect(comp, port_specs, tree)
     comp_mgmt.activate(comp)
     try:
-        if options.timeout != -1:
+        if options.timeout is not None:
             event.wait(options.timeout)
             comp_mgmt.disconnect(comp)
-            comp_mgmt.deactivate(comp)
-        elif options.end > -1:
+            try:
+                comp_mgmt.deactivate(comp)
+            except rts_exceptions.DeactivateError:
+                # Don't care about this because the component will be shut down
+                # soon anyway
+                pass
+        elif options.end is not None:
             event.wait()
             comp_mgmt.disconnect(comp)
-            comp_mgmt.deactivate(comp)
+            try:
+                comp_mgmt.deactivate(comp)
+            except rts_exceptions.DeactivateError:
+                # Don't care about this because the component will be shut down
+                # soon anyway
+                pass
         else:
             while True:
                 raw_input()
@@ -273,7 +341,7 @@ settings compatible with the port.'''
             action='store_true', default=False, help='Display the log '\
             'information and exit.')
     parser.add_option('-e', '--end', dest='end', action='store', type='float',
-            default=-1,
+            default=None,
             help='Time or entry index to stop recording or playback. Must be '\
             'within the bounds of the log. Specify -1 to record forever or '\
             'replay to the end of the log. Use --index to specify that this '\
@@ -308,14 +376,13 @@ settings compatible with the port.'''
             type='float', default=1.0,
             help='Scale the playback speed of the log. [Default: %default]')
     parser.add_option('-s', '--start', dest='start', action='store',
-            type='float', default=0,
+            type='float', default=None,
             help='Time or entry index to start playback from. Must be within '\
             'the bounds of the log. Use --index to specify that this value '\
             'is an index. [Default: %default]')
     parser.add_option('-t', '--timeout', dest='timeout', action='store',
-            type='float', default=-1, help='Record/replay data for this many '\
-            'seconds. Specify -1 for no timeout. This option overrides '\
-            '--number. [Default: %default]')
+            type='float', default=None, help='Record/replay data for this '\
+            'many seconds. This option overrides --start/--end.')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
             help='Output verbose information. [Default: %default]')

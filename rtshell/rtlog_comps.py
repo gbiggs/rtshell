@@ -27,6 +27,7 @@ import traceback
 
 import gen_comp
 import ilog
+import rts_exceptions
 
 
 ###############################################################################
@@ -101,16 +102,18 @@ class Player(gen_comp.GenComp):
     def __init__(self, mgr, port_specs, logger_type=None, filename='',
             lims_are_ind=False, start=0, end=-1, rate=1.0, abs_times=False,
             ignore_times=False, verbose=False, *args, **kwargs):
-        if lims_are_ind:
-            max = end - start
-            self._end = -1
-            self._start_ind = start
-            self._start_time = -1
+        if end >= 0:
+            if lims_are_ind:
+                max = end - (start - 1)
+                self._end = -1
+            else:
+                max = -1
+                self._end = end
         else:
+            self._end = -1
             max = -1
-            self._end = end
-            self._start_ind = -1
-            self._start_time = start
+        self._lims_ind = lims_are_ind
+        self._start = start
         try:
             del kwargs['max']
         except KeyError:
@@ -119,7 +122,6 @@ class Player(gen_comp.GenComp):
                 **kwargs)
         self._logger_type = logger_type
         self._fn = filename
-        self._start = start
         self._rate = rate
         self._abs = abs_times
         self._ig_times = ignore_times
@@ -151,6 +153,7 @@ class Player(gen_comp.GenComp):
                     print >>sys.stderr, 'ERROR: Port {0} is incorrect data '\
                             'type; should be {1}.'.format(name,
                                     type(self._ports[name].data))
+                    self._set()
                     return RTC.RTC_ERROR
 
             # Sanity-check the end time
@@ -159,20 +162,23 @@ class Player(gen_comp.GenComp):
                         'the first entry time.'
 
             # Fast-forward to the start time (with a sanity-check)
-            if self._start_ind >= 0:
-                if self._start_ind > self._l.end[0]:
-                    print >>sys.stderr, 'ERROR: Specified start index is '\
-                            'after the last entry index.'
-                    return RTC.RTC_ERROR
-                self._l.seek(index=self._start_ind)
-                self._offset = time.time() - self._l.pos[1]
-            elif self._start_time >= 0:
-                if self._start_time > self._l.end[1]:
-                    print >>sys.stderr, 'ERROR: Specified start time is '\
-                            'after the last entry time.'
-                    return RTC.RTC_ERROR
-                self._l.seek(timestamp=self._start_time)
-                self._offset = time.time() - self._l.pos[1]
+            if self._start > 0: # If 0 index, already there; if 0 time... hmm
+                if self._lims_ind:
+                    if self._start > self._l.end[0]:
+                        print >>sys.stderr, 'ERROR: Specified start index is '\
+                                'after the last entry index.'
+                        self._set()
+                        return RTC.RTC_ERROR
+                    self._l.seek(index=self._start)
+                    self._offset = time.time() - self._l.pos[1].float
+                else:
+                    if self._start > self._l.end[1]:
+                        print >>sys.stderr, 'ERROR: Specified start time is '\
+                                'after the last entry time.'
+                        self._set()
+                        return RTC.RTC_ERROR
+                    self._l.seek(timestamp=self._start)
+                    self._offset = time.time() - self._l.pos[1].float
             else:
                 self._offset = time.time() - start
             self._vprint('Time offset is {0}'.format(self._offset))
@@ -205,16 +211,23 @@ class Player(gen_comp.GenComp):
                 # Calculate the current time in log-time
                 now = (time.time() - self._offset) * self._rate
                 self._vprint('Current time in logspace is {0}'.format(now))
+                if self._end >= 0 and now > self._end:
+                    self._vprint('Reached end time (current position: '\
+                            '{0}).'.format(self._l.pos))
+                    self._set()
+                    return RTC.RTC_OK, 0
                 # Read until past it - read one at a time to avoid huge memory
                 # spikes if the log contains large-sized data
                 while self._l.pos[1] <= now:
                     if self._max > -1 and execed >= self._max:
                         self._vprint(
                                 'Reached maximum number of results to play.')
+                        self._set()
                         break
                     if self._end >= 0 and self._l.pos[1] > self._end:
                         self._vprint('Reached end time (current position: '\
                                 '{0}).'.format(self._l.pos))
+                        self._set()
                         break
                     if not self._pub_log_item():
                         print >>sys.stderr, '{0}: End of log reached.'.format(

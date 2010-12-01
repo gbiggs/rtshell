@@ -45,7 +45,7 @@ class TextLog(ilog.Log):
     def write(self, timestamp, data):
         pos = self._file.tell()
         self._file.write('{0}\t{1}\n'.format(timestamp, data))
-        self._vb_print('Wrote entry at {0}.'.format(pos)
+        self._vb_print('Wrote entry at {0}.'.format(pos))
 
     def _close(self):
         if not self._is_open:

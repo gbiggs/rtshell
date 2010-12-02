@@ -37,18 +37,21 @@ class PortSpec(object):
         self._formatter = formatter
         self._input = input
         self._name = name
-        self._raw_specs = raw
+        self._raw_specs = [raw]
         self._targets = [target]
         self._type = type
         self._type_name = type_name
 
     def __str__(self):
-        if self.input:
-            port_dir = '>'
+        if self._formatter:
+            fmt_str = '#{0}'.format(self._formatter)
         else:
-            port_dir = '<'
-        return '{0}{1}{2}'.format(rtctree.path.format_path(self.target),
-                port_dir, self.name)
+            fmt_str = ''
+        result = ''
+        for t in self._targets:
+            result += '{0}.{1}{2},'.format(rtctree.path.format_path(t),
+                    self._name, fmt_str)
+        return result[:-1]
 
     @property
     def formatter(self):
@@ -73,7 +76,7 @@ class PortSpec(object):
     @property
     def raw(self):
         '''The raw port specifications that created this PortSpec.'''
-        return self._raw
+        return self._raw_specs
 
     @property
     def targets(self):
@@ -92,8 +95,8 @@ class PortSpec(object):
 
     def add_target(self, target, raw=''):
         '''Add an additional target for this port.'''
-        self._targets.append(new_target)
-        self._raw.append(raw)
+        self._targets.append(target)
+        self._raw_specs.append(raw)
 
 
 ###############################################################################

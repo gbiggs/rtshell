@@ -150,16 +150,17 @@ def connect(comp, port_specs, tree):
     conns = []
     for p in port_specs:
         local_port = find_local_port(p.name, ports)
-        dest_port = find_port(p.target[0], p.target[1], tree)
-        props['dataport.data_type'] = \
-                dest_port.properties['dataport.data_type']
-        prof = RTC.ConnectorProfile(p.name + '_' + p.target[1],
-                '', [local_port, dest_port.object],
-                rtctree.utils.dict_to_nvlist(props))
-        res, connector = local_port.connect(prof)
-        if res != RTC.RTC_OK:
-            raise rts_exceptions.ConnectFailedError(p.target[0], p.target[1])
-        conns.append(connector)
+        for t in p.targets:
+            dest_port = find_port(t[0], t[1], tree)
+            props['dataport.data_type'] = \
+                    dest_port.properties['dataport.data_type']
+            prof = RTC.ConnectorProfile(p.name + '_' + t[1],
+                    '', [local_port, dest_port.object],
+                    rtctree.utils.dict_to_nvlist(props))
+            res, connector = local_port.connect(prof)
+            if res != RTC.RTC_OK:
+                raise rts_exceptions.ConnectFailedError(t[0], t[1])
+            conns.append(connector)
     return conns
 
 

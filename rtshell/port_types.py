@@ -147,7 +147,7 @@ def make_port_specs(ports, modmgr, tree):
                 raise rts_exceptions.SameNameDiffSpecError(raw)
             result[name].add_target((rtc, port), raw=raw)
         else:
-            result.append(PortSpec(name, port_cons, (rtc, port), input=input,
+            result[name] = (PortSpec(name, port_cons, (rtc, port), input=input,
                 formatter=formatter,
                 type_name=port_obj.properties['dataport.data_type'], raw=raw))
     return result.values()

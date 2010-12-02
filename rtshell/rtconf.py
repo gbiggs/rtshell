@@ -19,18 +19,17 @@ Implementation of the command to manage component configuration.
 '''
 
 
-from optparse import OptionParser, OptionError
+import optparse
 import os
-from rtctree.exceptions import RtcTreeError
-from rtctree.tree import create_rtctree, NoSuchConfSetError, \
-                         NoSuchConfParamError
-from rtctree.path import parse_path
-from rtctree.utils import build_attr_string, get_num_columns_and_rows, \
-                          get_terminal_size
+import rtctree.exceptions
+import rtctree.tree
+import rtctree.path
+import rtctree.utils
 import sys
+import traceback
 
-from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
-from rtshell.path import cmd_path_to_full_path
+import path
+import rtshell
 
 
 def is_hidden(name):
@@ -47,15 +46,15 @@ def format_conf_set(set_name, set, is_active, use_colour, long):
     else:
         tag = '+'
     if is_active:
-        title = tag + build_attr_string(['bold', 'green'],
-                                        supported=use_colour) + \
-                set_name + '*' + build_attr_string('reset',
-                                                   supported=use_colour)
+        title = tag + rtctree.utils.build_attr_string(['bold', 'green'],
+                supported=use_colour) + set_name + '*' + \
+                rtctree.utils.build_attr_string('reset', supported=use_colour)
         if set.description:
             title += ' ({0})'.format(set.description)
     else:
-        title = tag + build_attr_string('bold', supported=use_colour) + \
-                set_name + build_attr_string('reset', supported=use_colour)
+        title = tag + rtctree.utils.build_attr_string('bold',
+                supported=use_colour) + set_name + \
+                rtctree.utils.build_attr_string('reset', supported=use_colour)
         if set.description:
             title += '  ({0})'.format(set.description)
     result.append(title)
@@ -84,216 +83,85 @@ def format_conf_sets(sets, active_set_name, all, use_colour, long):
     return result
 
 
-def print_conf_sets(cmd_path, full_path, options, tree=None):
-    use_colour = sys.stdout.isatty()
-
-    path, port = parse_path(full_path)
+def get_comp(cmd_path, full_path, tree=None):
+    path, port = rtctree.path.parse_path(full_path)
     if port:
         # Can't configure a port
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
-
-    trailing_slash = False
+        raise rts_exceptions.NotAComponentError(cmd_path)
     if not path[-1]:
         # There was a trailing slash
-        print >>sys.stderr, '{0}: {1}: Not an \
-object'.format(sys.argv[0], cmd_path)
-        return 1
+        raise rts_exceptions.NoSuchObjectError(cmd_path)
 
     if not tree:
-        tree = create_rtctree(paths=path, filter=[path])
-    if not tree:
-        return 1
+        tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
 
     object = tree.get_node(path)
     if not object:
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
+        raise rts_exceptions.NoSuchObjectError(cmd_path)
+    if object.is_zombie:
+        raise rts_exceptions.ZombieObjectError(cmd_path)
     if not object.is_component:
-        print >>sys.stderr, '{0}: Cannot access {1}: Not a \
-component.'.format(sys.argv[0], cmd_path)
-        return 1
+        raise rts_exceptions.NotAComponentError(cmd_path)
+    return tree, object
+
+
+
+def print_conf_sets(cmd_path, full_path, options, tree=None):
+    use_colour = sys.stdout.isatty()
+    tree, comp = get_comp(cmd_path, full_path, tree)
 
     if options.set_name:
         if is_hidden(options.set_name) and not options.all:
-            print >>sys.stderr, '{0}: {1}: No such configuration \
-set'.format(sys.argv[0], options.set_name)
-            return 1
-
-        if not options.set_name in object.conf_sets:
-            print >>sys.stderr, '{0}: {1}: No such configuration \
-set'.format(sys.argv[0], options.set_name)
-            return 1
+            raise rts_exceptions.NoConfSetError(options.set_name)
+        if not options.set_name in comp.conf_sets:
+            raise rts_exceptions.NoConfSetError(options.set_name)
         lines = format_conf_set(options.set_name,
-                object.conf_sets[options.set_name],
-                options.set_name == object.active_conf_set_name,
+                comp.conf_sets[options.set_name],
+                options.set_name == comp.active_conf_set_name,
                 use_colour, options.long)
         for l in lines:
             print l
     else:
-        for l in format_conf_sets(object.conf_sets,
-                object.active_conf_set_name, options.all,
+        for l in format_conf_sets(comp.conf_sets,
+                comp.active_conf_set_name, options.all,
                 use_colour, options.long):
             print l
 
-    return 0
-
 
 def set_conf_value(param, new_value, cmd_path, full_path, options, tree=None):
-    path, port = parse_path(full_path)
-    if port:
-        # Can't configure a port
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
-
-    trailing_slash = False
-    if not path[-1]:
-        # There was a trailing slash
-        print >>sys.stderr, '{0}: {1}: Not an \
-object'.format(sys.argv[0], cmd_path)
-        return 1
-
-    if not tree:
-        tree = create_rtctree(paths=path, filter=[path])
-    if not tree:
-        return 1
-
-    object = tree.get_node(path)
-    if not object:
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
-    if not object.is_component:
-        print >>sys.stderr, '{0}: Cannot access {1}: Not a \
-component.'.format(sys.argv[0], cmd_path)
-        return 1
+    tree, comp = get_comp(cmd_path, full_path, tree)
 
     if not options.set_name:
-        options.set_name = object.active_conf_set_name
-
+        options.set_name = comp.active_conf_set_name
     if is_hidden(options.set_name) and not options.all:
-        print >>sys.stderr, '{0}: {1}: No such configuration \
-set'.format(sys.argv[0], e)
-        return 1
-
-    try:
-        object.set_conf_set_value(options.set_name, param, new_value)
-    except NoSuchConfSetError, e:
-        print >>sys.stderr, '{0}: {1}: No such configuration \
-set'.format(sys.argv[0], e)
-        return 1
-    except NoSuchConfParamError, e:
-        print >>sys.stderr, '{0}: {1}: No such configuration \
-parameter'.format(sys.argv[0], e)
-        return 1
+        raise rts_exceptions.NoConfSetError(options.set_name)
+    object.set_conf_set_value(options.set_name, param, new_value)
     if options.set_name == object.active_conf_set_name:
         # Re-activate the set to update the config param internally in the
         # component.
         object.activate_conf_set(options.set_name)
 
-    return 0
-
 
 def get_conf_value(param, cmd_path, full_path, options, tree=None):
-    path, port = parse_path(full_path)
-    if port:
-        # Can't configure a port
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
-
-    trailing_slash = False
-    if not path[-1]:
-        # There was a trailing slash
-        print >>sys.stderr, '{0}: {1}: Not an \
-object'.format(sys.argv[0], cmd_path)
-        return 1
-
-    if not tree:
-        tree = create_rtctree(paths=path, filter=[path])
-    if not tree:
-        return 1
-
-    object = tree.get_node(path)
-    if not object:
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
-    if not object.is_component:
-        print >>sys.stderr, '{0}: Cannot access {1}: Not a \
-component.'.format(sys.argv[0], cmd_path)
-        return 1
+    tree, comp = get_comp(cmd_path, full_path, tree)
 
     if not options.set_name:
         options.set_name = object.active_conf_set_name
-
     if is_hidden(options.set_name) and not options.all:
-        print >>sys.stderr, '{0}: {1}: No such configuration \
-set'.format(sys.argv[0], e)
-        return 1
+        raise rts_exceptions.NoConfSetError(options.set_name)
 
     if not options.set_name in object.conf_sets:
-        print >>sys.stderr, '{0}: {1}: No such configuration \
-set'.format(sys.argv[0], options.set_name)
-        return 1
+        raise rts_exceptions.NoConfSetError(options.set_name)
     if not param in object.conf_sets[options.set_name].data:
-        print >>sys.stderr, '{0}: {1}: No such configuration \
-parameter'.format(sys.argv[0], param)
-        return 1
+        raise rtctree.exceptions.NoSuchConfParamError(param)
     print object.conf_sets[options.set_name].data[param]
-
-    return 0
 
 
 def activate_set(set_name, cmd_path, full_path, options, tree=None):
-    path, port = parse_path(full_path)
-    if port:
-        # Can't configure a port
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
-
-    trailing_slash = False
-    if not path[-1]:
-        # There was a trailing slash
-        print >>sys.stderr, '{0}: {1}: Not an \
-object'.format(sys.argv[0], cmd_path)
-        return 1
-
-    if not tree:
-        tree = create_rtctree(paths=path, filter=[path])
-    if not tree:
-        return 1
-
-    object = tree.get_node(path)
-    if not object:
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
-    if object.is_zombie:
-        print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
-        return 1
-    if not object.is_component:
-        print >>sys.stderr, '{0}: Cannot access {1}: Not a \
-component.'.format(sys.argv[0], cmd_path)
-        return 1
-
-    if is_hidden(set_name) and not options.all:
-        print >>sys.stderr, '{0}: {1}: No such configuration \
-set'.format(sys.argv[0], e)
-        return 1
-
-    try:
-        object.activate_conf_set(set_name)
-    except NoSuchConfSetError, e:
-        print >>sys.stderr, '{0}: {1}: No such configuration \
-set'.format(sys.argv[0], e)
-        return 1
-
-    return 0
+    if is_hidden(options.set_name) and not options.all:
+        raise rts_exceptions.NoConfSetError(options.set_name)
+    tree, comp = get_comp(cmd_path, full_path, tree)
+    object.activate_conf_set(set_name)
 
 
 def main(argv=None, tree=None):
@@ -323,23 +191,26 @@ currently activate configuration set is retrieved. For example:
 The act command requires a single argument: the name of a configuration
 set to activate.
 
-''' + RTSH_PATH_USAGE
-    version = RTSH_VERSION
-    parser = OptionParser(usage=usage, version=version)
+''' + rtshell.RTSH_PATH_USAGE
+    version = rtshell.RTSH_VERSION
+    parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-a', '--all', dest='all', action='store_true',
             default=False,
             help='Do not ignore hidden sets. [Default: %default]')
     parser.add_option('-l', dest='long', action='store_true', default=False,
             help='Show more information. [Default: %default]')
     parser.add_option('-s', '--set', dest='set_name', action='store',
-            default='', help='Choose the configuration set to manipulate. \
-[Default: %default]')
+            default='', help='Choose the configuration set to manipulate. '\
+            '[Default: %default]')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+            default=False,
+            help='Output verbose information. [Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except OptionError, e:
+    except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError:', e
         return 1
 
@@ -354,37 +225,44 @@ set to activate.
         cmd_path = args[0]
         cmd = args[1]
         args = args[2:]
-    full_path = cmd_path_to_full_path(cmd_path)
+    full_path = path.cmd_path_to_full_path(cmd_path)
 
-    if cmd == 'list':
-        # Print the configuration sets
-        return print_conf_sets(cmd_path, full_path, options, tree)
-    elif cmd == 'set':
-        # Need to get more arguments
-        if len(args) == 2:
-            param = args[0]
-            new_value = args[1]
+    try:
+        if cmd == 'list':
+            # Print the configuration sets
+            print_conf_sets(cmd_path, full_path, options, tree)
+        elif cmd == 'set':
+            # Need to get more arguments
+            if len(args) == 2:
+                param = args[0]
+                new_value = args[1]
+            else:
+                print >>sys.stderr, usage
+                return 1
+            set_conf_value(param, new_value, cmd_path, full_path, options,
+                    tree)
+        elif cmd == 'get':
+            #Need to get more arguments
+            if len(args) == 1:
+                param = args[0]
+            else:
+                print >>sys.stderr, usage
+                return 1
+            get_conf_value(param, cmd_path, full_path, options, tree)
+        elif cmd == 'act':
+            if len(args) != 1:
+                print >>sys.stderr, usage
+                return 1
+            activate_set(args[0], cmd_path, full_path, options, tree)
         else:
             print >>sys.stderr, usage
             return 1
-        return set_conf_value(param, new_value, cmd_path, full_path, options,
-                tree)
-    elif cmd == 'get':
-        #Need to get more arguments
-        if len(args) == 1:
-            param = args[0]
-        else:
-            print >>sys.stderr, usage
-            return 1
-        return get_conf_value(param, cmd_path, full_path, options, tree)
-    elif cmd == 'act':
-        if len(args) != 1:
-            print >>sys.stderr, usage
-            return 1
-        return activate_set(args[0], cmd_path, full_path, options, tree)
-
-    print >>sys.stderr, usage
-    return 1
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
+        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        return 1
+    return 0
 
 
 # vim: tw=79

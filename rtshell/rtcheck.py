@@ -26,11 +26,12 @@ import rtctree.path
 import rtctree.tree
 import rtsprofile.rts_profile
 import sys
+import traceback
 
+import actions
+import option_store
+import rts_exceptions
 import rtshell
-import rtshell.actions
-import rtshell.rts_exceptions
-import rtshell.options
 
 
 class SystemNotOKCB(rtshell.actions.BaseCallback):
@@ -150,21 +151,19 @@ If the file has no extension, the input format is assumed to be XML.
 The output format can be over-ridden with the --xml or --yaml options.'''
     parser = optparse.OptionParser(usage=usage, version=rtshell.RTSH_VERSION)
     parser.add_option('--dry-run', dest='dry_run', action='store_true',
-            default=False,
-            help="Print what will be done but don't actually do anything. \
-[Default: %default]")
+            default=False, help="Print what will be done but don't actually '\
+            'do anything. [Default: %default]")
     parser.add_option('-s', '--state', dest='state', action='store',
             type='string', default='Active',
             help='The expected state of the RT Components in the system. ' \
             '[Default: %default]')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
-            default=False, help='Verbose output. [Default: %default]')
+            default=False,
+            help='Output verbose information. [Default: %default]')
     parser.add_option('-x', '--xml', dest='xml', action='store_true',
-            default=True, help='Use XML input format if no extension. \
-[Default: %default]')
+            default=True, help='Use XML input format. [Default: %default]')
     parser.add_option('-y', '--yaml', dest='xml', action='store_false',
-            help='Use YAML input format if no extension. \
-[Default: %default]')
+            help='Use YAML input format. [Default: False]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
@@ -173,7 +172,7 @@ The output format can be over-ridden with the --xml or --yaml options.'''
     except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError: ', e
         return 1
-    rtshell.options.Options().verbose = options.verbose
+    rtshell.option_store.OptionStore().verbose = options.verbose
 
     if not args:
         print >>sys.stderr, usage
@@ -207,8 +206,10 @@ The output format can be over-ridden with the --xml or --yaml options.'''
         try:
             for a in actions:
                 a(tree)
-        except rtshell.rts_exceptions.RtShellError, e:
-            print >>sys.stderr, e
+        except Exception, e:
+            if options.verbose:
+                traceback.print_exc()
+            print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
             return 1
     if cb.failed:
         return 1

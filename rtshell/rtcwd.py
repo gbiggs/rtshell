@@ -22,12 +22,13 @@ Create a command to change the current working directory environment variable.
 #!/usr/bin/env python
 
 import os
-from rtctree.exceptions import RtcTreeError
-from rtctree.tree import create_rtctree
-from rtctree.path import parse_path
+import rtctree.tree
+import rtctree.path
 import sys
+import traceback
 
-from rtshell.path import ENV_VAR, cmd_path_to_full_path
+import path
+import rts_exceptions
 
 
 if sys.platform == 'win32':
@@ -45,35 +46,23 @@ else:
 
 
 def make_cmd_line(path):
-    return '{0} {1}{2}{3}{4}{3}'.format(SET_CMD, ENV_VAR, EQUALS, QUOTE, path)
+    return '{0} {1}{2}{3}{4}{3}'.format(SET_CMD, path.ENV_VAR, EQUALS,
+            QUOTE, path)
 
 
 def cd(cmd_path, full_path):
-    path, port = parse_path(full_path)
+    path, port = rtctree.path.parse_path(full_path)
     if port:
-        # Can't change dir to a port
-        print >>sys.stderr, 'rtcd: {0}: Not a \
-directory'.format(cmd_path)
-        return 1
-
+        raise rts_exceptions.NotADirectoryError(cmd_path)
     if not path[-1]:
         # Remove trailing slash part
         path = path[:-1]
-
-    tree = create_rtctree(paths=path)
-    if not tree:
-        return 1
-
+    tree = rtctree.tree.create_rtctree(paths=path)
     if not tree.has_path(path):
-        print >>sys.stderr, 'rtcd: {0}: No such directory or \
-object'.format(cmd_path)
-        return 1
+        raise rts_exceptions.NotADirectoryError(cmd_path)
     if not tree.is_directory(path):
-        print >>sys.stderr, 'rtcd: {0}: Not a directory'.format(cmd_path)
-        return 1
-
+        raise rts_exceptions.NotADirectoryError(cmd_path)
     print make_cmd_line(full_path)
-    return 0
 
 
 def main(argv=None, tree=None):
@@ -83,10 +72,11 @@ def main(argv=None, tree=None):
         # Change to the root dir
         print '{0} {1}{3}{2}/{2}'.format(SET_CMD, ENV_VAR, QUOTE, EQUALS)
         return 0
-    else:
-        # Take the first argument only
-        cmd_path = sys.argv[1]
 
+    # Take the first argument only
+    cmd_path = sys.argv[1]
+
+    try:
         if cmd_path == '.' or cmd_path == './':
             # Special case for '.': do nothing
             if ENV_VAR in os.environ:
@@ -107,9 +97,14 @@ def main(argv=None, tree=None):
             else:
                 print make_cmd_line('/')
                 return 0
-
-        full_path = cmd_path_to_full_path(cmd_path)
-        return cd(cmd_path, full_path)
+        else:
+            full_path = path.cmd_path_to_full_path(cmd_path)
+            cd(cmd_path, full_path)
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
+        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        return 1
 
 
 # vim: tw=79

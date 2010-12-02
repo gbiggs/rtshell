@@ -17,18 +17,18 @@ Creation and execution of state change plans.
 '''
 
 
-from operator import attrgetter
-from os import sep as pathsep
-from rtctree.path import parse_path
-from rtsprofile.message_sending import Condition, Preceding, WaitTime
+import operator
+import os
+import rtctree.path
+import rtsprofile.message_sending
 import sys
 import thread
 import threading
 import time
-from traceback import format_exc, print_stack
-from types import NoneType
+import traceback
+import types
 
-from rtshell.rts_exceptions import PrecedingTimeoutError
+import rts_exceptions
 
 
 class Counter:
@@ -380,7 +380,7 @@ class DelayedCondition(BasicCondition, threading.Thread):
             try:
                 satisfied = self._check()
             except Exception, e:
-                self._set_error(format_exc())
+                self._set_error(traceback.format_exc())
                 break
             with self._cancel_lock:
                 if self._cancelled:
@@ -391,10 +391,11 @@ class DelayedCondition(BasicCondition, threading.Thread):
                 # Signal the owner
                 self._executor.set()
                 break
-            if type(self._timeout) is not NoneType:
+            if type(self._timeout) is not types.NoneType:
                 # Check if the remaining time is greater than zero
                 if self._check_timeout() <= 0.0:
-                    self._set_error(PrecedingTimeoutError(self._desc))
+                    self._set_error(
+                            rts_exceptions.PrecedingTimeoutError(self._desc))
                     return
 
     def _check_timeout(self):
@@ -474,8 +475,8 @@ class MonitorCondition(DelayedCondition):
 def _make_check_comp_state_cb(rtsprofile, target_comp):
     def cb(rtctree=None, *args, **kwargs):
         comp = rtsprofile.find_comp_by_target(target_comp)
-        path = pathsep + comp.path_uri
-        comp = rtctree.get_node(parse_path(path)[0])
+        path = os.sep + comp.path_uri
+        comp = rtctree.get_node(rtctree.path.parse_path(path)[0])
         return comp.refresh_state_in_ec(comp.get_ec_index(target_comp.id))
     return cb
 
@@ -566,15 +567,15 @@ class Plan(object):
                           c.target_component.component_id,
                           c.target_component.instance_name)
                 action = all[target]
-                if c.__class__ == Condition:
+                if c.__class__ == rtsprofile.message_sending.Condition:
                     # Just a sequencing value
                     action.add_condition(BasicCondition(executor=action,
                             sequence=c.sequence))
-                elif c.__class__ == WaitTime:
+                elif c.__class__ == rtsprofile.message_sending.WaitTime:
                     # An action to be executed after a certain amount of time
                     action.add_condition(SleepCondition(executor=action,
                         wait_time=c.wait_time, sequence=c.sequence))
-                elif c.__class__ == Preceding:
+                elif c.__class__ == rtsprofile.message_sending.Preceding:
                     # An action that waits for a previous action to
                     # occur/complete.
                     if c.sending_timing == 'SYNC':
@@ -618,8 +619,8 @@ action\'s component is not present.'.format(desc)
                 self._immediates.append(a)
             else:
                 self._laters.append(a)
-        self._immediates.sort(key=attrgetter('sort_order'))
-        self._laters.sort(key=attrgetter('sort_order'))
+        self._immediates.sort(key=operator.attrgetter('sort_order'))
+        self._laters.sort(key=operator.attrgetter('sort_order'))
 
     def _get_action_conditions(self, conds_source, action):
         # Get the corresponding conditions for an action, if any.

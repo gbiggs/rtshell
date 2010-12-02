@@ -27,9 +27,11 @@ import rtctree.path
 import rtctree.utils
 import SDOPackage
 import sys
+import traceback
 
+import path
+import rts_exceptions
 import rtshell
-import rtshell.path
 
 
 def format_port(port, comp, start_indent=0, use_colour=True, long=0):
@@ -391,37 +393,25 @@ def cat_target(cmd_path, full_path, options, tree=None):
         else:
             filter = [path]
         tree = rtctree.tree.create_rtctree(paths=path, filter=filter)
-    if not tree:
-        return tree
 
     if not tree.has_path(path):
-        print >>sys.stderr, '{0}: Cannot access {1}: No such object.'.format(
-                sys.argv[0], cmd_path)
-        return 1
+        raise rts_exceptions.NoSuchObjectError(cmd_path)
     object = tree.get_node(path)
     if port:
         if not object.is_component:
-            print >>sys.stderr, '{0}: Cannot access {1}: Not a '\
-                    'component.'.format(sys.argv[0], cmd_path)
-            return 1
+            raise rts_exceptions.NotAComponentError(cmd_path)
         if trailing_slash:
-            print >>sys.stderr, '{0}: {1}: Not an object'.format(
-                    sys.argv[0], cmd_path)
-            return 1
+            raise rts_exceptions.NoSuchObjectError(cmd_path)
         p = object.get_port_by_name(port)
         if not p:
-            print >>sys.stderr, '{0}: Cannot access {1}: No such port'.format(
-                    sys.argv[0], source_cmd_path)
-            return 1
+            raise rts_exceptions.PortNotFoundError(path, port)
         for l in format_port(p, object, start_indent=0,
                 use_colour=sys.stdout.isatty(), long=options.long):
             print l
     else:
         if object.is_component:
             if trailing_slash:
-                print >>sys.stderr, '{0}: {1}: Not an object'.format(
-                        sys.argv[0], cmd_path)
-                return 1
+                raise rts_exceptions.NoSuchObjectError(cmd_path)
             for l in format_component(object, tree, use_colour=sys.stdout.isatty(),
                     long=options.long):
                 print l
@@ -430,14 +420,9 @@ def cat_target(cmd_path, full_path, options, tree=None):
                     long=options.long):
                 print l
         elif object.is_zombie:
-            print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
-            return 1
+            raise rts_exceptions.ZombieObjectError(cmd_path)
         else:
-            print >>sys.stderr, '{0}: Cannot access {1}: No such '\
-                    'object.'.format(sys.argv[0], cmd_path)
-            return 1
-
-    return 0
+            raise rts_exceptions.NoSuchObjectError(cmd_path)
 
 
 def main(argv=None, tree=None):
@@ -450,8 +435,11 @@ Equivalent to the POSIX 'cat' command.
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-l', dest='long', action='count', default=0,
-            help='Show more information. Specify multiple times for even \
-more information. [Default: False]')
+            help='Show more information. Specify multiple times for even '\
+            'more information. [Default: False]')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+            default=False,
+            help='Output verbose information. [Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
@@ -470,9 +458,16 @@ more information. [Default: False]')
     else:
         print >>sys.stderr, usage
         return 1
-    full_path = rtshell.path.cmd_path_to_full_path(cmd_path)
+    full_path = path.cmd_path_to_full_path(cmd_path)
 
-    return cat_target(cmd_path, full_path, options, tree=tree)
+    try:
+        cat_target(cmd_path, full_path, options, tree=tree)
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
+        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        return 1
+    return 0
 
 
 # vim: tw=79

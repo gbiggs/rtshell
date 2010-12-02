@@ -26,31 +26,28 @@ import rtctree.path
 import rtctree.tree
 import rtctree.utils
 import sys
+import traceback
 
+import path
+import rtmgr
+import rts_exceptions
 import rtshell
-import rtshell.path
-import rtshell.rtmgr
-import rtshell.rts_exceptions
 
 
 def get_paths(comps, ports):
     comp_paths = []
     port_paths = []
     for c in comps:
-        fp = rtshell.path.cmd_path_to_full_path(c)
+        fp = path.cmd_path_to_full_path(c)
         c_path, c_port = rtctree.path.parse_path(fp)
         if c_port:
-            print >>sys.stderr, '{0}: Object is not a component: {1}'.format(
-                    sys.argv[0], c)
-            return 1
+            raise rts_exceptions.NotAComponentError(c)
         comp_paths.append((fp, c_path))
     for p in ports:
-        fp = rtshell.path.cmd_path_to_full_path(p)
+        fp = path.cmd_path_to_full_path(p)
         p_path, p_port = rtctree.path.parse_path(fp)
         if not p_port:
-            print >>sys.stderr, '{0}: Object is not a port: {1}'.format(
-                    sys.argv[0], p)
-            return 1
+            raise rts_exceptions.NotAPortError((p_path, p_port))
         cp = fp[:fp.rfind(':')]
         if (cp, p_path) not in comp_paths:
             comp_paths.append((cp, p_path))
@@ -63,9 +60,9 @@ def get_comp_objs(paths, tree):
     for fp, pp in paths:
         c = tree.get_node(pp)
         if not c:
-            raise rtshell.rts_exceptions.NoObjectAtPathError(pp)
+            raise rts_exceptions.NoSuchObjectError(pp)
         if not c.is_component:
-            raise rtshell.rts_exceptions.NotAComponentError(pp)
+            raise rts_exceptions.NotAComponentError(pp)
         cs[fp] = c
     return cs
 
@@ -76,7 +73,7 @@ def get_port_objs(paths, comps, tree):
         c = comps[cp]
         p = c.get_port_by_name(port_name)
         if not p:
-            raise rtshell.rts_exceptions.PortNotFoundError(cp, port_name)
+            raise rts_exceptions.PortNotFoundError(cp, port_name)
         ps.append(p)
     return ps
 
@@ -104,15 +101,13 @@ def get_mgr(cmd_path, full_path, comps, tree):
                 return True
         return False
 
-    tree_, mgr = rtshell.rtmgr.get_manager(cmd_path, full_path, tree)
+    tree_, mgr = rtmgr.get_manager(cmd_path, full_path, tree)
     if not mgr:
-        return None
+        raise rts_exceptions.NoSuchObjectError(cmd_path)
     # Check that each component is in this manager
     for k in comps:
         if not has_comp(mgr, comps[k].instance_name):
-            print >>sys.stderr, '{0}: {1} is not in the manager.'.format(
-                    sys.argv[0], comps[k].instance_name)
-            return None
+            raise rts_exceptions.NotInManagerError(comps[k].instance_name)
     return mgr
 
 
@@ -125,8 +120,6 @@ def make_composite(mgr_path, mgr_full_path, comps, ports, options, tree=None):
         paths = [y for x, y in comp_paths]
         tree = rtctree.tree.create_rtctree(paths=paths,
                 filter=paths + [mgr_parse_path])
-    if not tree:
-        return 1
     # Find all components
     comp_objs = get_comp_objs(comp_paths, tree)
     # Find all ports
@@ -136,12 +129,9 @@ def make_composite(mgr_path, mgr_full_path, comps, ports, options, tree=None):
     port_opts = make_port_opts(port_objs)
     # Find the manager (making sure there's only one)
     mgr = get_mgr(mgr_path, mgr_full_path, comp_objs, tree)
-    if not mgr:
-        return 1
     # Call the manager to create the composite component
     mgr.create_component('{0}?&instance_name={1}&conf.default.members={2}&conf.default.exported_ports={3}{4}'.format(options.type,
         options.name, comp_opts, port_opts, options.options))
-    return 0
 
 
 def main(argv=None, tree=None):
@@ -171,6 +161,9 @@ Ports are specified at the end of each path, preceeded by a colon (:).
     parser.add_option('-t', '--type', dest='type', action='store',
             type='string', default='PeriodicECSharedComposite',
             help='Type of composite component to create. [Default: %default]')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+            default=False,
+            help='Output verbose information. [Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
@@ -183,14 +176,17 @@ Ports are specified at the end of each path, preceeded by a colon (:).
     if len(args) != 1:
         print >>sys.stderr, '{0}: No manager specified.'.format(sys.argv[0])
         return 1
-    full_path = rtshell.path.cmd_path_to_full_path(args[0])
+    full_path = path.cmd_path_to_full_path(args[0])
 
     try:
-        return make_composite(args[0], full_path, options.comps,
+        make_composite(args[0], full_path, options.comps,
                 options.ports, options, tree=tree)
-    except rtctree.exceptions.RtcTreeError, e:
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
         print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
         return 1
+    return 0
 
 
 # vim: tw=79

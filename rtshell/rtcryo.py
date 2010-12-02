@@ -19,25 +19,24 @@ rtcryo library.
 '''
 
 
-from datetime import datetime
-from optparse import OptionParser, OptionError
-from os import sep as pathsep
-from os.path import splitext
-from rtctree.tree import create_rtctree
-from rtctree.path import parse_path
-from rtsprofile import RTSPROFILE_SPEC_VERSION
-from rtsprofile.rts_profile import RtsProfile
-from rtsprofile.component import Component
-from rtsprofile import composite_type as comp_type
-from rtsprofile.config_set import ConfigurationSet, ConfigurationData
-from rtsprofile.exec_context import ExecutionContext
-from rtsprofile.port_connectors import DataPortConnector, ServicePortConnector
-from rtsprofile.ports import DataPort, ServicePort
-from rtsprofile.targets import TargetPort
+import datetime
+import optparse
+import os.path
+import rtctree.tree
+import rtctree.path
+import rtsprofile
+import rtsprofile.rts_profile
+import rtsprofile.component
+import rtsprofile.config_set
+import rtsprofile.exec_context
+import rtsprofile.port_connectors
+import rtsprofile.ports
+import rtsprofile.targets
 import sys
+import traceback
 
-from rtshell import RTSH_VERSION
-from rtshell.options import Options
+import option_store
+import rtshell
 
 
 def make_comp_id(comp):
@@ -73,32 +72,32 @@ def find_unique_connectors(rtctree, components):
         for op in comp.connected_outports:
             for conn in op.connections:
                 name = comp.instance_name + '.' + op.name
-                source_port = TargetPort(component_id=make_comp_id(comp),
-                                         instance_name=comp.instance_name,
-                                         port_name=name)
+                source_port = rtsprofile.targets.TargetPort(
+                        component_id=make_comp_id(comp),
+                        instance_name=comp.instance_name, port_name=name)
                 source_port.properties['COMPONENT_PATH_ID'] = \
                         comp.full_path[1:]
                 # Get the list of ports this connection goes to
                 dest_ports = [name for name, p in conn.ports \
                                    if not comp.get_port_by_ref(p.object)]
                 # Assume the first is the destination and find its component
-                path = parse_path(dest_ports[0])
+                path = rtctree.path.parse_path(dest_ports[0])
                 dest_comp = rtctree.get_node(path[0])
                 # Now have all the info we need to make the target
                 name = dest_comp.instance_name + '.' + path[1]
-                dest_port = TargetPort(component_id=make_comp_id(dest_comp),
-                                       instance_name=dest_comp.instance_name,
-                                       port_name = name)
+                dest_port = rtsprofile.targets.TargetPort(
+                        component_id=make_comp_id(dest_comp),
+                        instance_name=dest_comp.instance_name, port_name=name)
                 dest_port.properties['COMPONENT_PATH_ID'] = \
                         dest_comp.full_path[1:]
-                rts_conn = DataPortConnector(connector_id=conn.id,
-                    name=conn.name,
-                    data_type=conn.properties['dataport.data_type'],
-                    interface_type=conn.properties['dataport.interface_type'],
-                    data_flow_type=conn.properties['dataport.dataflow_type'],
-                    subscription_type=conn.properties['dataport.subscription_type'],
-                    source_data_port=source_port,
-                    target_data_port=dest_port)
+                rts_conn = rtsprofile.port_connectors.DataPortConnector(
+                        connector_id=conn.id, name=conn.name,
+                        data_type=conn.properties['dataport.data_type'],
+                        interface_type=conn.properties['dataport.interface_type'],
+                        data_flow_type=conn.properties['dataport.dataflow_type'],
+                        subscription_type=conn.properties['dataport.subscription_type'],
+                        source_data_port=source_port,
+                        target_data_port=dest_port)
                 data_connectors.append(rts_conn)
 
         for sp in comp.connected_svcports:
@@ -107,28 +106,28 @@ def find_unique_connectors(rtctree, components):
                     continue;
                 seen_svc_connectors.append(conn)
                 name = comp.instance_name + '.' + sp.name
-                source_port = TargetPort(component_id=make_comp_id(comp),
-                                         instance_name=comp.instance_name,
-                                         port_name=name)
+                source_port = rtsprofile.targets.TargetPort(
+                        component_id=make_comp_id(comp),
+                        instance_name=comp.instance_name, port_name=name)
                 source_port.properties['COMPONENT_PATH_ID'] = \
                         comp.full_path[1:]
                 # Get the list of ports this connection goes to
                 dest_ports = [name for name, p in conn.ports \
                                    if not comp.get_port_by_ref(p.object)]
                 # Assume the first is the destination and find its component
-                path = parse_path(dest_ports[0])
+                path = rtctree.path.parse_path(dest_ports[0])
                 dest_comp = rtctree.get_node(path[0])
                 # Now have all the info we need to make the target
                 name = dest_comp.instance_name + '.' + path[1]
-                dest_port = TargetPort(component_id=make_comp_id(dest_comp),
-                                       instance_name=dest_comp.instance_name,
-                                       port_name = name)
+                dest_port = rtsprofile.targets.TargetPort(
+                        component_id=make_comp_id(dest_comp),
+                        instance_name=dest_comp.instance_name, port_name=name)
                 dest_port.properties['COMPONENT_PATH_ID'] = \
                         dest_comp.full_path[1:]
-                rts_conn = ServicePortConnector(connector_id=conn.id,
-                    name=conn.name,
-                    source_service_port=source_port,
-                    target_service_port=dest_port)
+                rts_conn = rtsprofile.port_connectors.ServicePortConnector(
+                        connector_id=conn.id, name=conn.name,
+                        source_service_port=source_port,
+                        target_service_port=dest_port)
                 svc_connectors.append(rts_conn)
     return data_connectors, svc_connectors
 
@@ -138,27 +137,31 @@ def tree_comps_to_rts_comps(components):
     for comp in components:
         active_conf_set = comp.active_conf_set_name if comp.active_conf_set \
                                                     else ''
-        new_rtsc = Component(id=make_comp_id(comp), path_uri=comp.full_path[1:],
-                             active_configuration_set=active_conf_set,
-                             instance_name=comp.instance_name,
-                             composite_type=comp_type.NONE, is_required=True)
+        new_rtsc = rtsprofile.component.Component(id=make_comp_id(comp),
+                path_uri=comp.full_path[1:],
+                active_configuration_set=active_conf_set,
+                instance_name=comp.instance_name,
+                composite_type=rtsprofile.composite_type.NONE,
+                is_required=True)
         for dp in comp.inports:
-            new_rtsc.data_ports.append(DataPort(dp.name))
+            new_rtsc.data_ports.append(rtsprofile.ports.DataPort(dp.name))
         for dp in comp.outports:
-            new_rtsc.data_ports.append(DataPort(dp.name))
+            new_rtsc.data_ports.append(rtsprofile.ports.DataPort(dp.name))
         for sp in comp.svcports:
-            new_rtsc.service_ports.append(ServicePort(sp.name))
+            new_rtsc.service_ports.append(rtsprofile.ports.ServicePort(sp.name))
         for cs in comp.conf_sets:
-            new_cs = ConfigurationSet(id=cs)
+            new_cs = rtsprofile.config_set.ConfigurationSet(id=cs)
             for param in comp.conf_sets[cs].data:
-                new_cs.configuration_data.append(ConfigurationData(name=param,
-                        data=comp.conf_sets[cs].data[param]))
+                new_cs.configuration_data.append(
+                        rtsprofile.config_set.ConfigurationData(name=param,
+                            data=comp.conf_sets[cs].data[param]))
             new_rtsc.configuration_sets.append(new_cs)
         for ec in comp.owned_ecs:
-            new_rtsc.execution_contexts.append(ExecutionContext(\
-                    id=str(ec.handle),
-                    kind=ec.kind_as_string(add_colour=False).upper(),
-                    rate=ec.rate))
+            new_rtsc.execution_contexts.append(
+                    rtsprofile.exec_context.ExecutionContext(
+                        id=str(ec.handle),
+                        kind=ec.kind_as_string(add_colour=False).upper(),
+                        rate=ec.rate))
         new_rtsc.properties['IOR'] = \
                 comp.nameserver.orb.object_to_string(comp.object)
         rts_comps.append(new_rtsc)
@@ -168,9 +171,60 @@ def tree_comps_to_rts_comps(components):
 def data_conns_to_rts_conns(connectors):
     result = []
     for conn in connectors:
-        source_port = TargetPort()
-        dest_port = TargetPort()
+        source_port = rtsprofile.targets.TargetPort()
+        dest_port = rtsprofile.targets.TargetPort()
     return result
+
+
+def freeze_dry(servers, options, tree=None):
+    if not tree:
+        tree = rtctree.tree.create_rtctree(servers=args)
+    # Run through the tree finding component names and connections to
+    # preserve.
+    components = find_all_used_components(tree)
+    # Create a list of objects for the profile
+    rts_components = tree_comps_to_rts_comps(components)
+    data_connectors, svc_connectors = find_unique_connectors(tree,
+            components)
+    # Create an empty RTSProfile and add the information to it
+    rtsprofile = rtsprofile.rts_profile.RtsProfile()
+    rtsprofile.abstract = options.abstract
+    today = datetime.datetime.today()
+    today = today.replace(microsecond=0)
+    rtsprofile.creation_date = today.isoformat()
+    rtsprofile.update_date = today.isoformat()
+    rtsprofile.version = rtsprofile.RTSPROFILE_SPEC_VERSION
+    rtsprofile.id = 'RTSystem :{0}.{1}.{2}'.format(options.vendor,
+                                                   options.sysname,
+                                                   options.version)
+    rtsprofile.components = rts_components
+    rtsprofile.data_port_connectors = data_connectors
+    rtsprofile.service_port_connectors = svc_connectors
+
+    if options.output == '-':
+        # Write XML to stdout
+        if options.xml:
+            sys.stdout.write(rtsprofile.save_to_xml())
+        else:
+            sys.stdout.write(rtsprofile.save_to_yaml())
+    else:
+        # Write to a file
+        ext = os.path.splitext(options.output)[1]
+        if ext == '.yaml':
+            options.xml = False
+        else:
+            options.xml = True
+        if options.output == 'rtsystem.':
+            if options.xml:
+                options.output += 'xml'
+            else:
+                options.output += 'yaml'
+        f = open(options.output, 'w')
+        if options.xml:
+            f.write(rtsprofile.save_to_xml())
+        else:
+            f.write(rtsprofile.save_to_yaml())
+        f.close()
 
 
 def main(argv=None, tree=None):
@@ -184,7 +238,7 @@ be used.
 The output format will be determined automatically from the file extension.
 If the file has no extension, the input format is assumed to be XML.
 The output format can be over-ridden with the --xml or --yaml options.'''
-    parser = OptionParser(usage=usage, version=RTSH_VERSION)
+    parser = optparse.OptionParser(usage=usage, version=rtshell.RTSH_VERSION)
     parser.add_option('-a', '--abstract', dest='abstract', action='store',
             type='string', default='RT System created by rtcryo.',
             help='Brief description of the RT System.')
@@ -212,64 +266,18 @@ The output format can be over-ridden with the --xml or --yaml options.'''
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except OptionError, e:
+    except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError: ', e
         return 1
-    Options().verbose = options.verbose
+    option_store.OptionStore().verbose = options.verbose
 
-    # Load the RTC Tree
-    if not tree:
-        tree = create_rtctree(servers=args)
-        if not tree:
-            print >>sys.stderr, '{0}: {1}: Empty tree.'.format(sys.argv[0], args)
-            return 1
-    # Run through the tree finding component names and connections to preserve.
-    components = find_all_used_components(tree)
-
-    # Create a list of objects for the profile
-    rts_components = tree_comps_to_rts_comps(components)
-    data_connectors, svc_connectors = find_unique_connectors(tree,
-                                                             components)
-    # Create an empty RTSProfile and add the information to it
-    rtsprofile = RtsProfile()
-    rtsprofile.abstract = options.abstract
-    today = datetime.today()
-    today = today.replace(microsecond=0)
-    rtsprofile.creation_date = today.isoformat()
-    rtsprofile.update_date = today.isoformat()
-    rtsprofile.version = RTSPROFILE_SPEC_VERSION
-    rtsprofile.id = 'RTSystem :{0}.{1}.{2}'.format(options.vendor,
-                                                   options.sysname,
-                                                   options.version)
-    rtsprofile.components = rts_components
-    rtsprofile.data_port_connectors = data_connectors
-    rtsprofile.service_port_connectors = svc_connectors
-
-    if options.output == '-':
-        # Write XML to stdout
-        if options.xml:
-            sys.stdout.write(rtsprofile.save_to_xml())
-        else:
-            sys.stdout.write(rtsprofile.save_to_yaml())
-    else:
-        # Write to a file
-        ext = splitext(options.output)[1]
-        if ext == '.yaml':
-            options.xml = False
-        else:
-            options.xml = True
-        if options.output == 'rtsystem.':
-            if options.xml:
-                options.output += 'xml'
-            else:
-                options.output += 'yaml'
-        f = open(options.output, 'w')
-        if options.xml:
-            f.write(rtsprofile.save_to_xml())
-        else:
-            f.write(rtsprofile.save_to_yaml())
-        f.close()
-
+    try:
+        freeze_dry(args, options, tree)
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
+        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        return 1
     return 0
 
 

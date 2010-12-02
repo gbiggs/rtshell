@@ -20,10 +20,11 @@ Function objects for actions that can be performed using rtctree.
 
 import sys
 
-from rtctree.exceptions import NoSuchConfSetError, NoSuchConfParamError
-from rtctree.path import parse_path
-from rtshell.rts_exceptions import RequiredActionFailedError
-from rtshell.options import Options
+import rtctree.exceptions
+import rtctree.path
+
+import option_store
+import rts_exceptions
 
 
 ###############################################################################
@@ -139,7 +140,7 @@ class RequiredActionCB(BaseCallback):
 
     def __call__(self, result, err_msg):
         if not result:
-            raise RequiredActionFailedError(err_msg)
+            raise rts_exceptions.RequiredActionFailedError(err_msg)
 
     def __str__(self):
         return 'Required'
@@ -161,7 +162,7 @@ class CheckForRequiredCompAct(Action):
     def __init__(self, path_str, id, instance_name, callbacks=[]):
         super(CheckForRequiredCompAct, self).__init__(callbacks=callbacks)
         self._path_str = path_str
-        self._path = parse_path(path_str)[0]
+        self._path = rtctree.path.parse_path(path_str)[0]
         self._id = id
         self._instance_name = instance_name
 
@@ -171,7 +172,7 @@ class CheckForRequiredCompAct(Action):
                 self._path_str))
 
     def _execute(self, rtctree):
-        if Options().verbose:
+        if option_store.OptionStore().verbose:
             print >>sys.stderr, 'Checking for required component {0} with ID \
 "{1}" and instance name "{2}"'.format(self._path_str, self._id,
                     self._instance_name)
@@ -216,7 +217,7 @@ class CheckForPortAct(Action):
     def __init__(self, path_str, port_name, callbacks=[]):
         super(CheckForPortAct, self).__init__(callbacks=callbacks)
         self._path_str = path_str
-        self._path = parse_path(path_str)[0]
+        self._path = rtctree.path.parse_path(path_str)[0]
         self._port_name = port_name
 
     def __str__(self):
@@ -224,7 +225,7 @@ class CheckForPortAct(Action):
 component at path {1}'.format(self._port_name, self._path_str))
 
     def _execute(self, rtctree):
-        if Options().verbose:
+        if option_store.OptionStore().verbose:
             print >>sys.stderr, 'Checking for required port {0} on component \
 {1}'.format(self._port_name, self._path_str)
         # Get the component at the specified path
@@ -257,7 +258,7 @@ class CheckActiveConfigSetAct(Action):
     def __init__(self, path_str, set, callbacks=[]):
         super(CheckActiveConfigSetAct, self).__init__(callbacks=callbacks)
         self._path_str = path_str
-        self._path = parse_path(path_str)[0]
+        self._path = rtctree.path.parse_path(path_str)[0]
         self._set = str(set) # Cannot send unicode strings to CORBA
 
     def __str__(self):
@@ -265,7 +266,7 @@ class CheckActiveConfigSetAct(Action):
                 'on component {1}'.format(self._set, self._path_str))
 
     def _execute(self, rtctree):
-        if Options().verbose:
+        if option_store.OptionStore().verbose:
             print >>sys.stderr, 'Checking configuration set "{0}" is active '\
                     'on component {1}'.format(self._set, self._path_str)
         comp = rtctree.get_node(self._path)
@@ -296,7 +297,7 @@ class SetActiveConfigSetAct(Action):
     def __init__(self, path_str, set, callbacks=[]):
         super(SetActiveConfigSetAct, self).__init__(callbacks=callbacks)
         self._path_str = path_str
-        self._path = parse_path(path_str)[0]
+        self._path = rtctree.path.parse_path(path_str)[0]
         self._set = str(set) # Cannot send unicode strings to CORBA
 
     def __str__(self):
@@ -304,7 +305,7 @@ class SetActiveConfigSetAct(Action):
 component at path {1}'.format(self._set, self._path_str))
 
     def _execute(self, rtctree):
-        if Options().verbose:
+        if option_store.OptionStore().verbose:
             print >>sys.stderr, 'Setting configuration set "{0}" active on \
 component {1}'.format(self._set, self._path_str)
         comp = rtctree.get_node(self._path)
@@ -312,7 +313,7 @@ component {1}'.format(self._set, self._path_str)
             return False, 'Component missing: {0}'.format(self._path_str)
         try:
             comp.activate_conf_set(self._set)
-        except NoSuchConfSetError:
+        except rts_exceptions.NoSuchConfSetError:
             return False, 'Invalid configuration set: {0}'.format(self._set)
         return True, None
 
@@ -334,7 +335,7 @@ class CheckConfigParamAct(Action):
     def __init__(self, path_str, set, param, value, callbacks=[]):
         super(CheckConfigParamAct, self).__init__(callbacks=callbacks)
         self._path_str = path_str
-        self._path = parse_path(path_str)[0]
+        self._path = rtctree.path.parse_path(path_str)[0]
         self._set = str(set) # Cannot send unicode strings to CORBA
         self._param = str(param)
         self._value = str(value)
@@ -345,7 +346,7 @@ class CheckConfigParamAct(Action):
                     self._set, self._path_str, self._value))
 
     def _execute(self, rtctree):
-        if Options().verbose:
+        if option_store.OptionStore().verbose:
             print >>sys.stderr, 'Checking parameter "{0}" in set "{1}" on '\
                     'component "{2}" is "{3}"'.format(self._param, self._set,
                             self._path_str, self._value)
@@ -383,7 +384,7 @@ class SetConfigParamValueAct(Action):
     def __init__(self, path_str, set, parameter, new_value, callbacks=[]):
         super(SetConfigParamValueAct, self).__init__(callbacks=callbacks)
         self._path_str = path_str
-        self._path = parse_path(path_str)[0]
+        self._path = rtctree.path.parse_path(path_str)[0]
         self._set = str(set) # Cannot send unicode strings to CORBA
         self._param = str(parameter)
         self._new_value = str(new_value)
@@ -394,7 +395,7 @@ component at path "{2}" to "{3}"'.format(self._param, self._set,
                 self._path_str, self._new_value))
 
     def _execute(self, rtctree):
-        if Options().verbose:
+        if option_store.OptionStore().verbose:
             print >>sys.stderr, 'Setting parameter "{0}" in set "{1}" on \
 component at path "{2}" to "{3}"'.format(self._param, self._set,
                     self._path_str, self._new_value)
@@ -403,9 +404,9 @@ component at path "{2}" to "{3}"'.format(self._param, self._set,
             return False, 'Component missing: {0}'.format(self._path_str)
         try:
             comp.set_conf_set_value(self._set, self._param, self._new_value)
-        except NoSuchConfSetError:
+        except rts_exceptions.NoSuchConfSetError:
             return False, 'Invalid configuration set: {0}'.format(self._set)
-        except NoSuchConfParamError:
+        except rts_exceptions.NoSuchConfParamError:
             return False, 'Invalid configuration parameter: {0}'.format(self._param)
         comp.reparse_conf_sets()
         if self._set == comp.active_conf_set_name:
@@ -434,9 +435,9 @@ class CheckForConnAct(Action):
     def __init__(self, source, dest, id, props={}, callbacks=[]):
         super(CheckForConnAct, self).__init__(callbacks=callbacks)
         self._source = source
-        self._s_path = parse_path(self._source[0])[0]
+        self._s_path = rtctree.path.parse_path(self._source[0])[0]
         self._dest = dest
-        self._d_path = parse_path(self._dest[0])[0]
+        self._d_path = rtctree.path.parse_path(self._dest[0])[0]
         self._id = id
         self._props = props
 
@@ -447,7 +448,7 @@ class CheckForConnAct(Action):
                     self._props))
 
     def _execute(self, rtctree):
-        if Options().verbose:
+        if option_store.OptionStore().verbose:
             print 'Checking for connection between {0}:{1} and ' \
                     '{2}:{3}'.format(self._source[0], self._source[1],
                             self._dest[0], self._dest[1])
@@ -509,10 +510,10 @@ class ConnectPortsAct(Action):
                  name, id, properties, callbacks=[]):
         super(ConnectPortsAct, self).__init__(callbacks=callbacks)
         self._source_path_str = source_path
-        self._source_path = parse_path(source_path)[0]
+        self._source_path = rtctree.path.parse_path(source_path)[0]
         self._source_port = source_port
         self._dest_path_str = dest_path
-        self._dest_path = parse_path(dest_path)[0]
+        self._dest_path = rtctree.path.parse_path(dest_path)[0]
         self._dest_port = dest_port
         self._name = name
         self._id = id
@@ -525,7 +526,7 @@ ID {4} and properties {5}'.format(self._source_path_str, self._source_port,
                 self._properties))
 
     def _execute(self, rtctree):
-        if Options().verbose:
+        if option_store.OptionStore().verbose:
             print >>sys.stderr, 'Connect {0}:{1} to {2}:{3} with \
 ID {4} and properties {5}'.format(self._source_path_str, self._source_port,
                     self._dest_path_str, self._dest_port, self._id,
@@ -577,7 +578,7 @@ ID {4} and properties {5}'.format(self._source_path_str, self._source_port,
                                 'match'.format(k, self._source_path_str,
                                         self._source_port, self._dest_path_str,
                                         self._dest_port, self._id)
-                if Options().verbose:
+                if option_store.OptionStore().verbose:
                     print >>sys.stderr, \
                             'Skipped existing connection with ID {0}'.format(
                                     self._id)
@@ -599,10 +600,10 @@ class DisconnectPortsAct(Action):
                  callbacks=[]):
         super(DisconnectPortsAct, self).__init__(callbacks=callbacks)
         self._source_path_str = source_path
-        self._source_path = parse_path(source_path)[0]
+        self._source_path = rtctree.path.parse_path(source_path)[0]
         self._source_port = source_port
         self._dest_path_str = dest_path
-        self._dest_path = parse_path(dest_path)[0]
+        self._dest_path = rtctree.path.parse_path(dest_path)[0]
         self._dest_port = dest_port
         self._id = id
 
@@ -612,7 +613,7 @@ class DisconnectPortsAct(Action):
                 self._dest_port, self._id))
 
     def _execute(self, rtctree):
-        if Options().verbose:
+        if option_store.OptionStore().verbose:
             print >>sys.stderr, \
                     'Disconnecting {0}:{1} from {2}:{3} with ID {4}'.format(\
                     self._source_path_str, self._source_port,
@@ -668,7 +669,7 @@ class StateChangeAct(Action):
         self._path_str = path_str
         self._comp_id = comp_id
         self._instance_name = instance_name
-        self._path = parse_path(path_str)[0]
+        self._path = rtctree.path.parse_path(path_str)[0]
         self._ec_id = ec_id
 
     def __str__(self):
@@ -696,7 +697,7 @@ class StateChangeAct(Action):
         return self._path_str
 
     def _execute(self, rtctree):
-        if Options().verbose:
+        if option_store.OptionStore().verbose:
             print >>sys.stderr, '{0} {1} in {2}'.format(self._verbose_str,
                     self._path_str, self._ec_id)
         comp = rtctree.get_node(self._path)

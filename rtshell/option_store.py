@@ -20,7 +20,7 @@ Singleton containing option values.
 
 import sys
 
-class Options(object):
+class OptionStore(object):
     def __new__(cls, *p, **k):
         if not '_the_instance' in cls.__dict__:
             cls._the_instance = object.__new__(cls)

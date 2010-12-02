@@ -19,23 +19,18 @@ Implementation of the command to move a component to the inactive state.
 '''
 
 
-#!/usr/bin/env python
-# -*- Python -*-
-# -*- coding: utf-8 -*-
-
-
 import sys
 
-from rtshell.state_control_base import base_main
+import state_control_base
 
 
 def deactivate_action(object, ec_index):
     object.deactivate_in_ec(ec_index)
-    return 0
 
 
 def main(argv=None, tree=None):
-    return base_main('Deactivate a component.', deactivate_action, argv)
+    return state_control_base.base_main('Deactivate a component.',
+            deactivate_action, argv)
 
 
 # vim: tw=79

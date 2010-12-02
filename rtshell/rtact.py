@@ -19,18 +19,16 @@ Implementation of the command to move a component to the activated state.
 '''
 
 
-import sys
-
-from rtshell.state_control_base import base_main
+import state_control_base
 
 
 def activate_action(object, ec_index):
     object.activate_in_ec(ec_index)
-    return 0
 
 
 def main(argv=None, tree=None):
-    return base_main('Activate a component.', activate_action, argv)
+    return start_control_base.base_main('Activate a component.',
+            activate_action, argv)
 
 
 # vim: tw=79

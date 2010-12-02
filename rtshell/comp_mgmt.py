@@ -60,7 +60,7 @@ def get_comp(rtc, tree=None, orb=None):
         tree = rtctree.tree.create_rtctree(paths=rtc, orb=orb, filter=[rtc])
 
     if not tree.has_path(rtc):
-        raise rts_exceptions.NoObjectAtPathError(rtc)
+        raise rts_exceptions.NoSuchObjectError(rtc)
     comp = tree.get_node(rtc)
     if not comp.is_component:
         raise rts_exceptions.NotAComponentError(rtc)

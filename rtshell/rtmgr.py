@@ -166,28 +166,43 @@ delete, create.
         return 1
     full_path = rtshell.path.cmd_path_to_full_path(args[0])
 
+    if (not options.mod_path_u and not options.mod_path and not
+            options.instance_name and not options.mod_name):
+        print >>sys.stderr, '{0}: No actions specified.'.format(sys.argv[0])
+        print >>sys.stderr, usage
+        return 1
+
+    result = 0
     if options.mod_path_u:
         # Unload a module
-        return unload_module(args[0], full_path, options.mod_path_u, tree)
+        loc_result = unload_module(args[0], full_path, options.mod_path_u,
+                tree)
+        if loc_result != 0:
+            result = loc_result
     if options.mod_path:
         # Load a module
         if not options.init_func:
             print >>sys.stderr, '{0}: No initialisation function '\
                     'specified.'.format(sys.argv[0])
             return 1
-        return load_module(args[0], full_path, options.mod_path,
+        loc_result = load_module(args[0], full_path, options.mod_path,
                 options.init_func, tree)
+        if loc_result != 0:
+            result = loc_result
     if options.instance_name:
         # Delete a component
-        return delete_component(args[0], full_path, options.instance_name,
-                tree)
+        loc_result = delete_component(args[0], full_path,
+                options.instance_name, tree)
+        if loc_result != 0:
+            result = loc_result
     if options.mod_name:
         # Create a component
-        return create_component(args[0], full_path, options.mod_name, tree)
+        loc_result = create_component(args[0], full_path, options.mod_name,
+                tree)
+        if loc_result != 0:
+            result = loc_result
 
-    print >>sys.stderr, '{0}: No actions specified.'.format(sys.argv[0])
-    print >>sys.stderr, usage
-    return 1
+    return result
 
 
 # vim: tw=79

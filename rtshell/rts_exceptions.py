@@ -96,6 +96,17 @@ class BadPortSpecError(RtShellError):
         return 'Bad port specification: {0}'.format(self._ps)
 
 
+class SameNameDiffSpecError(RtShellError):
+    '''A port spec has a different property from another with the same name.'''
+    def __init__(self, ps, *args, **kwargs):
+        super(SameNameDiffSpecError, self).__init__(self, *args, **kwargs)
+        self._ps = ps
+
+    def __str__(self):
+        return 'Port specification with same name has different properties: '\
+                '{0}'.format(self._ps)
+
+
 class NoObjectAtPathError(RtShellError):
     '''There is no object at the given path.'''
     def __init__(self, path, *args, **kwargs):

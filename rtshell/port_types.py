@@ -37,8 +37,8 @@ class PortSpec(object):
         self._formatter = formatter
         self._input = input
         self._name = name
-        self._raw = raw
-        self._target = target
+        self._raw_specs = raw
+        self._targets = [target]
         self._type = type
         self._type_name = type_name
 
@@ -72,13 +72,13 @@ class PortSpec(object):
 
     @property
     def raw(self):
-        '''The raw port specification that created this PortSpec.'''
+        '''The raw port specifications that created this PortSpec.'''
         return self._raw
 
     @property
-    def target(self):
-        '''The target port of this port, as (path, port_name).'''
-        return self._target
+    def targets(self):
+        '''The target ports of this port, as [(path, port_name), ...].'''
+        return self._targets
 
     @property
     def type(self):
@@ -89,6 +89,11 @@ class PortSpec(object):
     def type_name(self):
         '''The port's data type name.'''
         return self._type_name
+
+    def add_target(self, target, raw=''):
+        '''Add an additional target for this port.'''
+        self._targets.append(new_target)
+        self._raw.append(raw)
 
 
 ###############################################################################
@@ -111,7 +116,7 @@ def make_port_specs(ports, modmgr, tree):
     @param tree An RTCTree to search for the ports in.
 
     '''
-    result = []
+    result = {}
     index = 0
     for (rtc, port, name, form, raw) in ports:
         port_obj = comp_mgmt.find_port(rtc, port, tree)
@@ -126,17 +131,26 @@ def make_port_specs(ports, modmgr, tree):
                 name = 'input{0}'.format(index)
             else:
                 name = 'output{0}'.format(index)
-        port_cons = modmgr.find_class(port_obj.properties['dataport.data_type'])
+            index += 1
+        port_cons = modmgr.find_class(
+                port_obj.properties['dataport.data_type'])
         if form:
             # Look up the formatter in one of the user-provided modules
             formatter = fmt.import_formatter(form, modmgr)
         else:
             formatter = None
-        result.append(PortSpec(name, port_cons, (rtc, port), input=input,
-            formatter=formatter,
-            type_name=port_obj.properties['dataport.data_type'], raw=raw))
-        index += 1
-    return result
+        if name in result:
+            # Already have a port with this name so add a target
+            if (input != result[name].input or
+                    port_cons != result[name].type or
+                    formatter != result[name].formatter):
+                raise rts_exceptions.SameNameDiffSpecError(raw)
+            result[name].add_target((rtc, port), raw=raw)
+        else:
+            result.append(PortSpec(name, port_cons, (rtc, port), input=input,
+                formatter=formatter,
+                type_name=port_obj.properties['dataport.data_type'], raw=raw))
+    return result.values()
 
 
 def parse_targets(targets):

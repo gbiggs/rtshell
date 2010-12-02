@@ -311,7 +311,12 @@ def display_info(options):
         print 'Channel {0}'.format(ii + 1)
         print '  Name: {0}'.format(p.name)
         print '  Data type: {0} ({1})'.format(p.type_name, p.type)
-        print '  Origin: {0}'.format(p.raw)
+        if len(p.raw) == 1:
+            print '  Origin: {0}'.format(p.raw)
+        else:
+            print '  Origins:'
+            for r in p.raw:
+                print '    {0}'.format(r)
 
     return 0
 

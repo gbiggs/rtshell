@@ -311,12 +311,9 @@ def display_info(options):
         print 'Channel {0}'.format(ii + 1)
         print '  Name: {0}'.format(p.name)
         print '  Data type: {0} ({1})'.format(p.type_name, p.type)
-        if len(p.raw) == 1:
-            print '  Origin: {0}'.format(p.raw)
-        else:
-            print '  Origins:'
-            for r in p.raw:
-                print '    {0}'.format(r)
+        print '  Sources:'
+        for r in p.raw:
+            print '    {0}'.format(r)
 
     return 0
 
@@ -418,7 +415,8 @@ settings compatible with the port.'''
             result = record_log([path.cmd_path_to_full_path(p) for p in args],
                     options, tree)
     except Exception, e:
-        traceback.print_exc()
+        if options.verbose:
+            traceback.print_exc()
         print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
         return 1
     return result

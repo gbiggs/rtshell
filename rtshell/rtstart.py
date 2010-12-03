@@ -105,7 +105,7 @@ def start(profile=None, xml=True, dry_run=False, tree=None):
 
 
 def main(argv=None, tree=None):
-    usage = '''Usage: %prog [options] [RTSProfile specification file]
+    usage = '''Usage: %prog [options] [RTSProfile file]
 Start an RT system using an RT system profile specified in XML or YAML.
 
 If no file is given, the profile is read from standard input.'''

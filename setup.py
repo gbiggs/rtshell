@@ -52,7 +52,8 @@ base_scripts = ['rtact',
                 'rtresurrect',
                 'rtstart',
                 'rtstop',
-                'rtteardown']
+                'rtteardown',
+		'rtstodot']
 if sys.platform == 'win32':
     batch_files = ['rtact.bat',
                    'rtcat.bat',

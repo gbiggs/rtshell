@@ -38,6 +38,7 @@ import rtlog_comps
 import rts_exceptions
 import rtshell
 import simpkl_log
+import text_log
 
 
 def record_log(raw_paths, options, tree=None):
@@ -70,7 +71,7 @@ def record_log(raw_paths, options, tree=None):
     if options.logger == 'simpkl':
         l_type = simpkl_log.SimplePickleLog
     elif options.logger == 'text':
-        l_type = textlog.TextLogger
+        l_type = text_log.TextLog
     else:
         raise rts_exceptions.BadLogTypeError(options.logger)
 
@@ -266,6 +267,12 @@ def display_info(options):
 
     statinfo = os.stat(options.filename)
     size = statinfo.st_size
+    if size > 1024 * 1024 * 1024: # GiB
+        size_str = '{0:.2f}GiB ({1}B)'.format(size / (1024.0 * 1024 * 1024), size)
+    if size > 1024 * 1024: # MiB
+        size_str = '{0:.2f}MiB ({1}B)'.format(size / (1024.0 * 1024), size)
+    if size > 1024: # KiB
+        size_str = '{0:.2f}KiB ({1}B)'.format(size / 1024.0, size)
     log = l_type(filename=options.filename, mode='r', verbose=options.verbose)
 
     start_time, port_specs = log.metadata
@@ -279,7 +286,7 @@ def display_info(options):
             time.localtime(end_time.float))
 
     print 'Name: {0}'.format(options.filename)
-    print 'Size: {0}B'.format(size)
+    print 'Size: ' + size_str
     print 'Start time: {0} ({1})'.format(start_time_str, start_time)
     print 'First entry time: {0} ({1})'.format(first_time_str, first_time)
     print 'End time: {0} ({1})'.format(end_time_str, end_time)

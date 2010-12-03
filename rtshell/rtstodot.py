@@ -1,99 +1,163 @@
 #!/usr/bin/env python
+# -*- Python -*-
+# -*- coding: utf-8 -*-
 
-#-----------------------------------------------------------------------------
-# rtstodot
-#
-# A utility script to visualize RTSProfile using graphviz.
-#      copyright Yosuke Matsusaka <yosuke.matsusaka@aist.go.jp> 2010
-#-----------------------------------------------------------------------------
+'''rtshell
 
-# Usage:
-#  -Visualize current configuration to screen
-#   % rtcryo -o - | rtstodot - | dot -T xlib
-#  -Output in eps [paste in latex paper]
-#   % rtstodot rtsystem.xml | dot -T eps > rtsystem.eps
+Copyright (C) 2009-2010
+    Yosuke Matsusaka and Geoffrey Biggs
+    RT-Synthesis Research Group
+    Intelligent Systems Research Institute,
+    National Institute of Advanced Industrial Science and Technology (AIST),
+    Japan
+    All rights reserved.
+Licensed under the Eclipse Public License -v 1.0 (EPL)
+http://www.opensource.org/licenses/eclipse-1.0.txt
 
-# History
-# 2010/10/05 First version
-# 2010/10/10 Adapt to RTC port naming convention
+Implementation of the RT System visualisation command.
 
-import sys, codecs
-from rtsprofile import rts_profile
+'''
 
-def usage():
-    print "Usage: %s [RTSProfile]" % sys.argv[0]
-    print "Examples:"
-    print " -Visualize current configuration to screen"
-    print "  % rtcryo -o - | rtstodot - | dot -T xlib"
-    print " -Output in eps format [can be used in latex paper]"
-    print "  % rtstodot rtsystem.xml | dot -T eps > rtsystem.eps"
+
+import optparse
+import rtsprofile.rts_profile
+import sys
+import traceback
+
+import rtshell
+
 
 def port_name(s):
-    return s.split('.')[-1]
+    parts = s.split('.')
+    if len(parts) == 1:
+        return s
+    else:
+        return parts[-1]
+
 
 def escape(s):
     return s.replace('.', '_dot_').replace('/', '_slash_')
 
-def main():
-    if (len(sys.argv) != 2):
-        usage()
-        quit()
 
-    fname = sys.argv[1]
-    p = rts_profile.RtsProfile()
-    if fname == '-':
-        p.parse_from_xml(sys.stdin.read())
+def get_ports(rtsp):
+    in_ports = []
+    out_ports = []
+    for dp in rtsp.data_port_connectors:
+        in_ports.append((dp.source_data_port.instance_name,
+            port_name(dp.source_data_port.port_name)))
+        out_ports.append((dp.target_data_port.instance_name,
+            port_name(dp.target_data_port.port_name)))
+    for sp in rtsp.service_port_connectors:
+        out_ports.append((dp.source_data_port.instance_name,
+            port_name(dp.source_data_port.port_name)))
+        in_ports.append((dp.target_data_port.instance_name,
+            port_name(dp.target_data_port.port_name)))
+    return in_ports, out_ports
+
+
+def make_comp_str(c, in_ports, out_ports):
+    in_ports_str = ''
+    out_ports_str = ''
+    for dp in c.data_ports:
+        if (c.instance_name, dp.name) in in_ports:
+            in_ports_str += '<{0}>{0}|'.format(port_name(dp.name))
+        if (c.instance_name, dp.name) in out_ports:
+            out_ports_str += '<{0}>{0}|'.format(port_name(dp.name))
+    for sp in c.service_ports:
+        if (c.instance_name, sp.name) in in_ports:
+            in_ports_str += '<{0}>{0}|'.format(port_name(sp.name))
+        if (c.instance_name, sp.name) in out_ports:
+            out_ports_str += '<{0}>{0}|'.format(port_name(sp.name))
+    label_str = '{{{{{0}}}|{1}|{{{2}}}}}'.format(in_ports_str[:-1], c.instance_name,
+            out_ports_str[:-1])
+    return '  {0} [label="{1}"];'.format(escape(c.instance_name), label_str)
+
+
+def make_conn_str(s_port, d_port):
+    return '  {0}:{1} -> {2}:{3}'.format(
+            escape(s_port.instance_name), port_name(s_port.port_name),
+            escape(d_port.instance_name), port_name(d_port.port_name))
+
+
+def visualise(profile=None, xml=True, tree=None):
+    # Load the profile
+    if profile:
+        # Read from a file
+        with open(profile) as f:
+            if xml:
+                rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=f)
+            else:
+                rtsp = rtsprofile.rts_profile.RtsProfile(yaml_spec=f)
     else:
-        p.parse_from_xml(open(fname).read())
+        # Read from standard input
+        lines = sys.stdin.read()
+        if xml:
+            rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=lines)
+        else:
+            rtsp = rtsprofile.rts_profile.RtsProfile(yaml_spec=lines)
 
-    print 'digraph rtsprofile {'
-    print '  rankdir=LR;'
-    print '  node [shape=Mrecord];'
+    result = ['digraph rtsprofile {', '  rankdir=LR;', '  node [shape=Mrecord];']
+    in_ports, out_ports = get_ports(rtsp)
+    for comp in rtsp.components:
+        result.append(make_comp_str(comp, in_ports, out_ports))
+    for conn in rtsp.data_port_connectors:
+        result.append(make_conn_str(conn.source_data_port,
+            conn.target_data_port) + ';')
+    for conn in rtsp.service_port_connectors:
+        result.append(make_conn_str(conn.source_service_port,
+            conn.target_service_port) + ' [arrowhead="odot"];')
+    result.append('}')
+    return result
 
-    # use connection info to estimate port direction
-    isinport = {}
-    isoutport = {}
-    for dp in p.data_port_connectors:
-        s = dp.source_data_port
-        isoutport[(s.instance_name, s.port_name)] = True
-        t = dp.target_data_port
-        isinport[(t.instance_name, t.port_name)] = True
-    for sp in p.service_port_connectors:
-        s = sp.source_service_port
-        isoutport[(s.instance_name, s.port_name)] = True
-        t = sp.target_service_port
-        isinport[(t.instance_name, t.port_name)] = True
 
-    # draw components
-    for c in p.components:
-        inports = []
-        outports = []
-        for dp in c.data_ports:
-            if isinport.has_key((c.instance_name, dp.name)):
-                inports.append(port_name(dp.name))
-            if isoutport.has_key((c.instance_name, dp.name)):
-                outports.append(port_name(dp.name))
-        for sp in c.service_ports:
-            if isinport.has_key((c.instance_name, sp.name)):
-                inports.append(port_name(sp.name))
-            if isoutport.has_key((c.instance_name, sp.name)):
-                outports.append(port_name(sp.name))
-        inportstr = '|'.join(['<%s>%s' % (n,n) for n in inports])
-        outportstr = '|'.join(['<%s>%s' % (n,n) for n in outports])
-        labelstr = '{{%s}|%s|{%s}}' % (inportstr, c.instance_name, outportstr)
-        print '  %s [label="%s"];' % (escape(c.instance_name), labelstr)
+def main(argv=None, tree=None):
+    usage = '''Usage: %prog [options] [RTSProfile file]
+Visualise RT Systems using dot files.
 
-    # draw connections
-    for dp in p.data_port_connectors:
-        s = dp.source_data_port
-        t = dp.target_data_port
-        print '  %s:%s -> %s:%s;' % (escape(s.instance_name), port_name(s.port_name), escape(t.instance_name), port_name(t.port_name))
-    for sp in p.service_port_connectors:
-        s = sp.source_service_port
-        t = sp.target_service_port
-        print '  %s:%s -> %s:%s [arrowhead="odot"];' % (escape(s.instance_name), port_name(s.port_name), escape(t.instance_name), port_name(t.port_name))
+If no file is given, the profile is read from standard input.
 
-    print '}'
+Example: visualising the current configuration.
+ $ rtcryo | rtstodot | dot -T xlib"
 
-if __name__ == '__main__':
-    sys.exit(main())
+Example: Outputting in EPS format.
+ $ rtstodot rtsystem.rts | dot -T eps > rtsystem.eps
+'''
+    version = rtshell.RTSH_VERSION
+    parser = optparse.OptionParser(usage=usage, version=version)
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+            default=False,
+            help='Output verbose information. [Default: %default]')
+    parser.add_option('-x', '--xml', dest='xml', action='store_true',
+            default=True, help='Use XML input format. [Default: True]')
+    parser.add_option('-y', '--yaml', dest='xml', action='store_false',
+            help='Use YAML input format. [Default: False]')
+
+    if argv:
+        sys.argv = [sys.argv[0]] + argv
+    try:
+        options, args = parser.parse_args()
+    except optparse.OptionError, e:
+        print >>sys.stderr, 'OptionError:', e
+        return 1
+
+    if not args:
+        profile = None
+    elif len(args) == 1:
+        profile = args[0]
+    else:
+        print >>sys.stderr, usage
+        return 1
+
+    try:
+        for l in visualise(profile=profile, xml=options.xml, tree=tree):
+            print l
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
+        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        return 1
+    return 0
+
+
+# vim: tw=79
+

@@ -19,6 +19,8 @@ Command to visualise RT Systems.
 '''
 
 
+import sys
+
 import rtshell.rtstodot
 
 

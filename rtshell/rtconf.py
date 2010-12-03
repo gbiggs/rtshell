@@ -95,14 +95,14 @@ def get_comp(cmd_path, full_path, tree=None):
     if not tree:
         tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
 
-    object = tree.get_node(path)
-    if not object:
+    comp = tree.get_node(path)
+    if not comp:
         raise rts_exceptions.NoSuchObjectError(cmd_path)
-    if object.is_zombie:
+    if comp.is_zombie:
         raise rts_exceptions.ZombieObjectError(cmd_path)
-    if not object.is_component:
+    if not comp.is_component:
         raise rts_exceptions.NotAComponentError(cmd_path)
-    return tree, object
+    return tree, comp
 
 
 
@@ -135,33 +135,33 @@ def set_conf_value(param, new_value, cmd_path, full_path, options, tree=None):
         options.set_name = comp.active_conf_set_name
     if is_hidden(options.set_name) and not options.all:
         raise rts_exceptions.NoConfSetError(options.set_name)
-    object.set_conf_set_value(options.set_name, param, new_value)
-    if options.set_name == object.active_conf_set_name:
+    comp.set_conf_set_value(options.set_name, param, new_value)
+    if options.set_name == comp.active_conf_set_name:
         # Re-activate the set to update the config param internally in the
         # component.
-        object.activate_conf_set(options.set_name)
+        comp.activate_conf_set(options.set_name)
 
 
 def get_conf_value(param, cmd_path, full_path, options, tree=None):
     tree, comp = get_comp(cmd_path, full_path, tree)
 
     if not options.set_name:
-        options.set_name = object.active_conf_set_name
+        options.set_name = comp.active_conf_set_name
     if is_hidden(options.set_name) and not options.all:
         raise rts_exceptions.NoConfSetError(options.set_name)
 
-    if not options.set_name in object.conf_sets:
+    if not options.set_name in comp.conf_sets:
         raise rts_exceptions.NoConfSetError(options.set_name)
-    if not param in object.conf_sets[options.set_name].data:
+    if not param in comp.conf_sets[options.set_name].data:
         raise rtctree.exceptions.NoSuchConfParamError(param)
-    print object.conf_sets[options.set_name].data[param]
+    print comp.conf_sets[options.set_name].data[param]
 
 
 def activate_set(set_name, cmd_path, full_path, options, tree=None):
     if is_hidden(options.set_name) and not options.all:
         raise rts_exceptions.NoConfSetError(options.set_name)
     tree, comp = get_comp(cmd_path, full_path, tree)
-    object.activate_conf_set(set_name)
+    comp.activate_conf_set(set_name)
 
 
 def main(argv=None, tree=None):

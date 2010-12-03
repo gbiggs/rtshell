@@ -10,6 +10,6 @@
 
 rtcwd()
 {
-   eval $(python -c "import sys; from rtshell import rtcwd; sys.exit(rtcwd.main(['${1}']))")
+   eval $(python -c "import sys; import rtshell.rtcwd; sys.exit(rtshell.rtcwd.main(['${1}']))")
 }
 

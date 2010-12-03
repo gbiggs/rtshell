@@ -71,10 +71,10 @@ def delete_all_zombies(options, tree=None):
     def del_zombie(node, args):
         try:
             node.parent.unbind(node.name)
-            except Exception, e:
-                if options.verbose:
-                    traceback.print_exc()
-                print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        except Exception, e:
+            if options.verbose:
+                traceback.print_exc()
+            print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
     tree.iterate(del_zombie, filter=['is_zombie'])
 
 

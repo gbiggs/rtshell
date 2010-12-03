@@ -14,85 +14,66 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-File: state_control_base.py
-
 Base for the scripts that change component state.
 
 '''
 
-# $Source$
 
-
-from optparse import OptionParser, OptionError
+import optparse
 import os
-from rtctree.tree import create_rtctree, BadECIndexError
-from rtctree.path import parse_path
+import rtctree.tree
+import rtctree.path
 import sys
+import traceback
 
-from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
-from rtshell.path import cmd_path_to_full_path
+import path
+import rts_exceptions
+import rtshell
 
 
 def alter_component_state(action, cmd_path, full_path, options, tree=None):
-    path, port = parse_path(full_path)
+    path, port = rtctree.path.parse_path(full_path)
     if port:
-        # Can't alter a port
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
+        raise rts_exceptions.NotAComponentError(cmd_path)
 
     trailing_slash = False
     if not path[-1]:
-        # There was a trailing slash
-        print >>sys.stderr, '{0}: {1}: Not an \
-object'.format(sys.argv[0], cmd_path)
-        return 1
+        raise rts_exceptions.NotAComponentError(cmd_path)
 
     if not tree:
-        tree = create_rtctree(paths=path, filter=[path])
+        tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
     if not tree:
         return 1
 
     if not tree.has_path(path):
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
+        raise rts_exceptions.NoSuchObjectError(cmd_path)
     object = tree.get_node(path)
     if object.is_zombie:
-        print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
-        return 1
+        raise rts_exceptions.ZombieObjectError(cmd_path)
     if not object.is_component:
-        print >>sys.stderr, '{0}: Cannot access {1}: Not a \
-component'.format(sys.argv[0], cmd_path)
-        return 1
-
-    try:
-        action(object, options.ec_index)
-    except BadECIndexError, e:
-        print >>sys.stderr, '{0}: No execution context at index \
-{1}'.format(sys.argv[0], e.args[0])
-        return 1
-
-    return 0
+        raise rts_exceptions.NotAComponentError(cmd_path)
+    action(object, options.ec_index)
 
 
 def base_main(description, action, argv=None, tree=None):
     usage = '''Usage: %prog [options] <path>
 {0}
 
-{1}'''.format(description, RTSH_PATH_USAGE)
-    version = RTSH_VERSION
-    parser = OptionParser(usage=usage, version=version)
+{1}'''.format(description, rtshell.RTSH_PATH_USAGE)
+    version = rtshell.RTSH_VERSION
+    parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-e', '--exec_context', dest='ec_index', type='int',
-            action='store', default=0,
-            help='Index of the execution context to activate within. \
-[Default: %default]')
+            action='store', default=0, help='Index of the execution context '\
+            'to change state in. [Default: %default]')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+            default=False,
+            help='Output verbose information. [Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except OptionError, e:
+    except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError:', e
         return 1
 
@@ -105,9 +86,16 @@ def base_main(description, action, argv=None, tree=None):
     else:
         print >>sys.stderr, usage
         return 1
-    full_path = cmd_path_to_full_path(cmd_path)
+    full_path = path.cmd_path_to_full_path(cmd_path)
 
-    return alter_component_state(action, cmd_path, full_path, options, tree)
+    try:
+        alter_component_state(action, cmd_path, full_path, options, tree)
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
+        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        return 1
+    return 0
 
 
 # vim: tw=79

@@ -126,7 +126,6 @@ def write_to_ports(raw_paths, options, tree=None):
     tree.give_away_orb()
     del tree
     comp_mgmt.shutdown(mgr)
-    return 0
 
 
 def main(argv=None, tree=None):
@@ -179,12 +178,12 @@ then stop. Specify -1 for no timeout. This option overrides --number. \
         return 1
 
     try:
-        result = write_to_ports([path.cmd_path_to_full_path(p) \
+        write_to_ports([path.cmd_path_to_full_path(p) \
                 for p in args], options, tree=tree)
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
         print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
         return 1
-    return result
+    return 0
 

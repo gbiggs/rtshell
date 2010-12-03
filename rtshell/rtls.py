@@ -19,19 +19,17 @@ Implementation of the command to list naming contexts.
 '''
 
 
-from optparse import OptionParser, OptionError
+import optparse
 import os
-from rtctree.exceptions import RtcTreeError
-from rtctree.tree import create_rtctree, InvalidServiceError, \
-                         FailedToNarrowRootNamingError, \
-                         NonRootPathError
-from rtctree.path import parse_path
-from rtctree.utils import build_attr_string, colour_supported, \
-                          get_num_columns_and_rows, get_terminal_size
+import rtctree.tree
+import rtctree.path
+import rtctree.utils
 import sys
+import traceback
 
-from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
-from rtshell.path import cmd_path_to_full_path
+import path
+import rts_exceptions
+import rtshell
 
 
 def get_node_long_lines(nodes, use_colour=True):
@@ -53,10 +51,10 @@ def get_node_long_lines(nodes, use_colour=True):
                 out_width = 1
             if svc_width == 0:
                 svc_width = 1
-            name = build_attr_string(['bold', 'blue'],
-                        supported=use_colour) + \
-                    node.name + build_attr_string(['reset'],
-                        supported=use_colour)
+            name = (rtctree.utils.build_attr_string(['bold', 'blue'],
+                    supported=use_colour) + node.name +
+                    rtctree.utils.build_attr_string(['reset'],
+                    supported=use_colour))
             info_strings.append((('-', 0), ('-', 0), ('-', 0),
                                  ('-', 0), ('-', 0), name))
         elif node.is_manager:
@@ -71,10 +69,10 @@ def get_node_long_lines(nodes, use_colour=True):
                 out_width = 1
             if svc_width == 0:
                 svc_width = 1
-            name = build_attr_string(['bold', 'green'],
-                        supported=use_colour) + \
-                    node.name + build_attr_string(['reset'],
-                        supported=use_colour)
+            name = (rtctree.utils.build_attr_string(['bold', 'green'],
+                    supported=use_colour) + node.name +
+                    rtctree.utils.build_attr_string(['reset'],
+                    supported=use_colour))
             info_strings.append((('-', 0), ('-', 0), ('-', 0),
                                  ('-', 0), ('-', 0), name))
         elif node.is_component:
@@ -91,40 +89,34 @@ def get_node_long_lines(nodes, use_colour=True):
             total_string = '{0}/{1}'.format(num_ports, num_connected)
             if len(total_string) > total_width:
                 total_width = len(total_string)
-            coloured_string = build_attr_string('bold',
-                                supported=use_colour) + \
-                              str(num_ports) + \
-                              build_attr_string('reset',
-                                supported=use_colour) + '/' + \
-                              str(num_connected)
-            total_string = (coloured_string, len(coloured_string) - \
-                                len(total_string))
+            coloured_string = (rtctree.utils.build_attr_string('bold',
+                    supported=use_colour) + str(num_ports) +
+                    rtctree.utils.build_attr_string('reset',
+                    supported=use_colour) + '/' + str(num_connected))
+            total_string = (coloured_string,
+                    len(coloured_string) - len(total_string))
 
             num_ports = len(node.inports)
             num_connected = len(node.connected_inports)
             in_string = '{0}/{1}'.format(num_ports, num_connected)
             if len(in_string) > in_width:
                 in_width = len(in_string)
-            coloured_string = build_attr_string('bold',
-                                supported=use_colour) + \
-                              str(num_ports) + \
-                              build_attr_string('reset',
-                                supported=use_colour) + '/' + \
-                              str(num_connected)
-            in_string = (coloured_string, len(coloured_string) - \
-                                len(in_string))
+            coloured_string = (rtctree.utils.build_attr_string('bold',
+                    supported=use_colour) + str(num_ports) +
+                    rtctree.utils.build_attr_string('reset',
+                    supported=use_colour) + '/' + str(num_connected))
+            in_string = (coloured_string,
+                    len(coloured_string) - len(in_string))
 
             num_ports = len(node.outports)
             num_connected = len(node.connected_outports)
             out_string = '{0}/{1}'.format(num_ports, num_connected)
             if len(out_string) > out_width:
                 out_width = len(out_string)
-            coloured_string = build_attr_string('bold',
-                                supported=use_colour) + \
-                              str(num_ports) + \
-                              build_attr_string('reset',
-                                supported=use_colour) + '/' + \
-                              str(num_connected)
+            coloured_string = (rtctree.utils.build_attr_string('bold',
+                    supported=use_colour) + str(num_ports) +
+                    rtctree.utils.build_attr_string('reset',
+                    supported=use_colour) + '/' + str(num_connected))
             out_string = (coloured_string, len(coloured_string) - \
                                 len(out_string))
 
@@ -133,12 +125,10 @@ def get_node_long_lines(nodes, use_colour=True):
             svc_string = '{0}/{1}'.format(num_ports, num_connected)
             if len(svc_string) > svc_width:
                 svc_width = len(svc_string)
-            coloured_string = build_attr_string('bold',
-                                supported=use_colour) + \
-                              str(num_ports) + \
-                              build_attr_string('reset',
-                                supported=use_colour) + '/' + \
-                              str(num_connected)
+            coloured_string = (rtctree.utils.build_attr_string('bold',
+                    supported=use_colour) + str(num_ports) +
+                    rtctree.utils.build_attr_string('reset',
+                    supported=use_colour) + '/' + str(num_connected))
             svc_string = (coloured_string, len(coloured_string) - \
                                 len(svc_string))
 
@@ -156,10 +146,10 @@ def get_node_long_lines(nodes, use_colour=True):
                 out_width = 1
             if svc_width == 0:
                 svc_width = 1
-            name = build_attr_string(['faint', 'white'],
-                        supported=use_colour) + \
-                    '*' + node.name + build_attr_string(['reset'],
-                        supported=use_colour)
+            name = (rtctree.utils.build_attr_string(['faint', 'white'],
+                    supported=use_colour) + '*' + node.name +
+                    rtctree.utils.build_attr_string(['reset'],
+                    supported=use_colour))
             info_strings.append((('-', 0), ('-', 0), ('-', 0),
                                  ('-', 0), ('-', 0), name))
         else:
@@ -174,10 +164,10 @@ def get_node_long_lines(nodes, use_colour=True):
                 out_width = 1
             if svc_width == 0:
                 svc_width = 1
-            name = build_attr_string(['faint', 'white'],
-                        supported=use_colour) + \
-                    node.name + build_attr_string(['reset'],
-                        supported=use_colour)
+            name = (rtctree.utils.build_attr_string(['faint', 'white'],
+                    supported=use_colour) + node.name +
+                    rtctree.utils.build_attr_string(['reset'],
+                    supported=use_colour))
             info_strings.append((('-', 0), ('-', 0), ('-', 0),
                                  ('-', 0), ('-', 0), name))
     state_width += 2
@@ -200,9 +190,9 @@ def get_node_long_lines(nodes, use_colour=True):
 
 def format_items_list(items):
     gap = '  '
-    term_rows, term_cols = get_terminal_size()
-    nrows, ncols, col_widths = get_num_columns_and_rows([len(ii[1]) \
-            for ii in items], len(gap), term_cols)
+    term_rows, term_cols = rtctree.utils.get_terminal_size()
+    nrows, ncols, col_widths = rtctree.utils.get_num_columns_and_rows(
+            [len(ii[1]) for ii in items], len(gap), term_cols)
     rows = [items[s:s + ncols] for s in range(0, len(items), ncols)]
     lines = []
     for r in rows:
@@ -216,7 +206,7 @@ def format_items_list(items):
 
 def list_directory(dir_node, long=False):
     listing = dir_node.children
-    use_colour = colour_supported(sys.stdout)
+    use_colour = rtctree.utils.colour_supported(sys.stdout)
     if long:
         lines = get_node_long_lines(listing, use_colour=use_colour)
         return lines
@@ -224,45 +214,34 @@ def list_directory(dir_node, long=False):
         items = []
         for entry in listing:
             if entry.is_directory:
-                items.append((build_attr_string(['bold', 'blue'],
-                                supported=use_colour) + \
-                              entry.name + '/' + \
-                              build_attr_string(['reset'],
-                                supported=use_colour),
-                             entry.name))
+                items.append((rtctree.utils.build_attr_string(['bold', 'blue'],
+                        supported=use_colour) + entry.name + '/' + \
+                        rtctree.utils.build_attr_string(['reset'],
+                        supported=use_colour), entry.name))
             elif entry.is_component:
                 items.append((entry.name, entry.name))
             elif entry.is_manager:
-                items.append((build_attr_string(['bold', 'green'],
-                                supported=use_colour) + \
-                              entry.name + \
-                              build_attr_string(['reset'],
-                                  supported=use_colour),
-                             entry.name))
+                items.append((rtctree.utils.build_attr_string(['bold',
+                        'green'], supported=use_colour) + entry.name + \
+                        rtctree.utils.build_attr_string(['reset'],
+                        supported=use_colour), entry.name))
             elif entry.is_zombie:
-                items.append((build_attr_string(['faint', 'white'],
-                                supported=use_colour) + \
-                              '*' + entry.name + \
-                              build_attr_string(['reset'],
-                                  supported=use_colour),
-                             '*' + entry.name))
+                items.append((rtctree.utils.build_attr_string(['faint',
+                        'white'], supported=use_colour) + '*' + entry.name + \
+                        rtctree.utils.build_attr_string(['reset'],
+                        supported=use_colour), '*' + entry.name))
             else:
-                items.append((build_attr_string(['faint', 'white'],
-                                supported=use_colour) + \
-                              entry.name + \
-                              build_attr_string(['reset'],
-                                  supported=use_colour),
-                             entry.name))
+                items.append((rtctree.utils.build_attr_string(['faint',
+                        'white'], supported=use_colour) + entry.name + \
+                        rtctree.utils.build_attr_string(['reset'],
+                        supported=use_colour), entry.name))
         return format_items_list(items)
 
 
 def list_target(cmd_path, full_path, options, tree=None):
-    path, port = parse_path(full_path)
+    path, port = rtctree.path.parse_path(full_path)
     if port:
-        # Can't list a port
-        print >>sys.stderr, '{0}: Cannot access {1}: No such directory or \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
+        raise rts_exceptions.CannotDoToPortError('list')
 
     trailing_slash = False
     if not path[-1]:
@@ -271,42 +250,34 @@ object.'.format(sys.argv[0], cmd_path)
         path = path[:-1]
 
     if not tree:
-        tree = create_rtctree(paths=path, filter=[path])
-    if not tree:
-        return 1
+        tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
 
     if not tree.has_path(path):
-        print >>sys.stderr, '{0}: Cannot access {1}: No such directory or \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
+        raise rts_exceptions.NoSuchObjectError(cmd_path)
     if tree.is_component(path) or tree.is_unknown(path) or \
             tree.is_zombie(path):
         # Path points to a single object: print it like 'ls <file>'.
         if trailing_slash:
             # If there was a trailing slash, complain that the object is not a
             # directory.
-            print >>sys.stderr, '{0}: cannot access {1}: Not a \
-directory.'.format(sys.argv[0], address)
-            return 1
+            raise rts_exceptions.NoSuchObjectError(cmd_path)
         if options.long:
-            lines = get_node_long_lines([tree.get_node(path)],
+            return get_node_long_lines([tree.get_node(path)],
                                         sys.stdout.isatty())
-            for l in lines:
-                print l
         else:
             if tree.is_component(path):
-                print path[-1]
+                return [path[-1]]
             elif tree.is_zombie(path):
-                print build_attr_string(['faint', 'white'],
-                        supported=sys.stdout.isatty()) + \
-                    '*' + path[-1] + build_attr_string(['reset'],
-                        supported=sys.stdout.isatty())
+                return [(rtctree.utils.build_attr_string(['faint', 'white'],
+                        supported=sys.stdout.isatty()) + '*' + path[-1] +
+                        rtctree.utils.build_attr_string(['reset'],
+                        supported=sys.stdout.isatty()))]
             else:
                 # Assume unknown
-                print build_attr_string(['faint', 'white'],
-                        supported=sys.stdout.isatty()) + \
-                    path[-1] + build_attr_string(['reset'],
-                        supported=sys.stdout.isatty())
+                return [(rtctree.utils.build_attr_string(['faint', 'white'],
+                        supported=sys.stdout.isatty()) + path[-1] +
+                        rtctree.utils.build_attr_string(['reset'],
+                        supported=sys.stdout.isatty()))]
     elif tree.is_directory(path):
         # If recursing, need to list this directory and all its children
         if options.recurse:
@@ -322,25 +293,19 @@ directory.'.format(sys.argv[0], address)
                     args=options.long, filter=['is_directory'])[1:]
             listings = recurse_root.iterate(list_directory,
                     args=options.long, filter=['is_directory'])
+            result = []
             for dir, listing in zip(dir_names, listings):
                 if dir == '.':
-                    print '.:'
+                    result.append('.:')
                 else:
-                    print './' + dir + ':'
-                for l in listing:
-                    print l
-                print
+                    result.append('./' + dir + ':')
+                result += listing
+                result.append('')
         else:
             dir_node = tree.get_node(path)
-            lines = list_directory(dir_node, options.long)
-            for l in lines:
-                print l
+            return list_directory(dir_node, options.long)
     else:
-        print >>sys.stderr, '{0}: cannot access {1}: Unknown object \
-type.'.format(sys.argv[0], cmd_path)
-        return 1
-
-    return 0
+        raise rts_exceptions.UnknownObjectError(cmd_path)
 
 
 def main(argv=None, tree=None):
@@ -357,19 +322,22 @@ Output ports/Outputs connected
 Service ports/Service connected
 Name
 
-''' + RTSH_PATH_USAGE
-    version = RTSH_VERSION
-    parser = OptionParser(usage=usage, version=version)
+''' + rtshell.RTSH_PATH_USAGE
+    version = rtshell.RTSH_VERSION
+    parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-l', dest='long', action='store_true', default=False,
             help='Use a long listing format.')
     parser.add_option('-R', '--recurse', dest='recurse', action='store_true',
             default=False, help='List recursively. [Default: %default]')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+            default=False,
+            help='Output verbose information. [Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except OptionError, e:
+    except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError:', e
         return 1
 
@@ -380,9 +348,17 @@ Name
     else:
         print >>sys.stderr, usage
         return 1
-    full_path = cmd_path_to_full_path(cmd_path)
+    full_path = path.cmd_path_to_full_path(cmd_path)
 
-    return list_target(cmd_path, full_path, options, tree)
+    try:
+        for l in list_target(cmd_path, full_path, options, tree):
+            print l
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
+        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        return 1
+    return 0
 
 
 # vim: tw=79

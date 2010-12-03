@@ -19,29 +19,58 @@ Implementation of the command to find components, managers, etc.
 '''
 
 
-from optparse import OptionParser, OptionError
+import optparse
 import os
 import re
-from rtctree.exceptions import RtcTreeError
-from rtctree.tree import create_rtctree, InvalidServiceError, \
-                         FailedToNarrowRootNamingError, \
-                         NonRootPathError
-from rtctree.path import parse_path
-from rtctree.utils import build_attr_string, get_num_columns_and_rows, \
-                          get_terminal_size
+import rtctree.tree
+import rtctree.path
 import sys
+import traceback
 
-from rtshell import RTSH_PATH_USAGE, RTSH_VERSION
-from rtshell.path import cmd_path_to_full_path
+import path
+import rts_exceptions
+import rtshell
+
+
+def get_result(node, args):
+    if node.full_path.startswith(cmd_path):
+        result = node.full_path[len(cmd_path):]
+        if not result:
+            # This will happen if the search root is a component
+            return node.name
+        return node.full_path
+    else:
+        return node.full_path
+
+
+def matches_search(node):
+    # Filter out types
+    if node.is_component and 'c' not in options.type:
+        return False
+    if node.is_manager and 'm' not in options.type and \
+            'd' not in options.type:
+        return False
+    if node.is_nameserver and 'n' not in options.type and \
+            'd' not in options.type:
+        return False
+    if node.is_directory and 'd' not in options.type and \
+            (not node.is_nameserver and not node.is_manager):
+        return False
+    if node.is_zombie and 'z' not in options.type:
+        return False
+    if not name_res:
+        return True
+    # Check for name matches
+    for name_re in name_res:
+        if name_re.search(node.full_path):
+            return True
+    return False
 
 
 def search(cmd_path, full_path, options, tree=None):
-    path, port = parse_path(full_path)
+    path, port = rtctree.path.parse_path(full_path)
     if port:
-        # Can't search in a port
-        print >>sys.stderr, '{0}: Cannot access {1}: No such directory or \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
+        raise rts_exceptions.NotADirectoryError(cmd_path)
 
     trailing_slash = False
     if not path[-1]:
@@ -50,22 +79,14 @@ object.'.format(sys.argv[0], cmd_path)
         path = path[:-1]
 
     if not tree:
-        tree = create_rtctree(paths=path, filter=[path])
-    if not tree:
-        return 1
+        tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
 
     # Find the root node of the search
     root = tree.get_node(path)
     if not root:
-        print >>sys.stderr, '{0}: Cannot access {1}: No such directory or \
-object.'.format(sys.argv[0], cmd_path)
-        return 1
+        raise rts_exceptions.NoSuchObjectError(cmd_path)
     if root.is_component and trailing_slash:
-        # If there was a trailing slash, complain that a component is not a
-        # directory.
-        print >>sys.stderr, '{0}: cannot access {1}: Not a directory.'.format(\
-                sys.argv[0], address)
-        return 1
+        raise rts_exceptions.NotADirectoryError(cmd_path)
 
     name_res = []
     for name in options.name:
@@ -85,42 +106,7 @@ object.'.format(sys.argv[0], cmd_path)
         name = name.replace (r'\?', r'.')
         name_res.append(re.compile(name, re.IGNORECASE))
 
-    def get_result(node, args):
-        if node.full_path.startswith(cmd_path):
-            result = node.full_path[len(cmd_path):]
-            if not result:
-                # This will happen if the search root is a component
-                return node.name
-            return node.full_path
-        else:
-            return node.full_path
-    def matches_search(node):
-        # Filter out types
-        if node.is_component and 'c' not in options.type:
-            return False
-        if node.is_manager and 'm' not in options.type and \
-                'd' not in options.type:
-            return False
-        if node.is_nameserver and 'n' not in options.type and \
-                'd' not in options.type:
-            return False
-        if node.is_directory and 'd' not in options.type and \
-                (not node.is_nameserver and not node.is_manager):
-            return False
-        if node.is_zombie and 'z' not in options.type:
-            return False
-        if not name_res:
-            return True
-        # Check for name matches
-        for name_re in name_res:
-            if name_re.search(node.full_path):
-                return True
-        return False
-    matches = root.iterate(get_result, filter=[matches_search])
-    for m in matches:
-        print m
-
-    return 0
+    return root.iterate(get_result, filter=[matches_search])
 
 
 def main(argv=None, tree=None):
@@ -129,29 +115,31 @@ Find entries in the RTC tree matching given constraints.
 
 Equivalent to the UNIX 'find' command.
 
-''' + RTSH_PATH_USAGE
-    version = RTSH_VERSION
-    parser = OptionParser(usage=usage, version=version)
-    parser.add_option('--maxdepth', dest='max_depth', action='store',
-                      type='int', default=0,
-                      help='Maximum depth to search down to in the tree. Set \
-to 0 to disable. [Default: %default]')
-    parser.add_option('--iname', dest='iname', action='append', type='string',
-                      default=[], help='Case-insensitive name pattern. This \
-option can be specified multiple times.')
-    parser.add_option('--name', dest='name', action='append', type='string',
-                      default=[], help='Case-sensitive name pattern. This \
-option can be specified multiple times.')
-    parser.add_option('--type', dest='type', action='store', type='string',
-                      help='Type of object: c (component), d (directory), m \
-(manager), n (name server), z (zombie). Multiple types can be specified in a \
-single entry, e.g. "--type dmn".')
+''' + rtshell.RTSH_PATH_USAGE
+    version = rtshell.RTSH_VERSION
+    parser = optparse.OptionParser(usage=usage, version=version)
+    parser.add_option('-i', '--iname', dest='iname', action='append',
+            type='string', default=[], help='Case-insensitive name pattern. '\
+            'This option can be specified multiple times.')
+    parser.add_option('-m', '--maxdepth', dest='max_depth', action='store',
+            type='int', default=0, help='Maximum depth to search down to in '\
+            'the tree. Set to 0 to disable. [Default: %default]')
+    parser.add_option('-n', '--name', dest='name', action='append',
+            type='string', default=[], help='Case-sensitive name pattern. '\
+            'This option can be specified multiple times.')
+    parser.add_option('-t', '--type', dest='type', action='store',
+            type='string', help='Type of object: c (component), d '\
+            '(directory), m (manager), n (name server), z (zombie). Multiple '\
+            'types can be specified in a single entry, e.g. "--type=dmn".')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+            default=False,
+            help='Output verbose information. [Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except OptionError, e:
+    except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError:', e
         return 1
 
@@ -160,9 +148,17 @@ single entry, e.g. "--type dmn".')
     else:
         print >>sys.stderr, usage
         return 1
-    full_path = cmd_path_to_full_path(cmd_path)
+    full_path = path.cmd_path_to_full_path(cmd_path)
 
-    return search(cmd_path, full_path, options, tree)
+    try:
+        for m in search(cmd_path, full_path, options, tree):
+            print m
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
+        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        return 1
+    return 0
 
 
 # vim: tw=79

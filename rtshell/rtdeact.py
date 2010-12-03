@@ -19,8 +19,6 @@ Implementation of the command to move a component to the inactive state.
 '''
 
 
-import sys
-
 import state_control_base
 
 

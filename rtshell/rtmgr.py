@@ -21,22 +21,19 @@ Implementation of the command for controlling managers.
 
 import optparse
 import os
-import rtctree.exceptions
 import rtctree.tree
 import rtctree.path
 import sys
 
 import rtshell
-import rtshell.path
+import rts_exceptions
+import path
 
 
 def get_manager(cmd_path, full_path, tree=None):
     path, port = rtctree.path.parse_path(full_path)
     if port:
-        # Can't configure a port
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return None
+        raise rts_exceptions.NotAManagerError(cmd_path)
 
     if not path[-1]:
         # There was a trailing slash - ignore it
@@ -44,82 +41,34 @@ object.'.format(sys.argv[0], cmd_path)
 
     if not tree:
         tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
-    if not tree:
-        return None
 
     object = tree.get_node(path)
     if not object:
-        print >>sys.stderr, '{0}: Cannot access {1}: No such \
-object.'.format(sys.argv[0], cmd_path)
-        return tree, None
+        raise rts_exceptions.NoSuchObjectError(cmd_path)
     if object.is_zombie:
-        print >>sys.stderr, '{0}: Zombie object.'.format(sys.argv[0])
-        return 1
+        raise rts_exceptions.ZombieObjectError(cmd_path)
     if not object.is_manager:
-        print >>sys.stderr, '{0}: Cannot access {1}: Not a \
-manager.'.format(sys.argv[0], cmd_path)
-        return tree, None
-
+        raise rts_exceptions.NotAManagerError(cmd_path)
     return tree, object
 
 def load_module(cmd_path, full_path, module_path, init_func, tree=None):
     tree, mgr = get_manager(cmd_path, full_path, tree)
-    if not mgr:
-        return 1
-
-    try:
-        mgr.load_module(module_path, init_func)
-    except rtctree.exceptions.FailedToLoadModuleError:
-        print >>sys.stderr, '{0}: Failed to load module {1}'.format(\
-                sys.argv[0], module_path)
-        return 1
-
-    return 0
+    mgr.load_module(module_path, init_func)
 
 
 def unload_module(cmd_path, full_path, module_path, tree=None):
     tree, mgr = get_manager(cmd_path, full_path, tree)
-    if not mgr:
-        return 1
-
-    try:
-        mgr.unload_module(module_path)
-    except rtctree.exceptions.FailedToUnloadModuleError:
-        print >>sys.stderr, '{0}: Failed to unload module {1}'.format(\
-                sys.argv[0], module_path)
-        return 1
-
-    return 0
+    mgr.unload_module(module_path)
 
 
 def create_component(cmd_path, full_path, module_name, tree=None):
     tree, mgr = get_manager(cmd_path, full_path, tree)
-    if not mgr:
-        return 1
-
-    try:
-        mgr.create_component(module_name)
-    except rtctree.exceptions.FailedToCreateComponentError:
-        print >>sys.stderr, '{0}: Failed to create component from module \
-{1}'.format(sys.argv[0], module_name)
-        return 1
-
-    return 0
+    mgr.create_component(module_name)
 
 
 def delete_component(cmd_path, full_path, instance_name, tree=None):
     tree, mgr = get_manager(cmd_path, full_path, tree)
-    if not mgr:
-        return 1
-
-    try:
-        mgr.delete_component(instance_name)
-    except rtctree.exceptions.FailedToDeleteComponentError, e:
-        print >>sys.stderr, '{0}: Failed to delete component {1}'.format(\
-                sys.argv[0], instance_name)
-        return 1
-
-    return 0
+    mgr.delete_component(instance_name)
 
 
 def main(argv=None, tree=None):
@@ -152,6 +101,9 @@ delete, create.
     parser.add_option('-u', '--unload', dest='mod_path_u', action='store',
             type='string', default='', help='Unload the module from the '\
             'manager.')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+            default=False,
+            help='Output verbose information. [Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
@@ -164,7 +116,7 @@ delete, create.
     if len(args) != 1:
         print >>sys.stderr, '{0}: No manager specified.'.format(sys.argv[0])
         return 1
-    full_path = rtshell.path.cmd_path_to_full_path(args[0])
+    full_path = path.cmd_path_to_full_path(args[0])
 
     if (not options.mod_path_u and not options.mod_path and not
             options.instance_name and not options.mod_name):
@@ -172,37 +124,30 @@ delete, create.
         print >>sys.stderr, usage
         return 1
 
-    result = 0
-    if options.mod_path_u:
-        # Unload a module
-        loc_result = unload_module(args[0], full_path, options.mod_path_u,
-                tree)
-        if loc_result != 0:
-            result = loc_result
-    if options.mod_path:
-        # Load a module
-        if not options.init_func:
-            print >>sys.stderr, '{0}: No initialisation function '\
-                    'specified.'.format(sys.argv[0])
-            return 1
-        loc_result = load_module(args[0], full_path, options.mod_path,
-                options.init_func, tree)
-        if loc_result != 0:
-            result = loc_result
-    if options.instance_name:
-        # Delete a component
-        loc_result = delete_component(args[0], full_path,
-                options.instance_name, tree)
-        if loc_result != 0:
-            result = loc_result
-    if options.mod_name:
-        # Create a component
-        loc_result = create_component(args[0], full_path, options.mod_name,
-                tree)
-        if loc_result != 0:
-            result = loc_result
-
-    return result
+    try:
+        if options.mod_path_u:
+            # Unload a module
+            unload_module(args[0], full_path, options.mod_path_u, tree)
+        if options.mod_path:
+            # Load a module
+            if not options.init_func:
+                print >>sys.stderr, '{0}: No initialisation function '\
+                        'specified.'.format(sys.argv[0])
+                return 1
+            load_module(args[0], full_path, options.mod_path,
+                    options.init_func, tree)
+        if options.instance_name:
+            # Delete a component
+            delete_component(args[0], full_path, options.instance_name, tree)
+        if options.mod_name:
+            # Create a component
+            create_component(args[0], full_path, options.mod_name, tree)
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
+        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        return 1
+    return 0
 
 
 # vim: tw=79

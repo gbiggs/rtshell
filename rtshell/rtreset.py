@@ -20,18 +20,16 @@ inactive state.
 '''
 
 
-import sys
-
-from rtshell.state_control_base import base_main
+import state_control_base
 
 
 def reset_action(object, ec_index):
     object.reset_in_ec(ec_index)
-    return 0
 
 
 def main(argv=None, tree=None):
-    return base_main('Reset a component.', reset_action, argv)
+    return state_control_base.base_main('Reset a component.', reset_action,
+            argv)
 
 
 # vim: tw=79

@@ -176,9 +176,10 @@ def data_conns_to_rts_conns(connectors):
     return result
 
 
-def freeze_dry(servers, options, tree=None):
+def freeze_dry(servers, dest='-', xml=True, abstract='', vendor='', sysname='',
+        version='', tree=None):
     if not tree:
-        tree = rtctree.tree.create_rtctree(servers=args)
+        tree = rtctree.tree.create_rtctree(servers=servers)
     # Run through the tree finding component names and connections to
     # preserve.
     components = find_all_used_components(tree)
@@ -188,39 +189,27 @@ def freeze_dry(servers, options, tree=None):
             components)
     # Create an empty RTSProfile and add the information to it
     rtsprofile = rtsprofile.rts_profile.RtsProfile()
-    rtsprofile.abstract = options.abstract
+    rtsprofile.abstract = abstract
     today = datetime.datetime.today()
     today = today.replace(microsecond=0)
     rtsprofile.creation_date = today.isoformat()
     rtsprofile.update_date = today.isoformat()
     rtsprofile.version = rtsprofile.RTSPROFILE_SPEC_VERSION
-    rtsprofile.id = 'RTSystem :{0}.{1}.{2}'.format(options.vendor,
-                                                   options.sysname,
-                                                   options.version)
+    rtsprofile.id = 'RTSystem :{0}.{1}.{2}'.format(vendor, sysname, version)
     rtsprofile.components = rts_components
     rtsprofile.data_port_connectors = data_connectors
     rtsprofile.service_port_connectors = svc_connectors
 
-    if options.output == '-':
+    if dest == '-':
         # Write XML to stdout
-        if options.xml:
+        if xml:
             sys.stdout.write(rtsprofile.save_to_xml())
         else:
             sys.stdout.write(rtsprofile.save_to_yaml())
     else:
         # Write to a file
-        ext = os.path.splitext(options.output)[1]
-        if ext == '.yaml':
-            options.xml = False
-        else:
-            options.xml = True
-        if options.output == 'rtsystem.':
-            if options.xml:
-                options.output += 'xml'
-            else:
-                options.output += 'yaml'
-        f = open(options.output, 'w')
-        if options.xml:
+        f = open(dest, 'w')
+        if xml:
             f.write(rtsprofile.save_to_xml())
         else:
             f.write(rtsprofile.save_to_yaml())
@@ -233,11 +222,7 @@ Record a running RT System in an RTSProfile specification.
 
 Any name servers specified on the command line will be used to build the
 RTCTree. If no name servers are specified, the RTCTree's default behaviour will
-be used.
-
-The output format will be determined automatically from the file extension.
-If the file has no extension, the input format is assumed to be XML.
-The output format can be over-ridden with the --xml or --yaml options.'''
+be used.'''
     parser = optparse.OptionParser(usage=usage, version=rtshell.RTSH_VERSION)
     parser.add_option('-a', '--abstract', dest='abstract', action='store',
             type='string', default='RT System created by rtcryo.',
@@ -247,8 +232,8 @@ The output format can be over-ridden with the --xml or --yaml options.'''
             help='Name of the RT System. [Default: %default]')
     parser.add_option('-o', '--output', dest='output', action='store',
             type='string', default='-',
-            help='Output file name. Specify - for standard out. \
-[Default: standard out]')
+            help='Output file name. Specify - for standard out. [Default: '\
+            'standard out]')
     parser.add_option('-v', '--system-version', dest='version', action='store',
             type='string', default='0',
             help='Version of the RT System. [Default: %default]')
@@ -256,9 +241,9 @@ The output format can be over-ridden with the --xml or --yaml options.'''
             type='string', default='Me',
             help='Vendor of the RT System. [Default: %default]')
     parser.add_option('-x', '--xml', dest='xml', action='store_true',
-            default=True, help='Use XML output format. [Default: %default]')
+            default=True, help='Use XML output format. [Default: True]')
     parser.add_option('-y', '--yaml', dest='xml', action='store_false',
-            help='Use YAML output format. [Default: %default]')
+            help='Use YAML output format. [Default: False]')
     parser.add_option('--verbose', dest='verbose', action='store_true',
             default=False, help='Verbose output. [Default: %default]')
 
@@ -272,7 +257,9 @@ The output format can be over-ridden with the --xml or --yaml options.'''
     option_store.OptionStore().verbose = options.verbose
 
     try:
-        freeze_dry(args, options, tree)
+        freeze_dry(args, dest=options.output, xml=options.xml,
+                abstract=options.abstract, vendor=options.vendor,
+                sysname=options.sysname, version=options.version, tree=tree)
     except Exception, e:
         if options.verbose:
             traceback.print_exc()

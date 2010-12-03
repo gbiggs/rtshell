@@ -21,7 +21,6 @@ rtcheck library.
 
 import optparse
 import os
-import os.path
 import rtctree.path
 import rtctree.tree
 import rtsprofile.rts_profile
@@ -142,6 +141,42 @@ def check_states(rtsprofile, expected, req_cb):
     return checks
 
 
+def check(profile=None, xml=True, state='Active', dry_run=False, tree=None):
+    # Load the profile
+    if profile:
+        # Read from a file
+        with open(args[0]) as f:
+            if xml:
+                rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=f)
+            else:
+                rtsp = rtsprofile.rts_profile.RtsProfile(yaml_spec=f)
+    else:
+        # Read from standard input
+        lines = sys.stdin.read()
+        if xml:
+            rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=lines)
+        else:
+            rtsp = rtsprofile.rts_profile.RtsProfile(yaml_spec=lines)
+
+    # Build a list of actions to perform that will check the system
+    cb = SystemNotOKCB()
+    actions = (check_comps(rtsp, cb) + check_connections(rtsp, cb) +
+            check_configs(rtsp, cb) + check_states(rtsp, state, cb))
+    if dry_run:
+        for a in actions:
+            print a
+    else:
+        if not tree:
+            # Load the RTC Tree, using the paths from the profile
+            tree = rtctree.tree.create_rtctree(paths=[rtctree.path.parse_path(
+                os.sep + c.path_uri)[0] for c in rtsp.components])
+        for a in actions:
+            a(tree)
+    if cb.failed:
+        return False
+    return True
+
+
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <RTSProfile specification file>
 Check that the running RT System conforms to an RTSProfile specification.
@@ -161,7 +196,7 @@ The output format can be over-ridden with the --xml or --yaml options.'''
             default=False,
             help='Output verbose information. [Default: %default]')
     parser.add_option('-x', '--xml', dest='xml', action='store_true',
-            default=True, help='Use XML input format. [Default: %default]')
+            default=True, help='Use XML input format. [Default: True]')
     parser.add_option('-y', '--yaml', dest='xml', action='store_false',
             help='Use YAML input format. [Default: False]')
 
@@ -175,43 +210,21 @@ The output format can be over-ridden with the --xml or --yaml options.'''
     rtshell.option_store.OptionStore().verbose = options.verbose
 
     if not args:
+        profile = None
+    elif len(args) == 1:
+        profile = args[0]
+    else:
         print >>sys.stderr, usage
         return 1
 
-    # Load the profile
-    ext = os.path.splitext(args[0])[1]
-    if ext == '.xml':
-        options.xml = True
-    elif ext == '.yaml':
-        options.xml = False
-    with open(args[0]) as f:
-        if options.xml:
-            rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=f)
-        else:
-            rtsp = rtsprofile.rts_profile.RtsProfile(yaml_spec=f)
-    # Build a list of actions to perform that will check the system
-    cb = SystemNotOKCB()
-    actions = check_comps(rtsp, cb) + \
-            check_connections(rtsp, cb) + \
-            check_configs(rtsp, cb) + \
-            check_states(rtsp, options.state, cb)
-    if options.dry_run:
-        for a in actions:
-            print a
-    else:
-        if not tree:
-            # Load the RTC Tree, using the paths from the profile
-            tree = rtctree.tree.create_rtctree(paths=[rtctree.path.parse_path(
-                os.sep + c.path_uri)[0] for c in rtsp.components])
-        try:
-            for a in actions:
-                a(tree)
-        except Exception, e:
-            if options.verbose:
-                traceback.print_exc()
-            print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+    try:
+        if not check(profile=profile, xml=options.xml, state=options.state,
+                dry_run=options.dry_run, tree=tree):
             return 1
-    if cb.failed:
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
+        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
         return 1
     return 0
 

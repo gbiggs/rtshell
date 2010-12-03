@@ -546,7 +546,8 @@ class Plan(object):
                 self._complete_flag.clear()
         for a in self._laters:
             a.wait_for_exit()
-        return error
+        if error:
+            raise rts_exceptions.PlanExecutionError(error)
 
     def make(self, rtsprofile, actions, conds_source, monitor_target):
         '''Make a plan from a list of actions and an RTSProfile.'''

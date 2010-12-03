@@ -26,6 +26,15 @@ class RtShellError(Exception):
     pass
 
 
+class CallFailedError(Exception):
+    '''An interface call failed.'''
+    def __init__(self, msg):
+        self._msg = msg
+
+    def __str__(self):
+        return 'Interface call failed: {0}'.format(self._msg)
+
+
 class RequiredActionFailedError(RtShellError):
     '''Error raised when an action that must succeed fails.'''
     def __init__(self, msg):
@@ -42,6 +51,15 @@ class PrecedingTimeoutError(RtShellError):
 
     def __str__(self):
         return 'Preceding condition timed out: {0}'.format(self._msg)
+
+
+class PlanExecutionError(RtShellError):
+    '''An error occurred executing a plan.'''
+    def __init__(self, error):
+        self._error = error
+
+    def __str__(self):
+        return 'Error executing plan:\n{0}'.format(self._error)
 
 
 class EmptyConstExprError(RtShellError):
@@ -167,6 +185,22 @@ class NotAPortError(RtShellError):
             return 'Not a port: {0}'.format(self._path)
 
 
+class NotAManagerError(RtShellError):
+    '''A given path is not a manager.'''
+    def __init__(self, path):
+        self._path = path
+
+    def __str__(self):
+        if type(self._path) == tuple:
+            return 'Not a manager: {0}'.format(
+                    rtctree.path.format_path(self._path))
+        elif type(self._path) == list:
+            return 'Not a manager: {0}'.format(
+                    rtctree.path.format_path((self._path, None)))
+        else:
+            return 'Not a manager: {0}'.format(self._path)
+
+
 class NotInManagerError(RtShellError):
     '''A component name does not exist in a manager.'''
     def __init__(self, name):
@@ -224,6 +258,22 @@ class ZombieObjectError(RtShellError):
             return 'Zombie object: {0}'.format(self._path)
 
 
+class UnknownObjectError(RtShellError):
+    '''A given path points to an unknown object.'''
+    def __init__(self, path):
+        self._path = path
+
+    def __str__(self):
+        if type(self._path) == tuple:
+            return 'Unknown object: {0}'.format(
+                    rtctree.path.format_path(self._path))
+        elif type(self._path) == list:
+            return 'Unknown object: {0}'.format(
+                    rtctree.path.format_path((self._path, None)))
+        else:
+            return 'Unknown object: {0}'.format(self._path)
+
+
 class NoDestPortError(RtShellError):
     '''A required destination port was not specified.'''
     def __str__(self):
@@ -234,6 +284,15 @@ class NoSourcePortError(RtShellError):
     '''A required source port was not specified.'''
     def __str__(self):
         return 'No source port specified.'
+
+
+class CannotDoToPortError(RtShellError):
+    '''The action cannot be performed on a port.'''
+    def __init__(self, action):
+        self._action = action
+
+    def __str__(self):
+        return 'Cannot {0} ports.'.format(self._action)
 
 
 class PortNotFoundError(RtShellError):
@@ -384,6 +443,44 @@ class NoConfSetError(RtShellError):
 
     def __str__(self):
         return 'No such configuration set: {0}'.format(self._name)
+
+
+class BadStartPointError(RtShellError):
+    '''A given start point for the log is outside the bounds.'''
+    def __str__(self):
+        return 'Start time/index out of bounds.'
+
+
+class BadEndPointError(RtShellError):
+    '''A given end point for the log is outside the bounds.'''
+    def __str__(self):
+        return 'End time/index out of bounds.'
+
+
+class BadLogTypeError(RtShellError):
+    '''An invalid logger type was chosen.'''
+    def __init__(self, type):
+        self._type = type
+
+    def __str__(self):
+        return 'Invalid logger type: {0}'.format(self._type)
+
+
+class UnsupportedLogTypeError(RtShellError):
+    '''The selected log type doesn't support the desired feature.'''
+    def __init__(self, type, feature):
+        self._type = type
+        self._feature = feature
+
+    def __str__(self):
+        return 'Log type "{0}" does not support feature {1}.'.format(
+                self._type, self._feature)
+
+
+class NoLogFileNameError(RtShellError):
+    '''An expected file name was not provided.'''
+    def __str__(self):
+        return 'No log file specified.'
 
 
 # vim: tw=79

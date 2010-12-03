@@ -44,9 +44,7 @@ def record_log(raw_paths, options, tree=None):
     event = threading.Event()
 
     if options.end is not None and options.end < 0:
-        print >>sys.stderr, '{0}: End time/index cannot be '\
-                'negative.'.format(sys.argv[0])
-        return 1
+        raise rts_exceptions.BadEndPointError
     if options.end is None and options.index:
         print >>sys.stderr, '{0}: WARNING: --index has no effect without '\
                 '--end'.format(sys.argv[0])
@@ -74,9 +72,7 @@ def record_log(raw_paths, options, tree=None):
     elif options.logger == 'text':
         l_type = textlog.TextLogger
     else:
-        print >>sys.stderr, '{0}: Invalid logger type: {1}',format(sys.argv[0],
-                options.logger)
-        return 1
+        raise rts_exceptions.BadLogTypeError(options.logger)
 
     sources = port_types.parse_targets(raw_paths)
     if not tree:
@@ -127,24 +123,17 @@ def record_log(raw_paths, options, tree=None):
     tree.give_away_orb()
     del tree
     comp_mgmt.shutdown(mgr)
-    return 0
 
 
 def play_log(raw_paths, options, tree=None):
     event = threading.Event()
 
     if not options.filename:
-        print >>sys.stderr, \
-                '{0}: No log file specified.'.format(sys.argv[0])
-        return 1
+        raise rts_exceptions.NoLogFileNameError
     if options.start is not None and options.start < 0:
-        print >>sys.stderr, '{0}: Start time/index cannot be '\
-                'negative.'.format(sys.argv[0])
-        return 1
+        raise rts_exceptions.BadStartPointError
     if options.end is not None and options.end < 0:
-        print >>sys.stderr, '{0}: End time/index cannot be '\
-                'negative.'.format(sys.argv[0])
-        return 1
+        raise rts_exceptions.BadEndPointError
     if options.end is None and options.start is None and options.index:
         print >>sys.stderr, '{0}: WARNING: --index has no effect without '\
                 '--start or --end'.format(sys.argv[0])
@@ -193,15 +182,10 @@ def play_log(raw_paths, options, tree=None):
     if options.logger == 'simpkl':
         l_type = simpkl_log.SimplePickleLog
     elif options.logger == 'text':
-        print >>sys.stderr, '{0}: Logger type "text" does not support '\
-                'playback.'.format(sys.argv[0])
-        return 1
+        raise rts_exceptions.UnsupportedLogTypeError('text', 'playback')
     else:
-        print >>sys.stderr, '{0}: Invalid logger type: {1}',format(sys.argv[0],
-                options.logger)
-        return 1
+        raise rts_exceptions.BadLogTypeError(options.logger)
 
-    # TODO: allow port specs with multiple targets to be connected to.
     targets = port_types.parse_targets(raw_paths)
     if not tree:
         paths = [t[0] for t in targets]
@@ -261,25 +245,18 @@ def play_log(raw_paths, options, tree=None):
     tree.give_away_orb()
     del tree
     comp_mgmt.shutdown(mgr)
-    return 0
 
 
 def display_info(options):
     if not options.filename:
-        print >>sys.stderr, \
-                '{0}: No log file specified.'.format(sys.argv[0])
-        return 1
+        raise rts_exceptions.NoLogFileNameError
 
     if options.logger == 'simpkl':
         l_type = simpkl_log.SimplePickleLog
     elif options.logger == 'text':
-        print >>sys.stderr, '{0}: Logger type "text" does not support '\
-                'playback.'.format(sys.argv[0])
-        return 1
+        raise rts_exceptions.UnsupportedLogTypeError('text', 'inspection')
     else:
-        print >>sys.stderr, '{0}: Invalid logger type: {1}',format(sys.argv[0],
-                options.logger)
-        return 1
+        raise rts_exceptions.BadLogTypeError(options.logger)
 
     mm = modmgr.ModuleMgr(verbose=options.verbose)
     mm.load_mods_and_poas(options.modules)
@@ -314,8 +291,6 @@ def display_info(options):
         print '  Sources:'
         for r in p.raw:
             print '    {0}'.format(r)
-
-    return 0
 
 
 def main(argv=None, tree=None):
@@ -407,17 +382,17 @@ settings compatible with the port.'''
 
     try:
         if options.display_info:
-            result = display_info(options)
+            display_info(options)
         elif options.play:
-            result = play_log([path.cmd_path_to_full_path(p) for p in args],
+            play_log([path.cmd_path_to_full_path(p) for p in args],
                     options, tree)
         else:
-            result = record_log([path.cmd_path_to_full_path(p) for p in args],
+            record_log([path.cmd_path_to_full_path(p) for p in args],
                     options, tree)
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
         print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
         return 1
-    return result
+    return 0
 

@@ -181,18 +181,18 @@ def resurrect(profile=None, xml=True, dry_run=False, tree=None):
     # Load the profile
     if profile:
         # Read from a file
-        with open(args[0]) as f:
+        with open(profile) as f:
             if xml:
-                rtsp = RtsProfile(xml_spec=f)
+                rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=f)
             else:
-                rtsp = RtsProfile(yaml_spec=f)
+                rtsp = rtsprofile.rts_profile.RtsProfile(yaml_spec=f)
     else:
         # Read from standard input
         lines = sys.stdin.read()
         if xml:
-            rtsp = RtsProfile(xml_spec=lines)
+            rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=lines)
         else:
-            rtsp = RtsProfile(yaml_spec=lines)
+            rtsp = rtsprofile.rts_profile.RtsProfile(yaml_spec=lines)
 
     # Build a list of actions to perform that will reconstruct the system
     actions = rebuild_system_actions(rtsp)
@@ -203,7 +203,7 @@ def resurrect(profile=None, xml=True, dry_run=False, tree=None):
         if not tree:
             # Load the RTC Tree, using the paths from the profile
             tree = rtctree.tree.create_rtctree(paths=[rtctree.path.parse_path(
-                os.sep + c.path_uri)[0] for c in rtsprofile.components])
+                os.sep + c.path_uri)[0] for c in rtsp.components])
         for a in actions:
             a(tree)
 

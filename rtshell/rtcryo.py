@@ -44,7 +44,7 @@ def make_comp_id(comp):
                                         comp.type_name, comp.version)
 
 
-def find_all_used_components(rtctree):
+def find_all_used_components(tree):
     # Finds all component nodes in the tree
     def get_node(node, args):
         return node
@@ -52,12 +52,12 @@ def find_all_used_components(rtctree):
         if node.parent.is_manager:
             return False
         return True
-    return [c for c in rtctree.iterate(get_node,
+    return [c for c in tree.iterate(get_node,
                                        filter=['is_component', is_in_dir]) \
               if c.connected_ports]
 
 
-def find_unique_connectors(rtctree, components):
+def find_unique_connectors(tree, components):
     # Finds all unique connections between the components
     data_connectors = []
     seen_svc_connectors = []
@@ -82,7 +82,7 @@ def find_unique_connectors(rtctree, components):
                                    if not comp.get_port_by_ref(p.object)]
                 # Assume the first is the destination and find its component
                 path = rtctree.path.parse_path(dest_ports[0])
-                dest_comp = rtctree.get_node(path[0])
+                dest_comp = tree.get_node(path[0])
                 # Now have all the info we need to make the target
                 name = dest_comp.instance_name + '.' + path[1]
                 dest_port = rtsprofile.targets.TargetPort(
@@ -116,7 +116,7 @@ def find_unique_connectors(rtctree, components):
                                    if not comp.get_port_by_ref(p.object)]
                 # Assume the first is the destination and find its component
                 path = rtctree.path.parse_path(dest_ports[0])
-                dest_comp = rtctree.get_node(path[0])
+                dest_comp = tree.get_node(path[0])
                 # Now have all the info we need to make the target
                 name = dest_comp.instance_name + '.' + path[1]
                 dest_port = rtsprofile.targets.TargetPort(
@@ -188,31 +188,31 @@ def freeze_dry(servers, dest='-', xml=True, abstract='', vendor='', sysname='',
     data_connectors, svc_connectors = find_unique_connectors(tree,
             components)
     # Create an empty RTSProfile and add the information to it
-    rtsprofile = rtsprofile.rts_profile.RtsProfile()
-    rtsprofile.abstract = abstract
+    rtsp = rtsprofile.rts_profile.RtsProfile()
+    rtsp.abstract = abstract
     today = datetime.datetime.today()
     today = today.replace(microsecond=0)
-    rtsprofile.creation_date = today.isoformat()
-    rtsprofile.update_date = today.isoformat()
-    rtsprofile.version = rtsprofile.RTSPROFILE_SPEC_VERSION
-    rtsprofile.id = 'RTSystem :{0}.{1}.{2}'.format(vendor, sysname, version)
-    rtsprofile.components = rts_components
-    rtsprofile.data_port_connectors = data_connectors
-    rtsprofile.service_port_connectors = svc_connectors
+    rtsp.creation_date = today.isoformat()
+    rtsp.update_date = today.isoformat()
+    rtsp.version = rtsprofile.RTSPROFILE_SPEC_VERSION
+    rtsp.id = 'RTSystem :{0}.{1}.{2}'.format(vendor, sysname, version)
+    rtsp.components = rts_components
+    rtsp.data_port_connectors = data_connectors
+    rtsp.service_port_connectors = svc_connectors
 
     if dest == '-':
         # Write XML to stdout
         if xml:
-            sys.stdout.write(rtsprofile.save_to_xml())
+            sys.stdout.write(rtsp.save_to_xml())
         else:
-            sys.stdout.write(rtsprofile.save_to_yaml())
+            sys.stdout.write(rtsp.save_to_yaml())
     else:
         # Write to a file
         f = open(dest, 'w')
         if xml:
-            f.write(rtsprofile.save_to_xml())
+            f.write(rtsp.save_to_xml())
         else:
-            f.write(rtsprofile.save_to_yaml())
+            f.write(rtsp.save_to_yaml())
         f.close()
 
 

@@ -145,7 +145,7 @@ def check(profile=None, xml=True, state='Active', dry_run=False, tree=None):
     # Load the profile
     if profile:
         # Read from a file
-        with open(args[0]) as f:
+        with open(profile) as f:
             if xml:
                 rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=f)
             else:

@@ -48,35 +48,35 @@ def stop(profile=None, xml=True, dry_run=False, tree=None):
     # Load the profile
     if profile:
         # Read from a file
-        with open(args[0]) as f:
-            if options.xml:
+        with open(profile) as f:
+            if xml:
                 rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=f)
             else:
                 rtsp = rtsprofile.rts_profile.RtsProfile(yaml_spec=f)
     else:
         # Read from standard input
         lines = sys.stdin.read()
-        if options.xml:
+        if xml:
             rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=lines)
         else:
             rtsp = rtsprofile.rts_profile.RtsProfile(yaml_spec=lines)
 
     # Build a list of actions to perform that will stop the system
     deactivates = deactivate_actions(rtsp)
-    plan = plan.Plan()
-    plan.make(rtsp, deactivates, rtsp.deactivation,
+    p = plan.Plan()
+    p.make(rtsp, deactivates, rtsp.deactivation,
             rtctree.component.Component.INACTIVE)
-    if options.dry_run:
-        print plan
+    if dry_run:
+        print p
     else:
         if not tree:
             # Load the RTC Tree, using the paths from the profile
             tree = rtctree.tree.create_rtctree(paths=[rtctree.path.parse_path(
                 os.sep + c.path_uri)[0] for c in rtsp.components])
         try:
-            plan.execute(tree)
+            p.execute(tree)
         except rts_exceptions.RequiredActionFailedError, e:
-            plan.cancel()
+            p.cancel()
             raise
 
 

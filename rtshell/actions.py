@@ -739,7 +739,8 @@ class CheckCompStateAct(StateChangeAct):
                 comp.state_in_ec(ec_index) == comp.UNKNOWN):
             return True, None
         return False, 'Component {0} is in incorrect state {1}'.format(
-                self._path_str, comp.state_in_ec(ec_index))
+                self._path_str,
+                comp.get_state_in_ec_string(ec_index, add_colour=False))
 
 
 ###############################################################################

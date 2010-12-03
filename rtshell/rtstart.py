@@ -68,28 +68,28 @@ def start(profile=None, xml=True, dry_run=False, tree=None):
     # Load the profile
     if profile:
         # Read from a file
-        with open(args[0]) as f:
-            if options.xml:
+        with open(profile) as f:
+            if xml:
                 rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=f)
             else:
                 rtsp = rtsprofile.rts_profile.RtsProfile(yaml_spec=f)
     else:
         # Read from standard input
         lines = sys.stdin.read()
-        if options.xml:
+        if xml:
             rtsp = rtsprofile.rts_profile.RtsProfile(xml_spec=lines)
         else:
             rtsp = rtsprofile.rts_profile.RtsProfile(yaml_spec=lines)
 
     # Build a list of actions to perform that will start the system
     checks, activates = activate_actions(rtsp)
-    plan = plan.Plan()
-    plan.make(rtsp, activates, rtsp.activation,
+    p = plan.Plan()
+    p.make(rtsp, activates, rtsp.activation,
             rtctree.component.Component.ACTIVE)
-    if options.dry_run:
+    if dry_run:
         for a in checks:
             print a
-        print plan
+        print p
     else:
         if not tree:
             # Load the RTC Tree, using the paths from the profile
@@ -98,9 +98,9 @@ def start(profile=None, xml=True, dry_run=False, tree=None):
         try:
             for a in checks:
                 a(tree)
-            plan.execute(tree)
+            p.execute(tree)
         except rts_exceptions.RequiredActionFailedError:
-            plan.cancel()
+            p.cancel()
             raise
 
 

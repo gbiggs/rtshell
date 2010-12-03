@@ -59,7 +59,7 @@ class Recorder(gen_comp.GenComp):
         meta = (start, self._port_specs)
         # Make file name from activated time
         if not self._fn:
-            self._fn = 'rtlog_{0}.rtl'.format(int(start))
+            self._fn = 'rtlog_{0}.rtlog'.format(int(start))
         # Create log, record meta data
         self._l = self._logger_type(filename=self._fn, mode='w', meta=meta, verbose=self._verb)
         return RTC.RTC_OK

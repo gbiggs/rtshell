@@ -56,7 +56,7 @@ _rtsbc_rtopts()
     case ${COMP_WORDS[0]} in
         *rtact)     opts="--version -h --help -v --verbose -e --exec_context="
                     ;;
-        *rtcat)     opts="--version -h --help -v --verbose -l --ll"
+        *rtcat)     opts="--version -h --help -v --verbose -l -ll"
                     ;;
         *rtcheck)   opts="--version -h --help -v --verbose --dry-run -s --state= -x --xml -y --yaml"
                     ;;
@@ -290,7 +290,7 @@ _rtsbc_conid()
     # $1 = path
     # $2 = current word
     local cur=${2#=}
-    local ids=$(rtcat ConsoleIn0.rtc:out --ll | grep ID | awk '{print $2}')
+    local ids=$(rtcat ConsoleIn0.rtc:out -ll | grep ID | awk '{print $2}')
     COMPREPLY=($(compgen -W "${ids}" -- ${cur}))
     return 0
 }
@@ -395,11 +395,11 @@ _rtsbc_rtconf_param_val()
     if [[ "${SET_OPT_VAL}" == "" ]]; then
         # Param in active set
         val="\"$(rtconf ${1} ${ALL_SETS} get ${2} 2> /dev/null)\""
-        COMPREPLY=$(compgen -W "${val}" -- ${3})
+        COMPREPLY=($(compgen -W "${val}" -- ${3}))
     else
         # Param in specific set
         val="\"$(rtconf ${1} ${ALL_SETS} -s ${SET_OPT_VAL} get ${2} 2> /dev/null)\""
-        COMPREPLY=$(compgen -W "${val}" -- ${3})
+        COMPREPLY=($(compgen -W "${val}" -- ${3}))
     fi
     return 0
 }
@@ -489,6 +489,135 @@ _rtsbc_rtconf()
     return 0
 }
 
+_rtsbc_rtlog_get_logfile()
+{
+    # $@ = COMP_WORDS
+    local words
+    words=($@)
+    for ii in $(seq 0 ${#words[*]}) ;
+    do
+        if [[ ${words[ii]} == '-f' || ${words[ii]} == '--filename' ]]
+        then
+            logfilename=${words[ii + 1]}
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+_rtsbc_opt_in_opts()
+{
+    # $1 = short opt
+    # $2 = long opt
+    # $@ = COMP_WORDS
+    local short long words
+    short="${1}"
+    long="${2}"
+    shift 2
+    words=($@)
+    for ii in $(seq 0 ${#words[*]}) ;
+    do
+        if [[ ${words[ii]} == "${short}" || ${words[ii]} == "${long}" ]]
+        then
+            opt_found=1
+            return 0
+        fi
+    done
+
+    opt_found=
+    return 1
+}
+
+_rtsbc_rtlog_times()
+{
+    # $1 = File name
+    # $2 = Current word
+    times=$(rtlog -d -f ${1} | sed -n 's/.*(\([0-9.]*\))/\1/p')
+    COMPREPLY=($(compgen -W "${times}" -- ${2}))
+    return 0
+}
+
+_rtsbc_rtlog()
+{
+    local cur prev preprev colonopt logfilename opt_found
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [[ ${cur} == -* ]] ; then
+            _rtsbc_rtopts ${cur}
+            return 0
+    fi
+
+    case "${prev}" in
+        --filename|-f)
+            COMPREPLY=($(compgen -f ${cur}))
+            compopt -o filenames
+            return 0
+            ;;
+        --start|-s)
+            _rtsbc_rtlog_get_logfile ${COMP_WORDS[*]}
+            if [[ "${logfilename}" ]]
+            then
+                # Check if -i has been issued
+                _rtsbc_opt_in_opts '-i' '--index' ${COMP_WORDS[*]}
+                if [[ "${opt_found}" ]]
+                then
+                    # It doesn't make sense to complete indices - especially
+                    # when there could potentially be thousands of entries.
+                    COMPREPLY=
+                else
+                    _rtsbc_rtlog_times "${logfilename}" "${cur}"
+                fi
+            else
+                COMPREPLY=
+                return 0
+            fi
+            return 0
+            ;;
+        --end|-e)
+            _rtsbc_rtlog_get_logfile ${COMP_WORDS[*]}
+            if [[ "${logfilename}" ]]
+            then
+                # Check if -i has been issued
+                _rtsbc_opt_in_opts '-i' '--index' ${COMP_WORDS[*]}
+                if [[ "${opt_found}" ]]
+                then
+                    # It doesn't make sense to complete indices - especially
+                    # when there could potentially be thousands of entries.
+                    COMPREPLY=
+                else
+                    _rtsbc_rtlog_times "${logfilename}" "${cur}"
+                fi
+            else
+                COMPREPLY=
+                return 0
+            fi
+            return 0
+            ;;
+    esac
+
+    # : is treated the same as a space for separating variables
+    # Port completion 1
+    if [[ ${cur} == : ]] ; then
+        colonopt=$(rtcat ${prev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }')
+        COMPREPLY=(${colonopt})
+        return 0
+    fi
+
+    # Port completion 2
+    if [[ ${prev} == : ]] ; then
+        preprev="${COMP_WORDS[COMP_CWORD-2]}"
+        colonopt=`rtcat ${preprev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }'`
+        COMPREPLY=($(compgen -W "${colonopt}" -- ${cur}))
+        return 0
+    fi
+
+    _rtsbc_rtobj "${cur}" port
+    return 0
+}
+
 _rtsbc_mgr_get_module_path()
 {
     # $@ = COMP_WORDS
@@ -555,9 +684,14 @@ _rtsbc_rtmgr()
         --init-func|-i)
             # Find functions
             _rtsbc_mgr_get_module_path ${COMP_WORDS[*]}
-            funcs="$(nm -C ${module_path} | grep ' T ' | grep -v '::' | \
-                awk '{print $3;}')"
-            COMPREPLY=($(compgen -W "${funcs}" -- ${cur}))
+            if [[ -n "${module_path}" ]]
+            then
+                funcs="$(nm -C ${module_path} | grep ' T ' | grep -v '::' | \
+                    awk '{print $3;}')"
+                COMPREPLY=($(compgen -W "${funcs}" -- ${cur}))
+            else
+                COMPREPLY=
+            fi
             return 0
             ;;
         --load|-l)

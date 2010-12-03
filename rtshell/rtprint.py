@@ -115,17 +115,15 @@ compatible with the port.'''
             'struggles with your data types, try listing the modules here. '\
             'The module and its __POA partner will be imported.')
     parser.add_option('-n', '--number', dest='max', action='store',
-            type='int', default='-1',
-            help='Specify the number of times to read from any ports. \
-[Default: %default]')
+            type='int', default='-1', help='Specify the number of times to '\
+            'read from any ports. [Default: infinity]')
     parser.add_option('-r', '--rate', dest='rate', action='store',
-            type='float', default=1.0,
-            help='Specify the rate in Hertz at which to read and print. \
-[Default: %default]')
+            type='float', default=1.0, help='Specify the rate in Hertz at '\
+            'which to read and print. [Default: %default]')
     parser.add_option('-t', '--timeout', dest='timeout', action='store',
-            type='float', default=-1, help='Read data for this many seconds, \
-then stop. Specify -1 for no timeout. This option overrides --number. \
-[Default: %default]')
+            type='float', default=-1, help='Read data for this many seconds, '\
+            'then stop. Specify -1 for no timeout. This option overrides '\
+            '--number. [Default: %default]')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
             help='Output verbose information. [Default: %default]')

@@ -27,7 +27,7 @@ def activate_action(object, ec_index):
 
 
 def main(argv=None, tree=None):
-    return start_control_base.base_main('Activate a component.',
+    return state_control_base.base_main('Activate a component.',
             activate_action, argv)
 
 

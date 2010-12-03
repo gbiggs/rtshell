@@ -30,7 +30,6 @@ import traceback
 import path
 import rts_exceptions
 
-
 if sys.platform == 'win32':
     SET_CMD = 'set'
     EQUALS = '='
@@ -45,9 +44,9 @@ else:
     QUOTE = '"'
 
 
-def make_cmd_line(path):
+def make_cmd_line(dest):
     return '{0} {1}{2}{3}{4}{3}'.format(SET_CMD, path.ENV_VAR, EQUALS,
-            QUOTE, path)
+            QUOTE, dest)
 
 
 def cd(cmd_path, full_path):
@@ -70,7 +69,7 @@ def main(argv=None, tree=None):
         sys.argv = [sys.argv[0]] + argv
     if len(sys.argv) < 2:
         # Change to the root dir
-        print '{0} {1}{3}{2}/{2}'.format(SET_CMD, ENV_VAR, QUOTE, EQUALS)
+        print '{0} {1}{3}{2}/{2}'.format(SET_CMD, path.ENV_VAR, QUOTE, EQUALS)
         return 0
 
     # Take the first argument only
@@ -79,17 +78,18 @@ def main(argv=None, tree=None):
     try:
         if cmd_path == '.' or cmd_path == './':
             # Special case for '.': do nothing
-            if ENV_VAR in os.environ:
-                print make_cmd_line(os.environ[ENV_VAR])
+            if path.ENV_VAR in os.environ:
+                print make_cmd_line(os.environ[path.ENV_VAR])
                 return 0
             else:
                 print make_cmd_line('/')
                 return 0
         elif cmd_path == '..' or cmd_path == '../':
             # Special case for '..': go up one directory
-            if ENV_VAR in os.environ and os.environ[ENV_VAR] and \
-                    os.environ[ENV_VAR] != '/':
-                parent = os.environ[ENV_VAR][:os.environ[ENV_VAR].rstrip('/').rfind('/')]
+            if path.ENV_VAR in os.environ and os.environ[path.ENV_VAR] and \
+                    os.environ[path.ENV_VAR] != '/':
+                parent = os.environ[path.ENV_VAR][\
+                        :os.environ[path.ENV_VAR].rstrip('/').rfind('/')]
                 if not parent:
                     parent = '/'
                 print make_cmd_line(parent)
@@ -101,8 +101,6 @@ def main(argv=None, tree=None):
             full_path = path.cmd_path_to_full_path(cmd_path)
             cd(cmd_path, full_path)
     except Exception, e:
-        if options.verbose:
-            traceback.print_exc()
         print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
         return 1
 

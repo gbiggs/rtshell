@@ -301,6 +301,7 @@ def list_target(cmd_path, full_path, options, tree=None):
                     result.append('./' + dir + ':')
                 result += listing
                 result.append('')
+            return result
         else:
             dir_node = tree.get_node(path)
             return list_directory(dir_node, options.long)

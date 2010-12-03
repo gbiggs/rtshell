@@ -562,17 +562,10 @@ _rtsbc_rtlog()
             then
                 # Check if -i has been issued
                 _rtsbc_opt_in_opts '-i' '--index' ${COMP_WORDS[*]}
-                if [[ "${opt_found}" ]]
+                if [[ ! "${opt_found}" ]]
                 then
-                    # It doesn't make sense to complete indices - especially
-                    # when there could potentially be thousands of entries.
-                    COMPREPLY=
-                else
                     _rtsbc_rtlog_times "${logfilename}" "${cur}"
                 fi
-            else
-                COMPREPLY=
-                return 0
             fi
             return 0
             ;;
@@ -582,18 +575,15 @@ _rtsbc_rtlog()
             then
                 # Check if -i has been issued
                 _rtsbc_opt_in_opts '-i' '--index' ${COMP_WORDS[*]}
-                if [[ "${opt_found}" ]]
+                if [[ ! "${opt_found}" ]]
                 then
-                    # It doesn't make sense to complete indices - especially
-                    # when there could potentially be thousands of entries.
-                    COMPREPLY=
-                else
                     _rtsbc_rtlog_times "${logfilename}" "${cur}"
                 fi
-            else
-                COMPREPLY=
-                return 0
             fi
+            return 0
+            ;;
+        --logger|-l)
+            COMPREPLY=($(compgen -W "simpkl text" -- ${cur}))
             return 0
             ;;
     esac
@@ -689,8 +679,6 @@ _rtsbc_rtmgr()
                 funcs="$(nm -C ${module_path} | grep ' T ' | grep -v '::' | \
                     awk '{print $3;}')"
                 COMPREPLY=($(compgen -W "${funcs}" -- ${cur}))
-            else
-                COMPREPLY=
             fi
             return 0
             ;;

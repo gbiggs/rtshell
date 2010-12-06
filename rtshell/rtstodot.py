@@ -6,7 +6,6 @@
 
 Copyright (C) 2009-2010
     Yosuke Matsusaka and Geoffrey Biggs
-    RT-Synthesis Research Group
     Intelligent Systems Research Institute,
     National Institute of Advanced Industrial Science and Technology (AIST),
     Japan

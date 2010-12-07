@@ -35,28 +35,40 @@ import rtshell
 from docutils.core import publish_string
 
 
-def format_ports(ports, comp):
+def format_ports(comp):
     result = []
     result.append('.. csv-table:: Ports')
     result.append('   :header: "Name", "Type", "DataType", "Description"')
     result.append('   ')
-    for p in ports:
+    for p in comp.ports:
         datatype = p.properties['dataport.data_type']
         try:
-            description = p.properties['dataport.description']
+            description = p.properties['description']
         except KeyError:
             description = ''
         result.append('   "{0}", "{1}", "{2}", "{3}"'.format(p.name, p.porttype, datatype, description))
     return result
 
 
-def format_properties(props, comp):
+def format_properties(comp):
     result = []
     result.append('.. csv-table:: Configration parameters')
-    result.append('   :header: "Name", "Default"')
+    result.append('   :header: "Name", "Default", "Description"')
     result.append('   ')
-    for n, v in props.iteritems():
-        result.append('   "{0}", "{1}"'.format(n, v))
+
+    for n, v in comp.conf_sets['default'].data.iteritems():
+        try:
+            description = comp.conf_sets['__description__'].data[n]
+        except KeyError:
+            description = ''
+        try:
+            widget = comp.conf_sets['__widget__'].data[n]
+        except KeyError:
+            widget = ''
+        if widget != '':
+            result.append('   "{0}", "{1}", "{2} [limit:{3}]"'.format(n, v, description, widget))
+        else:
+            result.append('   "{0}", "{1}", "{2}"'.format(n, v, description))
     return result
 
 
@@ -70,10 +82,10 @@ def format_component(object, tree):
     result.append('{0}: {1}'.format('version', object.version))
     result.append('')
 
-    result += format_ports(object.ports, object)
+    result += format_ports(object)
     result.append('')
 
-    result += format_properties(object.active_conf_set.data, object)
+    result += format_properties(object)
     result.append('')
 
     return result
@@ -95,19 +107,15 @@ def cat_target(cmd_path, full_path, options, tree=None):
     if not tree.has_path(path):
         raise rts_exceptions.NoSuchObjectError(cmd_path)
     object = tree.get_node(path)
-    if port:
-        pass
-    else:
-        if object.is_component:
-            if trailing_slash:
-                raise rts_exceptions.NoSuchObjectError(cmd_path)
-            result += format_component(object, tree)
-        elif object.is_manager:
-            pass
-        elif object.is_zombie:
-            raise rts_exceptions.ZombieObjectError(cmd_path)
-        else:
+
+    if object.is_component:
+        if trailing_slash:
             raise rts_exceptions.NoSuchObjectError(cmd_path)
+        result += format_component(object, tree)
+    elif object.is_zombie:
+        raise rts_exceptions.ZombieObjectError(cmd_path)
+    else:
+        raise rts_exceptions.NoSuchObjectError(cmd_path)
     return result
 
 

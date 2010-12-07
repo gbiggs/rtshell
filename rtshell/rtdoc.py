@@ -77,9 +77,10 @@ def format_component(object, tree):
     result.append(object.name)
     result.append('=' * len(object.name))
     result.append(object.description)
+    result.append('')
 
-    result.append('{0}: {1}'.format('develped by', object.vendor))
-    result.append('{0}: {1}'.format('version', object.version))
+    result.append(':{0}: {1}'.format('Develped by', object.vendor))
+    result.append(':{0}: {1}'.format('Version', object.version))
     result.append('')
 
     result += format_ports(object)

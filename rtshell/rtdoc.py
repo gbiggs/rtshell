@@ -35,10 +35,24 @@ import rtshell
 from docutils.core import publish_string
 
 
+def escape(s):
+    return s.replace('"', "'")
+
+def section(s, level=0):
+    result = []
+    if level == 0:
+        result.append(s)
+        result.append('=' * len(s))
+    elif level == 1:
+        result.append(s)
+        result.append('-' * len(s))
+    return result
+
 def format_ports(comp):
     result = []
     result.append('.. csv-table:: Ports')
     result.append('   :header: "Name", "Type", "DataType", "Description"')
+    result.append('   :widths: 8, 8, 8, 26')
     result.append('   ')
     for p in comp.ports:
         datatype = p.properties['dataport.data_type']
@@ -46,14 +60,15 @@ def format_ports(comp):
             description = p.properties['description']
         except KeyError:
             description = ''
-        result.append('   "{0}", "{1}", "{2}", "{3}"'.format(p.name, p.porttype, datatype, description))
+        result.append('   "{0}", "{1}", "{2}", "{3}"'.format(p.name, p.porttype, datatype, escape(description)))
     return result
 
 
 def format_properties(comp):
     result = []
     result.append('.. csv-table:: Configration parameters')
-    result.append('   :header: "Name", "Default", "Description"')
+    result.append('   :header: "Name", "Description"')
+    result.append('   :widths: 12, 38')
     result.append('   ')
 
     for n, v in comp.conf_sets['default'].data.iteritems():
@@ -61,33 +76,72 @@ def format_properties(comp):
             description = comp.conf_sets['__description__'].data[n]
         except KeyError:
             description = ''
-        try:
-            widget = comp.conf_sets['__widget__'].data[n]
-        except KeyError:
-            widget = ''
-        if widget != '':
-            result.append('   "{0}", "{1}", "{2} [limit:{3}]"'.format(n, v, description, widget))
-        else:
-            result.append('   "{0}", "{1}", "{2}"'.format(n, v, description))
+        result.append('   "{0}", "{1}"'.format(n, escape(description)))
     return result
 
 
 def format_component(object, tree):
     result = []
-    result.append(object.name)
-    result.append('=' * len(object.name))
+    result += section(object.name, 0)
     result.append(object.description)
     result.append('')
 
-    result.append(':{0}: {1}'.format('Develped by', object.vendor))
+    result.append(':{0}: {1}'.format('Vendor', object.vendor))
     result.append(':{0}: {1}'.format('Version', object.version))
+    result.append(':{0}: {1}'.format('Category', object.category))
     result.append('')
 
+    try:
+        doc = object.properties['doc_introduction']
+        result += section('Introduction', 1)
+        result.append(doc)
+        result.append('')
+    except KeyError:
+        pass
+    try:
+        doc = object.properties['doc_requirements']
+        result += section('Requirements', 1)
+        result.append(doc)
+        result.append('')
+    except KeyError:
+        pass
+    try:
+        doc = object.properties['doc_install']
+        result += section('Install', 1)
+        result.append(doc)
+        result.append('')
+    except KeyError:
+        pass
+
+    result += section('Ports', 1)
     result += format_ports(object)
     result.append('')
 
+    result += section('Configuration parameters', 1)
     result += format_properties(object)
     result.append('')
+
+    try:
+        doc = object.properties['doc_usage']
+        result += section('Usage', 1)
+        result.append(doc)
+        result.append('')
+    except KeyError:
+        pass
+    try:
+        doc = object.properties['doc_misc']
+        result += section('Miscellaneous information', 1)
+        result.append(doc)
+        result.append('')
+    except KeyError:
+        pass
+    try:
+        doc = object.properties['doc_changelog']
+        result += section('Changelog', 1)
+        result.append(doc)
+        result.append('')
+    except KeyError:
+        pass
 
     return result
 

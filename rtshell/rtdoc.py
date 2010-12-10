@@ -89,24 +89,39 @@ def format_component(object, tree):
     result.append(':{0}: {1}'.format('Vendor', object.vendor))
     result.append(':{0}: {1}'.format('Version', object.version))
     result.append(':{0}: {1}'.format('Category', object.category))
+    try:
+        doc = object.conf_sets['__document__'].data['license']
+        result.append(':{0}: {1}'.format('License', doc))
+    except KeyError:
+        pass
+    try:
+        doc = object.conf_sets['__document__'].data['contact']
+        result.append(':{0}: {1}'.format('Contact', doc))
+    except KeyError:
+        pass
+    try:
+        doc = object.conf_sets['__document__'].data['url']
+        result.append(':{0}: {1}'.format('URL', doc))
+    except KeyError:
+        pass
     result.append('')
 
     try:
-        doc = object.properties['doc_introduction']
+        doc = object.conf_sets['__document__'].data['introduction']
         result += section('Introduction', 1)
         result.append(doc)
         result.append('')
     except KeyError:
         pass
     try:
-        doc = object.properties['doc_requirements']
+        doc = object.conf_sets['__document__'].data['requirements']
         result += section('Requirements', 1)
         result.append(doc)
         result.append('')
     except KeyError:
         pass
     try:
-        doc = object.properties['doc_install']
+        doc = object.conf_sets['__document__'].data['install']
         result += section('Install', 1)
         result.append(doc)
         result.append('')
@@ -122,21 +137,21 @@ def format_component(object, tree):
     result.append('')
 
     try:
-        doc = object.properties['doc_usage']
+        doc = object.conf_sets['__document__'].data['usage']
         result += section('Usage', 1)
         result.append(doc)
         result.append('')
     except KeyError:
         pass
     try:
-        doc = object.properties['doc_misc']
+        doc = object.conf_sets['__documentation__'].data['misc']
         result += section('Miscellaneous information', 1)
         result.append(doc)
         result.append('')
     except KeyError:
         pass
     try:
-        doc = object.properties['doc_changelog']
+        doc = object.conf_sets['__document__'].data['changelog']
         result += section('Changelog', 1)
         result.append(doc)
         result.append('')

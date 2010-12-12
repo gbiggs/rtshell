@@ -21,6 +21,7 @@ Base for the scripts that change component state.
 
 import optparse
 import os
+import os.path
 import rtctree.tree
 import rtctree.path
 import sys
@@ -42,8 +43,6 @@ def alter_component_state(action, cmd_path, full_path, options, tree=None):
 
     if not tree:
         tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
-    if not tree:
-        return 1
 
     if not tree.has_path(path):
         raise rts_exceptions.NoSuchObjectError(cmd_path)
@@ -93,7 +92,7 @@ def base_main(description, action, argv=None, tree=None):
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
         return 1
     return 0
 

@@ -1592,6 +1592,7 @@ def other_suite():
 def suite():
     return unittest.TestSuite([write_suite(), read_suite(), other_suite()])
 
+
 if __name__ == '__main__':
     unittest.main()
 

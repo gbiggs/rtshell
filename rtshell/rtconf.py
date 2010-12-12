@@ -21,6 +21,7 @@ Implementation of the command to manage component configuration.
 
 import optparse
 import os
+import os.path
 import rtctree.exceptions
 import rtctree.tree
 import rtctree.path
@@ -30,6 +31,7 @@ import traceback
 
 import path
 import rtshell
+import rts_exceptions
 
 
 def is_hidden(name):
@@ -158,9 +160,11 @@ def get_conf_value(param, cmd_path, full_path, options, tree=None):
 
 
 def activate_set(set_name, cmd_path, full_path, options, tree=None):
-    if is_hidden(options.set_name) and not options.all:
-        raise rts_exceptions.NoConfSetError(options.set_name)
+    if is_hidden(set_name) and not options.all:
+        raise rts_exceptions.NoConfSetError(set_name)
     tree, comp = get_comp(cmd_path, full_path, tree)
+    if not set_name in comp.conf_sets:
+        raise rts_exceptions.NoConfSetError(set_name)
     comp.activate_conf_set(set_name)
 
 
@@ -260,7 +264,7 @@ set to activate.
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
         return 1
     return 0
 

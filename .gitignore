@@ -19,3 +19,5 @@ build/
 MANIFEST
 dist
 *.rtl
+omninames-*.log
+omninames-*.bak

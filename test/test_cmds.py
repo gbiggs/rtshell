@@ -21,8 +21,10 @@ Tests for the commands.
 
 import os
 import os.path
+import rtsprofile.rts_profile
 import subprocess
 import sys
+import tempfile
 import time
 import unittest
 
@@ -224,8 +226,7 @@ def test_destportnotfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(ret, 1)
 
 
-#class rtactTests(unittest.TestCase):
-class rtactTests():
+class rtactTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
         self._std = launch_comp('std_comp')
@@ -275,8 +276,7 @@ def rtact_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtactTests)
 
 
-#class rtdeactTests(unittest.TestCase):
-class rtdeactTests():
+class rtdeactTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
         self._std = launch_comp('std_comp')
@@ -327,8 +327,7 @@ def rtdeact_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtdeactTests)
 
 
-#class rtresetTests(unittest.TestCase):
-class rtresetTests():
+class rtresetTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
         self._err = launch_comp('err_comp')
@@ -379,8 +378,7 @@ def rtreset_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtresetTests)
 
 
-#class rtcatTests(unittest.TestCase):
-class rtcatTests():
+class rtcatTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
         self._std = launch_comp('std_comp')
@@ -455,8 +453,7 @@ def rtcat_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtcatTests)
 
 
-#class rtcheckTests(unittest.TestCase):
-class rtcheckTests():
+class rtcheckTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
         self._std = launch_comp('std_comp')
@@ -470,19 +467,19 @@ class rtcheckTests():
         stop_ns(self._ns)
 
     def test_noprobs(self):
-        call_process(['./rtresurrect', './test/sys.rts'])
-        call_process(['./rtstart', './test/sys.rts'])
-        stdout, stderr, ret = call_process(['./rtcheck', './test/sys.rts'])
+        call_process(['./rtresurrect', './test/sys.rtsys'])
+        call_process(['./rtstart', './test/sys.rtsys'])
+        stdout, stderr, ret = call_process(['./rtcheck', './test/sys.rtsys'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
     def test_not_activated(self):
-        call_process(['./rtresurrect', './test/sys.rts'])
-        call_process(['./rtstart', './test/sys.rts'])
+        call_process(['./rtresurrect', './test/sys.rtsys'])
+        call_process(['./rtstart', './test/sys.rtsys'])
         call_process(['./rtdeact', '/localhost/local.host_cxt/Std0.rtc'])
         wait_for_comp('Std0.rtc', state='Inactive')
-        stdout, stderr, ret = call_process(['./rtcheck', './test/sys.rts'])
+        stdout, stderr, ret = call_process(['./rtcheck', './test/sys.rtsys'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr,
                 'Component /localhost/local.host_cxt/Std0.rtc '\
@@ -490,10 +487,10 @@ class rtcheckTests():
         self.assertEqual(ret, 1)
 
     def test_not_connected(self):
-        call_process(['./rtresurrect', './test/sys.rts'])
-        call_process(['./rtstart', './test/sys.rts'])
+        call_process(['./rtresurrect', './test/sys.rtsys'])
+        call_process(['./rtstart', './test/sys.rtsys'])
         call_process(['./rtdis', '/localhost/local.host_cxt/Std0.rtc'])
-        stdout, stderr, ret = call_process(['./rtcheck', './test/sys.rts'])
+        stdout, stderr, ret = call_process(['./rtcheck', './test/sys.rtsys'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, 'No connection between '\
                 '/localhost/local.host_cxt/Output0.rtc:out and '\
@@ -505,8 +502,7 @@ def rtcheck_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtcheckTests)
 
 
-#class rtcompTests(unittest.TestCase):
-class rtcompTests():
+class rtcompTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
         self._mgr = launch_manager()
@@ -570,8 +566,7 @@ def rtcomp_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtcompTests)
 
 
-#class rtconTests(unittest.TestCase):
-class rtconTests():
+class rtconTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
         self._std = launch_comp('std_comp')
@@ -951,14 +946,161 @@ def rtconf_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtconfTests)
 
 
+class rtcryoTests(unittest.TestCase):
+    def setUp(self):
+        self._ns = start_ns()
+        self._std = launch_comp('std_comp')
+        self._output = launch_comp('output_comp')
+        wait_for_comp('Std0.rtc')
+        wait_for_comp('Output0.rtc')
+        stdout, stderr, ret = call_process(['./rtresurrect',
+            './test/sys.rtsys'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def tearDown(self):
+        stop_comp(self._std)
+        stop_comp(self._output)
+        stop_ns(self._ns)
+
+    def test_freeze_to_stdout_xml(self):
+        stdout, stderr, ret = call_process(['./rtcryo', '-x'])
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._check_rtsys_xml(stdout)
+
+    def test_freeze_to_file_xml(self):
+        f, fn = tempfile.mkstemp(prefix='rtshell_test_')
+        os.close(f)
+        stdout, stderr, ret = call_process(['./rtcryo', '-x', '-o', fn])
+        rtsys = self._load_rtsys(fn)
+        os.remove(fn)
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._check_rtsys_xml(rtsys)
+
+    def test_freeze_to_stdout_yaml(self):
+        stdout, stderr, ret = call_process(['./rtcryo', '-y'])
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._check_rtsys_yaml(stdout)
+
+    def test_freeze_to_file_yaml(self):
+        f, fn = tempfile.mkstemp(prefix='rtshell_test_')
+        os.close(f)
+        stdout, stderr, ret = call_process(['./rtcryo', '-y', '-o', fn])
+        rtsys = self._load_rtsys(fn)
+        os.remove(fn)
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._check_rtsys_yaml(rtsys)
+
+    def test_freeze_abstract(self):
+        stdout, stderr, ret = call_process(['./rtcryo', '-a',
+            'This is an abstract'])
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        orig = self._load_rtsys('./test/sys.rtsys')
+        self.assertNotEqual(stdout, orig)
+        self.assert_('rts:abstract="This is an abstract"' in stdout)
+
+    def test_freeze_sysname(self):
+        stdout, stderr, ret = call_process(['./rtcryo', '-n',
+            'system name'])
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        orig = self._load_rtsys('./test/sys.rtsys')
+        self.assertNotEqual(stdout, orig)
+        self.assert_('rts:id="RTSystem :Me.system name.0"' in stdout)
+
+    def test_freeze_version(self):
+        stdout, stderr, ret = call_process(['./rtcryo', '-v',
+            '42'])
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        orig = self._load_rtsys('./test/sys.rtsys')
+        self.assertNotEqual(stdout, orig)
+        self.assert_('rts:id="RTSystem :Me.RTSystem.42"' in stdout)
+
+    def test_freeze_vendor(self):
+        stdout, stderr, ret = call_process(['./rtcryo', '-e',
+            'UnitTest'])
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        orig = self._load_rtsys('./test/sys.rtsys')
+        self.assertNotEqual(stdout, orig)
+        self.assert_('rts:id="RTSystem :UnitTest.RTSystem.0"' in stdout)
+
+    def _check_rtsys_xml(self, rtsys):
+        self.assert_(rtsys.startswith('<?xml'))
+        # Components
+        self.assert_('rts:instanceName="Std0"' in rtsys)
+        self.assert_('rts:instanceName="Output0"' in rtsys)
+        # Configuration sets and parameters
+        self.assert_('rts:ConfigurationSets rts:id="default"' in rtsys)
+        self.assert_('rts:ConfigurationSets rts:id="__hidden__"' in rtsys)
+        self.assert_('rts:ConfigurationSets rts:id="set1"' in rtsys)
+        self.assert_('rts:ConfigurationSets rts:id="set2"' in rtsys)
+        self.assert_('rts:name="param"' in rtsys)
+        self.assert_('rts:data="0"' in rtsys)
+        self.assert_('rts:data="1"' in rtsys)
+        self.assert_('rts:data="2"' in rtsys)
+        self.assert_('rts:data="3"' in rtsys)
+        # Connections
+        self.assert_('rts:DataPortConnectors' in rtsys)
+        self.assert_('rts:name="in_out"' in rtsys)
+        self.assert_('rts:sourceDataPort' in rtsys)
+        self.assert_('rts:portName="Output0.out"' in rtsys)
+        self.assert_('rts:targetDataPort' in rtsys)
+        self.assert_('rts:portName="Std0.in"' in rtsys)
+        # Can it be loaded?
+        rtsprofile.rts_profile.RtsProfile(xml_spec=rtsys)
+
+    def _check_rtsys_yaml(self, rtsys):
+        self.assert_(rtsys.startswith('rtsProfile:'))
+        # Components
+        self.assert_('instanceName: Std0' in rtsys)
+        self.assert_('instanceName: Output0' in rtsys)
+        # Configuration sets and parameters
+        self.assert_('id: default' in rtsys)
+        self.assert_('id: __hidden__' in rtsys)
+        self.assert_('id: set1' in rtsys)
+        self.assert_('id: set2' in rtsys)
+        self.assert_('name: param' in rtsys)
+        self.assert_("data: '0'" in rtsys)
+        self.assert_("data: '1'" in rtsys)
+        self.assert_("data: '2'" in rtsys)
+        self.assert_("data: '3'" in rtsys)
+        # Connections
+        self.assert_('dataPortConnectors' in rtsys)
+        self.assert_('name: in_out' in rtsys)
+        self.assert_('sourceDataPort' in rtsys)
+        self.assert_('portName: Output0.out' in rtsys)
+        self.assert_('targetDataPort' in rtsys)
+        self.assert_('portName: Std0.in' in rtsys)
+        # Can it be loaded?
+        rtsprofile.rts_profile.RtsProfile(yaml_spec=rtsys)
+
+    def _load_rtsys(self, fn):
+        with open(fn, 'r') as f:
+            return f.read()
+
+
+def rtcryo_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtcryoTests)
+
+
 def suite():
     return unittest.TestSuite([rtact_suite(), rtdeact_suite(),
         rtreset_suite(), rtcat_suite(), rtcheck_suite(), rtcomp_suite(),
-        rtcon_suite(), rtconf_suite()])
+        rtcon_suite(), rtconf_suite(), rtcryo_suite()])
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
+    if len(sys.argv) >= 2:
         COMP_LIB_PATH = sys.argv[1]
         sys.argv = [sys.argv[0]] + sys.argv[2:]
     unittest.main()

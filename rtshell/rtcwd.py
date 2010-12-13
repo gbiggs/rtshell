@@ -61,7 +61,7 @@ def cd(cmd_path, full_path):
         raise rts_exceptions.NotADirectoryError(cmd_path)
     if not tree.is_directory(path):
         raise rts_exceptions.NotADirectoryError(cmd_path)
-    print make_cmd_line(full_path)
+    return make_cmd_line(full_path)
 
 
 def main(argv=None, tree=None):
@@ -80,10 +80,8 @@ def main(argv=None, tree=None):
             # Special case for '.': do nothing
             if path.ENV_VAR in os.environ:
                 print make_cmd_line(os.environ[path.ENV_VAR])
-                return 0
             else:
                 print make_cmd_line('/')
-                return 0
         elif cmd_path == '..' or cmd_path == '../':
             # Special case for '..': go up one directory
             if path.ENV_VAR in os.environ and os.environ[path.ENV_VAR] and \
@@ -93,16 +91,15 @@ def main(argv=None, tree=None):
                 if not parent:
                     parent = '/'
                 print make_cmd_line(parent)
-                return 0
             else:
                 print make_cmd_line('/')
-                return 0
         else:
             full_path = path.cmd_path_to_full_path(cmd_path)
-            cd(cmd_path, full_path)
+            print cd(cmd_path, full_path)
     except Exception, e:
-        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        print >>sys.stderr, 'rtcwd: {0}'.format(e)
         return 1
+    return 0
 
 
 # vim: tw=79

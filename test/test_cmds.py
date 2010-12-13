@@ -1093,10 +1093,108 @@ def rtcryo_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtcryoTests)
 
 
+class rtcwdTests(unittest.TestCase):
+    def setUp(self):
+        self._ns = start_ns()
+        self._std = launch_comp('std_comp')
+        self._mgr = launch_manager()
+        wait_for_comp('Std0.rtc')
+
+    def tearDown(self):
+        stop_comp(self._std)
+        stop_manager(self._mgr)
+        stop_ns(self._ns)
+
+    def test_cwd_nothing(self):
+        stdout, stderr, ret = self._run_rtcwd('')
+        self.assertEqual(stdout, 'export RTCSH_CWD="/"')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_cwd_root(self):
+        stdout, stderr, ret = self._run_rtcwd('/')
+        self.assertEqual(stdout, 'export RTCSH_CWD="/"')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_cwd_ns(self):
+        stdout, stderr, ret = self._run_rtcwd('/localhost')
+        self.assertEqual(stdout, 'export RTCSH_CWD="/localhost"')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = self._run_rtcwd('/localhost/')
+        self.assertEqual(stdout, 'export RTCSH_CWD="/localhost/"')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_cwd_cxt(self):
+        stdout, stderr, ret = self._run_rtcwd('/localhost/local.host_cxt')
+        self.assertEqual(stdout, 'export RTCSH_CWD="/localhost/local.host_cxt"')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = self._run_rtcwd('/localhost/local.host_cxt/')
+        self.assertEqual(stdout, 'export RTCSH_CWD="/localhost/local.host_cxt/"')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_cwd_comp(self):
+        stdout, stderr, ret = self._run_rtcwd(
+                '/localhost/local.host_cxt/Std0.rtc')
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtcwd: Not a directory: '\
+                '/localhost/local.host_cxt/Std0.rtc')
+        self.assertEqual(ret, 1)
+        stdout, stderr, ret = self._run_rtcwd(
+                '/localhost/local.host_cxt/Std0.rtc/')
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtcwd: Not a directory: '\
+                '/localhost/local.host_cxt/Std0.rtc/')
+        self.assertEqual(ret, 1)
+
+    def test_cwd_mgr(self):
+        stdout, stderr, ret = self._run_rtcwd(
+                '/localhost/local.host_cxt/manager.mgr')
+        self.assertEqual(stdout,
+                'export RTCSH_CWD="/localhost/local.host_cxt/manager.mgr"')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = self._run_rtcwd(
+                '/localhost/local.host_cxt/manager.mgr/')
+        self.assertEqual(stdout,
+                'export RTCSH_CWD="/localhost/local.host_cxt/manager.mgr/"')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+
+    def test_cwd_no_object(self):
+        stdout, stderr, ret = self._run_rtcwd(
+                '/localhost/local.host_cxt/Nothing')
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr,
+                'rtcwd: Not a directory: /localhost/local.host_cxt/Nothing')
+        self.assertEqual(ret, 1)
+        stdout, stderr, ret = self._run_rtcwd(
+                '/localhost/local.host_cxt/Nothing/')
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr,
+                'rtcwd: Not a directory: /localhost/local.host_cxt/Nothing/')
+        self.assertEqual(ret, 1)
+
+
+    def _run_rtcwd(self, target):
+        return call_process(['python', '-c',
+            'import sys; import rtshell.rtcwd; sys.exit(rtshell.rtcwd.main('\
+            '["{0}"]))'.format(target)])
+
+
+def rtcwd_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtcwdTests)
+
+
 def suite():
     return unittest.TestSuite([rtact_suite(), rtdeact_suite(),
         rtreset_suite(), rtcat_suite(), rtcheck_suite(), rtcomp_suite(),
-        rtcon_suite(), rtconf_suite(), rtcryo_suite()])
+        rtcon_suite(), rtconf_suite(), rtcryo_suite(), rtcwd_suite()])
 
 
 if __name__ == '__main__':

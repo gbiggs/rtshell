@@ -21,6 +21,7 @@ Implementation of the command to make a component exit.
 
 import optparse
 import os
+import os.path
 import rtctree.tree
 import rtctree.path
 import RTC
@@ -39,7 +40,7 @@ def exit_target(cmd_path, full_path, options, tree=None):
 
     trailing_slash = False
     if not path[-1]:
-        raise rts_exceptions.NoSuchObjectError(cmd_path)
+        raise rts_exceptions.NotAComponentError(cmd_path)
 
     if not tree:
         tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
@@ -50,10 +51,9 @@ def exit_target(cmd_path, full_path, options, tree=None):
     if object.is_zombie:
         raise rts_exceptions.ZombieObjectError(cmd_path)
     if not object.is_component:
-        raise NotAComponentError(cmd_path)
+        raise rts_exceptions.NotAComponentError(cmd_path)
 
-    if object.exit() != RTC.RTC_OK:
-        raise rts_exceptions.CallFailedError('exit()')
+    object.exit()
 
 
 def main(argv=None, tree=None):
@@ -77,7 +77,8 @@ Make a component exit, cleaning up its execution contexts and children.
 
     if not args:
         # If no path given then can't do anything.
-        print >>sys.stderr, '{0}: No component specified.'.format(sys.argv[0])
+        print >>sys.stderr, '{0}: No component specified.'.format(
+                os.path.basename(sys.argv[0]))
         return 1
     elif len(args) == 1:
         cmd_path = args[0]
@@ -91,7 +92,7 @@ Make a component exit, cleaning up its execution contexts and children.
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
         return 1
     return 0
 

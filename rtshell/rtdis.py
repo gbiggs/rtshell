@@ -21,6 +21,7 @@ Implementation of the command to disconnect ports.
 
 import optparse
 import os
+import os.path
 import rtctree.tree
 import rtctree.path
 import sys
@@ -79,14 +80,10 @@ def disconnect_ports(source_cmd_path, source_full_path,
     source_path, source_port = rtctree.path.parse_path(source_full_path)
     if not source_port:
         raise rts_exceptions.NoSourcePortError
-    if not source_path[-1]:
-        raise rts_exceptions.NoSuchObjectError(source_cmd_path)
 
     dest_path, dest_port = rtctree.path.parse_path(dest_full_path)
     if not dest_port:
         raise rts_exceptions.NoDestPortError
-    if not dest_path[-1]:
-        raise rts_exceptions.NoSuchObjectError(dest_cmd_path)
 
     if not tree:
         tree = rtctree.tree.create_rtctree(paths=[source_path, dest_path],
@@ -95,17 +92,21 @@ def disconnect_ports(source_cmd_path, source_full_path,
         return 1
 
     source_comp = tree.get_node(source_path)
-    if not source_comp or not source_comp.is_component:
+    if not source_comp:
+        raise rts_exceptions.NoSuchObjectError(source_cmd_path)
+    if not source_comp.is_component:
         raise rts_exceptions.NotAComponentError(source_cmd_path)
     source_port_obj = source_comp.get_port_by_name(source_port)
     if not source_port_obj:
-        raise rts_exceptions.PortNotFoundError(source_cmd_path)
+        raise rts_exceptions.PortNotFoundError(source_path, source_port)
     dest_comp = tree.get_node(dest_path)
-    if not dest_comp or not dest_comp.is_component:
+    if not dest_comp:
+        raise rts_exceptions.NoSuchObjectError(dest_cmd_path)
+    if not dest_comp.is_component:
         raise rts_exceptions.NotAComponentError(dest_cmd_path)
     dest_port_obj = dest_comp.get_port_by_name(dest_port)
     if not dest_port_obj:
-        raise rts_exceptions.PortNotFoundError(dest_cmd_path)
+        raise rts_exceptions.PortNotFoundError(dest_path, dest_port)
 
     if options.id:
         s_conn = source_port_obj.get_connection_by_id(options.id)
@@ -171,7 +172,7 @@ Ports are specified at the end of each path, preceeded by a colon (:).'''
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
         return 1
     return 0
 

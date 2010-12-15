@@ -20,6 +20,7 @@ Implementation of the RT System visualisation command.
 
 
 import optparse
+import os.path
 import rtsprofile.rts_profile
 import sys
 import traceback
@@ -154,7 +155,7 @@ Example: Outputting in EPS format.
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
         return 1
     return 0
 

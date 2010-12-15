@@ -21,6 +21,7 @@ Tests for the commands.
 
 import os
 import os.path
+import re
 import rtsprofile.rts_profile
 import subprocess
 import sys
@@ -38,7 +39,7 @@ class RTCLaunchFailedError(Exception):
 
 def call_process(args):
     p = subprocess.Popen(args, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
+            stderr=subprocess.PIPE)
     output = p.communicate()
     output = (output[0].strip(), output[1].strip())
     return_code = p.returncode
@@ -47,7 +48,7 @@ def call_process(args):
 
 def start_process(args):
     p = subprocess.Popen(args, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
+            stderr=subprocess.PIPE)
     return p
 
 
@@ -1914,12 +1915,189 @@ def rtls_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtlsTests)
 
 
+class rtmgrTests(unittest.TestCase):
+    def setUp(self):
+        self._ns = start_ns()
+        self._std = launch_comp('std_comp')
+        make_zombie()
+        self._mgr = launch_manager()
+        wait_for_comp('Std0.rtc')
+        self._load_mgr()
+
+    def tearDown(self):
+        stop_comp(self._std)
+        clean_zombies()
+        stop_manager(self._mgr)
+        stop_ns(self._ns)
+
+    def _load_mgr(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt/manager.mgr', '-l',
+            os.path.join(COMP_LIB_PATH, 'Controller.so'), '-i',
+            'ControllerInit'])
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt/manager.mgr', '-l',
+            os.path.join(COMP_LIB_PATH, 'Sensor.so'), '-i',
+            'SensorInit', '-c', 'Sensor'])
+        self.assertEqual(ret, 0)
+
+    def _grab_section(self, stdout, sec, next_sec=''):
+        self.assert_(sec in stdout)
+        if not next_sec:
+            next_sec = '$'
+        return re.match(r'.*?\n{0}\n(.*?){1}'.format(sec, next_sec), stdout,
+            re.S).groups()[0]
+
+    def test_load_mod(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt/manager.mgr', '-l',
+            os.path.join(COMP_LIB_PATH, 'Motor.so'), '-i', 'MotorInit'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = call_process(['./rtcat',
+            '/localhost/local.host_cxt/manager.mgr'])
+        loaded = self._grab_section(stdout, 'Loaded modules:')
+        self.assert_(os.path.join(COMP_LIB_PATH, 'Motor.so') in loaded)
+
+    def test_load_mod_no_init(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt/manager.mgr', '-l',
+            os.path.join(COMP_LIB_PATH, 'Motor.so')])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtmgr: No initialisation function '
+            'specified.')
+        self.assertEqual(ret, 1)
+        stdout, stderr, ret = call_process(['./rtcat',
+            '/localhost/local.host_cxt/manager.mgr'])
+        loaded = self._grab_section(stdout, 'Loaded modules:')
+        self.assert_(os.path.join(COMP_LIB_PATH, 'Motor.so') not in loaded)
+
+    def test_create_rtc(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt/manager.mgr', '-c', 'Controller'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = call_process(['./rtls',
+            'localhost/local.host_cxt/manager.mgr'])
+        self.assert_('Controller0.rtc' in stdout)
+        stdout, stderr, ret = call_process(['./rtls',
+            'localhost/local.host_cxt/'])
+        self.assert_('Controller0.rtc' in stdout)
+
+    def test_delete_rtc(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt/manager.mgr', '-d', 'Sensor0'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = call_process(['./rtls',
+            'localhost/local.host_cxt/manager.mgr'])
+        self.assert_('Sensor0.rtc' not in stdout)
+        stdout, stderr, ret = call_process(['./rtls',
+            'localhost/local.host_cxt/'])
+        self.assert_('Sensor0.rtc' not in stdout)
+
+    def test_unload_mod(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt/manager.mgr', '-u',
+            os.path.join(COMP_LIB_PATH, 'Controller.so')])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = call_process(['./rtcat',
+            '/localhost/local.host_cxt/manager.mgr'])
+        loaded = self._grab_section(stdout, 'Loaded modules:')
+        self.assert_(os.path.join(COMP_LIB_PATH, 'Controller.so') not in loaded)
+
+    def test_port(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt/manager.mgr:port', '-c', 'Controller'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtmgr: Not a manager: '
+            '/localhost/local.host_cxt/manager.mgr:port')
+        self.assertEqual(ret, 1)
+
+    def test_rtc(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt/Std0.rtc', '-c', 'Controller'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtmgr: Not a manager: '
+            '/localhost/local.host_cxt/Std0.rtc')
+        self.assertEqual(ret, 1)
+
+    def test_context(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt', '-c', 'Controller'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtmgr: Not a manager: '
+            '/localhost/local.host_cxt')
+        self.assertEqual(ret, 1)
+
+    def test_ns(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost', '-c', 'Controller'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtmgr: Not a manager: '
+            '/localhost')
+        self.assertEqual(ret, 1)
+
+    def test_zombie(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt/Zombie0.rtc', '-c', 'Controller'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtmgr: Zombie object: '
+            '/localhost/local.host_cxt/Zombie0.rtc')
+        self.assertEqual(ret, 1)
+
+    def test_noobject(self):
+        stdout, stderr, ret = call_process(['./rtmgr',
+            '/localhost/local.host_cxt/NotAComp.rtc', '-c', 'Controller'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtmgr: No such object: '
+            '/localhost/local.host_cxt/NotAComp.rtc')
+        self.assertEqual(ret, 1)
+
+
+def rtmgr_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtmgrTests)
+
+
+class rtstodotTests(unittest.TestCase):
+    def _load_file(self, fn):
+        with open(fn, 'r') as f:
+            return f.read()
+
+    def test_stdin(self):
+        sys = self._load_file('./test/sys.rtsys')
+        p = subprocess.Popen('./rtstodot', stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate(sys)
+        self.assertEqual(stderr, '')
+        self.assertEqual(p.returncode, 0)
+        sample = self._load_file('./test/sys.dot')
+        self.assertEqual(sample, stdout)
+
+    def test_file(self):
+        stdout, stderr, ret = call_process(['./rtstodot', './test/sys.rtsys'])
+        sample = self._load_file('./test/sys.dot')
+        self.assertEqual(sample.rstrip(), stdout)
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+
+def rtstodot_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtstodotests)
+
+
 def suite():
     return unittest.TestSuite([rtact_suite(), rtdeact_suite(),
         rtreset_suite(), rtcat_suite(), rtcheck_suite(), rtcomp_suite(),
         rtcon_suite(), rtconf_suite(), rtcryo_suite(), rtcwd_suite(),
         rtdel_suite(), rtdis_suite(), rtexit_suite(), rtfind_suite(),
-        rtls_suite])
+        rtls_suite(), rtmgr_suite(), rtstodot_suite()])
 
 
 if __name__ == '__main__':

@@ -1,0 +1,7 @@
+digraph rtsprofile {
+  rankdir=LR;
+  node [shape=Mrecord];
+  Std0 [label="{{}|Std0|{<in>in}}"];
+  Output0 [label="{{<out>out}|Output0|{}}"];
+  Output0:out -> Std0:in;
+}

@@ -21,6 +21,7 @@ Implementation of the command for controlling managers.
 
 import optparse
 import os
+import os.path
 import rtctree.tree
 import rtctree.path
 import sys
@@ -132,7 +133,7 @@ delete, create.
             # Load a module
             if not options.init_func:
                 print >>sys.stderr, '{0}: No initialisation function '\
-                        'specified.'.format(sys.argv[0])
+                        'specified.'.format(os.path.basename(sys.argv[0]))
                 return 1
             load_module(args[0], full_path, options.mod_path,
                     options.init_func, tree)
@@ -145,7 +146,7 @@ delete, create.
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
         return 1
     return 0
 

@@ -20,6 +20,7 @@ Log recording and playing components used by rtlog
 
 
 import OpenRTM_aist
+import os.path
 import RTC
 import sys
 import time
@@ -100,11 +101,14 @@ class Recorder(gen_comp.GenComp):
 
 class Player(gen_comp.GenComp):
     def __init__(self, mgr, port_specs, logger_type=None, filename='',
-            lims_are_ind=False, start=0, end=-1, rate=1.0, abs_times=False,
+            lims_are_ind=False, start=0, end=-1, scale_rate=1.0, abs_times=False,
             ignore_times=False, verbose=False, *args, **kwargs):
         if end >= 0:
             if lims_are_ind:
-                max = end - (start - 1)
+                if start == 0:
+                    max = end
+                else:
+                    max = end - (start - 1)
                 self._end = -1
             else:
                 max = -1
@@ -122,7 +126,7 @@ class Player(gen_comp.GenComp):
                 **kwargs)
         self._logger_type = logger_type
         self._fn = filename
-        self._rate = rate
+        self._rate = scale_rate
         self._abs = abs_times
         self._ig_times = ignore_times
         self._verb = verbose
@@ -202,7 +206,7 @@ class Player(gen_comp.GenComp):
                     self._vprint('Playing {0} entries.'.format(int(self._rate)))
                     if not self._pub_log_item():
                         print >>sys.stderr, '{0}: End of log reached.'.format(
-                                sys.argv[0])
+                                os.path.basename(sys.argv[0]))
                         self._set()
                         result = RTC.RTC_ERROR
                     else:
@@ -231,7 +235,7 @@ class Player(gen_comp.GenComp):
                         break
                     if not self._pub_log_item():
                         print >>sys.stderr, '{0}: End of log reached.'.format(
-                                sys.argv[0])
+                                os.path.basename(sys.argv[0]))
                         self._set()
                         result = RTC.RTC_ERROR
                         break

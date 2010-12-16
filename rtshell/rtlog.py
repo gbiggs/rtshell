@@ -49,7 +49,7 @@ def record_log(raw_paths, options, tree=None):
         raise rts_exceptions.BadEndPointError
     if options.end is None and options.index:
         print >>sys.stderr, '{0}: WARNING: --index has no effect without '\
-                '--end'.format(sys.argv[0])
+                '--end'.format(os.path.basename(sys.argv[0]))
 
     mm = modmgr.ModuleMgr(verbose=options.verbose, paths=options.paths)
     mm.load_mods_and_poas(options.modules)
@@ -94,7 +94,7 @@ def record_log(raw_paths, options, tree=None):
             rtlog_comps.Recorder, port_specs, event=event,
             logger_type=l_type, filename=options.filename,
             lims_are_ind=options.index, end=end,
-            verbose=options.verbose)
+            verbose=options.verbose, rate=options.exec_rate)
     if options.verbose:
         print >>sys.stderr, 'Created component {0}'.format(comp_name)
     try:
@@ -138,7 +138,7 @@ def play_log(raw_paths, options, tree=None):
         raise rts_exceptions.BadEndPointError
     if options.end is None and options.start is None and options.index:
         print >>sys.stderr, '{0}: WARNING: --index has no effect without '\
-                '--start or --end'.format(sys.argv[0])
+                '--start or --end'.format(os.path.basename(sys.argv[0]))
 
     mm = modmgr.ModuleMgr(verbose=options.verbose, paths=options.paths)
     mm.load_mods_and_poas(options.modules)
@@ -159,7 +159,7 @@ def play_log(raw_paths, options, tree=None):
                             time.localtime(options.start))
                     end_str = time.strftime('%Y-%m-%d %H:%M:%S',
                             time.localtime(options.end))
-                    print >>sys.stderr, 'Playing from {0} ({1}) to {2} '\
+                    print >>sys.stderr, 'Playing from {0} ({1}) until {2} '\
                             '({3}).'.format(start_str, options.start, end_str,
                                     options.end)
             else:
@@ -174,7 +174,7 @@ def play_log(raw_paths, options, tree=None):
         elif options.start is not None:
             if options.index:
                 print >>sys.stderr, 'Playing from entry {0}.'.format(
-                        int(options.start), int(options.end))
+                        int(options.start))
             else:
                 start_str = time.strftime('%Y-%m-%d %H:%M:%S',
                         time.localtime(options.start))
@@ -206,11 +206,13 @@ def play_log(raw_paths, options, tree=None):
         end = -1 # Send -1 as the default
     else:
         end = options.end
+    print options.rate
     comp_name, mgr = comp_mgmt.make_comp('rtlog_player', tree,
             rtlog_comps.Player, port_specs, event=event, logger_type=l_type,
             filename=options.filename, lims_are_ind=options.index, start=start,
-            end=end, rate=options.rate, abs_times=options.abs_times,
-            ignore_times=options.ig_times, verbose=options.verbose)
+            end=end, scale_rate=options.rate, abs_times=options.abs_times,
+            ignore_times=options.ig_times, verbose=options.verbose,
+            rate=options.exec_rate)
     if options.verbose:
         print >>sys.stderr, 'Created component {0}'.format(comp_name)
     comp = comp_mgmt.find_comp_in_mgr(comp_name, mgr)
@@ -226,7 +228,8 @@ def play_log(raw_paths, options, tree=None):
                 # Don't care about this because the component will be shut down
                 # soon anyway
                 pass
-        elif options.end is not None:
+        #elif options.end is not None:
+        else:
             event.wait()
             comp_mgmt.disconnect(comp)
             try:
@@ -235,9 +238,9 @@ def play_log(raw_paths, options, tree=None):
                 # Don't care about this because the component will be shut down
                 # soon anyway
                 pass
-        else:
-            while True:
-                raw_input()
+        #else:
+            #while True:
+                #raw_input()
             # The manager will catch the Ctrl-C and shut down itself, so don't
             # disconnect/deactivate the component
     except KeyboardInterrupt:
@@ -260,7 +263,7 @@ def display_info(options):
     else:
         raise rts_exceptions.BadLogTypeError(options.logger)
 
-    mm = modmgr.ModuleMgr(verbose=options.verbose)
+    mm = modmgr.ModuleMgr(verbose=options.verbose, paths=options.paths)
     mm.load_mods_and_poas(options.modules)
     if options.verbose:
         print >>sys.stderr, \
@@ -270,10 +273,12 @@ def display_info(options):
     size = statinfo.st_size
     if size > 1024 * 1024 * 1024: # GiB
         size_str = '{0:.2f}GiB ({1}B)'.format(size / (1024.0 * 1024 * 1024), size)
-    if size > 1024 * 1024: # MiB
+    elif size > 1024 * 1024: # MiB
         size_str = '{0:.2f}MiB ({1}B)'.format(size / (1024.0 * 1024), size)
-    if size > 1024: # KiB
+    elif size > 1024: # KiB
         size_str = '{0:.2f}KiB ({1}B)'.format(size / 1024.0, size)
+    else:
+        size_str = '{0}B'.format(size)
     log = l_type(filename=options.filename, mode='r', verbose=options.verbose)
 
     start_time, port_specs = log.metadata
@@ -375,7 +380,7 @@ settings compatible with the port.'''
             default=False,
             help='Output verbose information. [Default: %default]')
     parser.add_option('-x', '--exec-rate', dest='exec_rate', action='store',
-            type='float', default=10.0,
+            type='float', default=100.0,
             help='Specify the rate in Hertz at which to run the component. '
             '[Default: %default]')
 

@@ -1847,7 +1847,223 @@ def rtinject_suite():
 
 
 class rtlogTests(unittest.TestCase):
-    pass
+    # TODO: Add missing tests:
+    # --absolute-times
+    # Test logger
+    # Timeout
+    def setUp(self):
+        self._clean_comp_output()
+        self._ns = start_ns()
+        self._std = launch_comp('std_comp')
+        self._output = launch_comp('output_comp')
+        self._c1 = launch_comp('c1_comp')
+        self._c2 = launch_comp('c2_comp')
+        wait_for_comp('Std0.rtc')
+        wait_for_comp('Output0.rtc')
+        wait_for_comp('C10.rtc')
+        wait_for_comp('C20.rtc')
+        call_process(['./rtact', '/localhost/local.host_cxt/Std0.rtc'])
+        call_process(['./rtact', '/localhost/local.host_cxt/C20.rtc'])
+        wait_for_comp('Std0.rtc', 'Active')
+        wait_for_comp('C20.rtc', 'Active')
+
+    def tearDown(self):
+        stop_comp(self._std)
+        stop_comp(self._output)
+        stop_comp(self._c1)
+        stop_comp(self._c2)
+        stop_ns(self._ns)
+
+    def _get_comp_output(self, name):
+        with open(os.path.join('./test', name + '_rcvd'), 'r') as f:
+            return f.read()
+
+    def _clean_comp_output(self):
+        if os.path.exists('./test/std_rcvd'):
+            os.remove('./test/std_rcvd')
+        if os.path.exists('./test/c2_rcvd'):
+            os.remove('./test/c2_rcvd')
+        if os.path.exists('./test/test.rtlog'):
+            os.remove('./test/test.rtlog')
+
+    def _num_recorded(self, text):
+        return int(re.search(r'Number of entries: (\d+)\n', text).groups()[0])
+
+    def _test_playback(self):
+        stdout, stderr, ret = call_process(['./rtlog',
+            '/localhost/local.host_cxt/Std0.rtc:in.nums',
+            '-f', './test/output.rtlog', '-p'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtlog: End of log reached.')
+        self.assertEqual(ret, 0)
+        self.assertEqual(self._get_comp_output('std'), '0\n1\n2\n3\n4\n')
+
+    def _test_playback_from_middle_index(self):
+        stdout, stderr, ret = call_process(['./rtlog',
+            '/localhost/local.host_cxt/Std0.rtc:in.nums',
+            '-f', './test/output.rtlog', '-p', '-i', '-s', '2'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'Playing from entry 2.\nrtlog: '
+            'End of log reached.')
+        self.assertEqual(ret, 0)
+        time.sleep(0.5)
+        self.assertEqual(self._get_comp_output('std'), '2\n3\n4\n')
+
+    def _test_playback_to_middle_index(self):
+        stdout, stderr, ret = call_process(['./rtlog',
+            '/localhost/local.host_cxt/Std0.rtc:in.nums',
+            '-f', './test/output.rtlog', '-p', '-i', '-e', '3'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'Playing 3 entries.')
+        self.assertEqual(ret, 0)
+        time.sleep(0.5)
+        self.assertEqual(self._get_comp_output('std'), '0\n1\n2\n')
+
+    def _test_playback_from_middle_to_middle_index(self):
+        stdout, stderr, ret = call_process(['./rtlog',
+            '/localhost/local.host_cxt/Std0.rtc:in.nums',
+            '-f', './test/output.rtlog', '-p', '-i', '-s', '2', '-e', '2'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'Playing from entry 2 to entry 2.')
+        self.assertEqual(ret, 0)
+        time.sleep(0.5)
+        self.assertEqual(self._get_comp_output('std'), '2\n')
+
+    def _test_playback_from_middle_time(self):
+        stdout, stderr, ret = call_process(['./rtlog',
+            '/localhost/local.host_cxt/Std0.rtc:in.nums',
+            '-f', './test/output.rtlog', '-p', '-s', '1292489688'])
+        self.assertEqual(stdout, '')
+        self.assert_(re.match(r'Playing from \d{4}-\d{2}-\d{2} '
+            '\d{2}:\d{2}:\d{2} \(\d+.\d+\)\.\nrtlog: End of log reached.',
+            stderr) is not None)
+        self.assertEqual(ret, 0)
+        time.sleep(0.5)
+        self.assertEqual(self._get_comp_output('std'), '1\n2\n3\n4\n')
+
+    def _test_playback_to_middle_time(self):
+        stdout, stderr, ret = call_process(['./rtlog',
+            '/localhost/local.host_cxt/Std0.rtc:in.nums',
+            '-f', './test/output.rtlog', '-p', '-e', '1292489690'])
+        self.assertEqual(stdout, '')
+        self.assert_(re.match(r'Playing until \d{4}-\d{2}-\d{2} '
+            '\d{2}:\d{2}:\d{2} \(\d+.\d+\)\.',
+            stderr) is not None)
+        self.assertEqual(ret, 0)
+        time.sleep(0.5)
+        self.assertEqual(self._get_comp_output('std'), '0\n1\n2\n')
+
+    def _test_playback_from_middle_to_middle_time(self):
+        stdout, stderr, ret = call_process(['./rtlog',
+            '/localhost/local.host_cxt/Std0.rtc:in.nums',
+            '-f', './test/output.rtlog', '-p', '-s', '1292489688', '-e',
+            '1292489690'])
+        self.assertEqual(stdout, '')
+        self.assert_(re.match(r'Playing from \d{4}-\d{2}-\d{2} '
+            '\d{2}:\d{2}:\d{2} \(\d+.\d+\) until \d{4}-\d{2}-\d{2} '
+            '\d{2}:\d{2}:\d{2} \(\d+.\d+\)\.', stderr) is not None)
+        self.assertEqual(ret, 0)
+        time.sleep(0.5)
+        self.assertEqual(self._get_comp_output('std'), '1\n2\n')
+
+    def test_playback_rate(self):
+        logger = start_process(['./rtlog',
+            '/localhost/local.host_cxt/Std0.rtc:in.nums',
+            '-f', './test/output.rtlog', '-p', '-r', '0.1'])
+        time.sleep(3)
+        logger.terminate()
+        stdout, stderr = logger.communicate()
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(logger.returncode, -15)
+        time.sleep(0.5)
+        self.assertEqual(self._get_comp_output('std'), '0\n')
+
+    def _test_record(self):
+        logger = start_process(['./rtlog',
+            '/localhost/local.host_cxt/Output0.rtc:out',
+            '-f', './test/test.rtlog'])
+        call_process(['./rtact', '/localhost/local.host_cxt/Output0.rtc'])
+        wait_for_comp('Output0.rtc', 'Active')
+        time.sleep(1)
+        stdout, stderr = logger.communicate()
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(logger.returncode, 0)
+        stdout, stderr, ret = call_process(['./rtlog', '-d', '-f',
+            './test/test.rtlog'])
+        self.assert_(self._num_recorded(stdout) > 0)
+
+    def _test_record_limit_index(self):
+        logger = start_process(['./rtlog',
+            '/localhost/local.host_cxt/Output0.rtc:out',
+            '-f', './test/test.rtlog', '-i', '-e', '5'])
+        call_process(['./rtact', '/localhost/local.host_cxt/Output0.rtc'])
+        wait_for_comp('Output0.rtc', 'Active')
+        stdout, stderr = logger.communicate()
+        self.assertEqual(stdout, 'Recording 5 entries')
+        self.assertEqual(stderr, '')
+        self.assertEqual(logger.returncode, 0)
+        stdout, stderr, ret = call_process(['./rtlog', '-d', '-f',
+            './test/test.rtlog'])
+        self.assert_('Number of entries: 5' in stdout)
+
+    def _test_record_limit_time(self):
+        logger = start_process(['./rtlog',
+            '/localhost/local.host_cxt/Output0.rtc:out',
+            '-f', './test/test.rtlog', '-e', '{0}'.format(time.time() + 3)])
+        call_process(['./rtact', '/localhost/local.host_cxt/Output0.rtc'])
+        wait_for_comp('Output0.rtc', 'Active')
+        stdout, stderr = logger.communicate()
+        self.assertEqual(stdout, 'Recording 5 entries')
+        self.assertEqual(stderr, '')
+        self.assertEqual(logger.returncode, 0)
+        stdout, stderr, ret = call_process(['./rtlog', '-d', '-f',
+            './test/test.rtlog'])
+        self.assert_(self._num_recorded(stdout) > 0)
+
+    def _test_display_info(self):
+        stdout, stderr, ret = call_process(['./rtlog', '-d', '-f',
+            './test/test.rtlog'])
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self.assert_('Size: 1.13KiB (1106B)' in stdout)
+        self.assert_('Start time: 2010-12-16 17:54:45 (1292489685.35)' in
+                stdout)
+        self.assert_('First entry time: 2010-12-16 17:54:47 '
+                '(1292489687.403273984)' in stdout)
+        self.assert_('End time: 2010-12-16 17:54:51 '
+                '(1292489691.408852992)' in stdout)
+        self.assert_('Number of entries: 5' in stdout)
+        self.assert_('Channel 1' in stdout)
+        self.assert_('Name: nums' in stdout)
+        self.assert_('Data type: TimedLong (RTC.TimedLong)' in stdout)
+        self.assert_('/localhost/local.host_cxt/Output0.rtc:out.nums' in
+                stdout)
+
+    def _test_playback_usermod(self):
+        stdout, stderr, ret = call_process(['./rtlog',
+            '/localhost/local.host_cxt/C20.rtc:input.nums',
+            '-f', './test/output.rtlog', '-p', '--path=./test', '-m', 'MyData'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self.assertEqual(self._get_comp_output('std'), '0\n1\n2\n3\n4\n')
+
+    def _test_record_usermod(self):
+        logger = start_process(['./rtlog',
+            '/localhost/local.host_cxt/C10.rtc:output',
+            '-f', './test/test.rtlog', '-i', '-e', '5', '--path=./test', '-m',
+            'MyData'])
+        call_process(['./rtact', '/localhost/local.host_cxt/C10.rtc'])
+        wait_for_comp('C10.rtc', 'Active')
+        stdout, stderr = logger.communicate()
+        self.assertEqual(stdout, 'Recording 5 entries')
+        self.assertEqual(stderr, '')
+        self.assertEqual(logger.returncode, 0)
+        stdout, stderr, ret = call_process(['./rtlog', '-d', '-f',
+            './test/test.rtlog'])
+        self.assert_('Number of entries: 5' in stdout)
 
 
 def rtlog_suite():

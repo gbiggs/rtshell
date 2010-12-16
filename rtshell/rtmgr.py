@@ -88,7 +88,7 @@ delete, create.
             type='string', default='', help='Create a new component instance '\
             'from the specified loaded module. Properties of the new '\
             'component an be specified after the module name prefixed with a '\
-            'question mark. e.g. ConsoleIn?instance_name=blag')
+            'question mark. e.g. ConsoleIn?instance_name=bleg')
     parser.add_option('-d', '--delete', dest='instance_name', action='store',
             type='string', default='', help='Shut down and delete the '\
             'specified component instance.')

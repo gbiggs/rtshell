@@ -15,20 +15,20 @@ _0_MyData = omniORB.openModule("MyData", r"test.idl")
 _0_MyData__POA = omniORB.openModule("MyData__POA", r"test.idl")
 
 
-# struct Blag
-_0_MyData.Blag = omniORB.newEmptyClass()
-class Blag (omniORB.StructBase):
-    _NP_RepositoryId = "IDL:MyData/Blag:1.0"
+# struct Bleg
+_0_MyData.Bleg = omniORB.newEmptyClass()
+class Bleg (omniORB.StructBase):
+    _NP_RepositoryId = "IDL:MyData/Bleg:1.0"
 
     def __init__(self, val1, val2):
         self.val1 = val1
         self.val2 = val2
 
-_0_MyData.Blag = Blag
-_0_MyData._d_Blag  = (omniORB.tcInternal.tv_struct, Blag, Blag._NP_RepositoryId, "Blag", "val1", omniORB.tcInternal.tv_ulong, "val2", omniORB.tcInternal.tv_ulong)
-_0_MyData._tc_Blag = omniORB.tcInternal.createTypeCode(_0_MyData._d_Blag)
-omniORB.registerType(Blag._NP_RepositoryId, _0_MyData._d_Blag, _0_MyData._tc_Blag)
-del Blag
+_0_MyData.Bleg = Bleg
+_0_MyData._d_Bleg  = (omniORB.tcInternal.tv_struct, Bleg, Bleg._NP_RepositoryId, "Bleg", "val1", omniORB.tcInternal.tv_ulong, "val2", omniORB.tcInternal.tv_ulong)
+_0_MyData._tc_Bleg = omniORB.tcInternal.createTypeCode(_0_MyData._d_Bleg)
+omniORB.registerType(Bleg._NP_RepositoryId, _0_MyData._d_Bleg, _0_MyData._tc_Bleg)
+del Bleg
 
 #
 # End of module "MyData"

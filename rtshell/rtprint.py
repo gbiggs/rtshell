@@ -40,7 +40,7 @@ import rtshell
 def read_from_ports(raw_paths, options, tree=None):
     event = threading.Event()
 
-    mm = modmgr.ModuleMgr(verbose=options.verbose)
+    mm = modmgr.ModuleMgr(verbose=options.verbose, paths=options.paths)
     mm.load_mods_and_poas(options.modules)
     if options.verbose:
         print >>sys.stderr, \
@@ -117,6 +117,9 @@ compatible with the port.'''
     parser.add_option('-n', '--number', dest='max', action='store',
             type='int', default='-1', help='Specify the number of times to '\
             'read from any ports. [Default: infinity]')
+    parser.add_option('-p', '--path', dest='paths', action='append',
+            type='string', default=[],
+            help='Extra module search paths to add to the PYTHONPATH.')
     parser.add_option('-r', '--rate', dest='rate', action='store',
             type='float', default=1.0, help='Specify the rate in Hertz at '\
             'which to read and print. [Default: %default]')

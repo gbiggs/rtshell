@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import imp
-import inspect
-import sys
-from traceback import print_exc
-from time import time
-from optparse import OptionParser, OptionError
-
 import OpenRTM_aist
+import os
+import os.path
 import RTC
+import sys
+import traceback
+
 
 import MyData, MyData__POA
 
@@ -17,9 +16,13 @@ import MyData, MyData__POA
 class C2(OpenRTM_aist.DataFlowComponentBase):
     def __init__(self, mgr):
         OpenRTM_aist.DataFlowComponentBase.__init__(self, mgr)
+        self._df = './test/c2_rcvd'
 
     def onInitialize(self):
         try:
+            if os.path.exists(self._df):
+                os.remove(self._df)
+
             f, p, d = imp.find_module('MyData')
             self._m = imp.load_module('MyData', f, p, d)
             if f:
@@ -28,22 +31,25 @@ class C2(OpenRTM_aist.DataFlowComponentBase):
             self._m_poa = imp.load_module('MyData__POA', f, p, d)
             if f:
                 f.close()
-            self._data_type = self._m.Blag
+            self._data_type = self._m.Bleg
             self._in_data = self._data_type(0, 0)
             self._inport = OpenRTM_aist.InPort('input', self._in_data,
                     OpenRTM_aist.RingBuffer(8))
             self.registerInPort('input', self._inport)
         except:
-            print_exc()
+            traceback.print_exc()
             return RTC.RTC_ERROR
         return RTC.RTC_OK
 
     def onExecute(self, ec_id):
         try:
             if self._inport.isNew():
-                print self._inport.read()
+                d = self._inport.read()
+                with open(self._df, 'a+') as f:
+                    f.write('{0}\n'.format(d))
+                print d
         except:
-            print_exc()
+            traceback.print_exc()
             return RTC.RTC_ERROR
         return RTC.RTC_OK
 

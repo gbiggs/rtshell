@@ -21,6 +21,7 @@ Implementation of the command to print data sent by ports to the console.
 
 import OpenRTM_aist
 import optparse
+import os.path
 import RTC
 import rtctree.tree
 import rtctree.utils
@@ -40,7 +41,7 @@ import rtshell
 def write_to_ports(raw_paths, options, tree=None):
     event = threading.Event()
 
-    mm = modmgr.ModuleMgr(verbose=options.verbose)
+    mm = modmgr.ModuleMgr(verbose=options.verbose, paths=options.paths)
     mm.load_mods_and_poas(options.modules)
     if options.verbose:
         print >>sys.stderr, \
@@ -153,6 +154,9 @@ If not specified, values will be read from standard in.')
             type='int', default='1',
             help='Specify the number of times to write to the port. \
 [Default: %default]')
+    parser.add_option('-p', '--path', dest='paths', action='append',
+            type='string', default=[],
+            help='Extra module search paths to add to the PYTHONPATH.')
     parser.add_option('-r', '--rate', dest='rate', action='store',
             type='float', default=1.0,
             help='Specify the rate in Hertz at which to emit data. \
@@ -183,7 +187,7 @@ then stop. Specify -1 for no timeout. This option overrides --number. \
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
         return 1
     return 0
 

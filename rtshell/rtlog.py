@@ -50,7 +50,7 @@ def record_log(raw_paths, options, tree=None):
         print >>sys.stderr, '{0}: WARNING: --index has no effect without '\
                 '--end'.format(sys.argv[0])
 
-    mm = modmgr.ModuleMgr(verbose=options.verbose)
+    mm = modmgr.ModuleMgr(verbose=options.verbose, paths=options.paths)
     mm.load_mods_and_poas(options.modules)
     if options.verbose:
         print >>sys.stderr, \
@@ -139,7 +139,7 @@ def play_log(raw_paths, options, tree=None):
         print >>sys.stderr, '{0}: WARNING: --index has no effect without '\
                 '--start or --end'.format(sys.argv[0])
 
-    mm = modmgr.ModuleMgr(verbose=options.verbose)
+    mm = modmgr.ModuleMgr(verbose=options.verbose, paths=options.paths)
     mm.load_mods_and_poas(options.modules)
     if options.verbose:
         print >>sys.stderr, \
@@ -335,6 +335,9 @@ settings compatible with the port.'''
             'record to/playback from. If not specified for recording, a '\
             'default will be created based on the current time. Must be '\
             'specified for playback.')
+    parser.add_option('-h', '--path', dest='paths', action='append',
+            type='string', default=[],
+            help='Extra module search paths to add to the PYTHONPATH.')
     parser.add_option('-i', '--index', dest='index', action='store_true',
             default=False, help='Interpret the start and end values as entry '\
             'indices. [Default: %default]')

@@ -47,9 +47,8 @@ def call_process(args):
 
 
 def start_process(args):
-    p = subprocess.Popen(args, stdout=subprocess.PIPE,
+    return subprocess.Popen(args, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
-    return p
 
 
 def find_omninames():
@@ -63,7 +62,8 @@ def find_omninames():
 
 
 def launch_comp(name):
-    p = start_process([os.path.join('./test', name), '-f', './test/rtc.conf'])
+    p = subprocess.Popen([os.path.join('./test', name),
+        '-f', './test/rtc.conf'], stdout=subprocess.PIPE)
     p.poll()
     if p.returncode is not None:
         raise RTCLaunchFailedError
@@ -1723,14 +1723,123 @@ def rtfind_suite():
 
 class rtinjectTests(unittest.TestCase):
     def setUp(self):
+        self._clean_comp_output()
         self._ns = start_ns()
         self._std = launch_comp('std_comp')
+        self._c2 = launch_comp('c2_comp')
+        wait_for_comp('Std0.rtc')
+        wait_for_comp('C20.rtc')
+        call_process(['./rtact', '/localhost/local.host_cxt/Std0.rtc'])
+        call_process(['./rtact', '/localhost/local.host_cxt/C20.rtc'])
+        wait_for_comp('Std0.rtc', 'Active')
+        wait_for_comp('C20.rtc', 'Active')
 
     def tearDown(self):
         stop_comp(self._std)
+        stop_comp(self._c2)
         stop_ns(self._ns)
+        self._clean_comp_output()
+
+    def _get_comp_output(self, name):
+        with open(os.path.join('./test', name + '_rcvd'), 'r') as f:
+            return f.read()
+
+    def _clean_comp_output(self):
+        if os.path.exists('./test/std_rcvd'):
+            os.remove('./test/std_rcvd')
+        if os.path.exists('./test/c2_rcvd'):
+            os.remove('./test/c2_rcvd')
 
     def test_stdin(self):
+        p = subprocess.Popen(['./rtinject',
+            '/localhost/local.host_cxt/Std0.rtc:in'], stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate('RTC.TimedLong({time}, 42)')
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(p.returncode, 0)
+        self.assertEqual(self._get_comp_output('std'), '42\n')
+
+    def test_option(self):
+        stdout, stderr, ret = call_process(['./rtinject', '-c',
+            'RTC.TimedLong({time}, 42)',
+            '/localhost/local.host_cxt/Std0.rtc:in'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        time.sleep(1)
+        self.assertEqual(self._get_comp_output('std'), '42\n')
+
+    def test_max(self):
+        stdout, stderr, ret = call_process(['./rtinject', '-c',
+            'RTC.TimedLong({time}, 42)', '-n', '3',
+            '/localhost/local.host_cxt/Std0.rtc:in'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        time.sleep(1)
+        self.assertEqual(self._get_comp_output('std'), '42\n42\n42\n')
+
+    def test_timeout(self):
+        stdout, stderr, ret = call_process(['./rtinject', '-c',
+            'RTC.TimedLong({time}, 42)', '-t', '2',
+            '/localhost/local.host_cxt/Std0.rtc:in'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        time.sleep(3)
+        comp_out = self._get_comp_output('std')
+        self.assert_('42' in comp_out)
+        count = len(comp_out.split('\n'))
+        self.assert_(count > 1000 and count < 2000)
+
+    def _test_rate(self):
+        stdout, stderr, ret = call_process(['./rtinject', '-c',
+            'RTC.TimedLong({time}, 42)', '-t', '2', '-r', '1',
+            '/localhost/local.host_cxt/Std0.rtc:in'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        time.sleep(3)
+        comp_stdout = self._std.stdout.read()
+        self.assertEqual(comp_stdout, '42\n42\n')
+
+    def test_mod(self):
+        stdout, stderr, ret = call_process(['./rtinject', '-c',
+            'MyData.Bleg(val1=4, val2=2)', '-m', 'MyData', '-p', './test',
+            '/localhost/local.host_cxt/C20.rtc:input'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        time.sleep(1)
+        self.assertEqual(self._get_comp_output('c2'),
+                'MyData.Bleg(val1=4L, val2=2L)\n')
+
+    def test_mod_no_path(self):
+        stdout, stderr, ret = call_process(['./rtinject', '-c',
+            'MyData.Bleg(val1=4, val2=2)', '-m', 'MyData',
+            '/localhost/local.host_cxt/C20.rtc:input'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtinject: No module named MyData')
+        self.assertEqual(ret, 1)
+
+    def test_bad_comp(self):
+        stdout, stderr, ret = call_process(['./rtinject', '-c',
+            'RTC.TimedLong({time}, 42)',
+            '/localhost/local.host_cxt/NotAComp0.rtc:in'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtinject: No such object: '
+            '/localhost/local.host_cxt/NotAComp0.rtc')
+        self.assertEqual(ret, 1)
+
+    def test_bad_port(self):
+        stdout, stderr, ret = call_process(['./rtinject', '-c',
+            'RTC.TimedLong({time}, 42)',
+            '/localhost/local.host_cxt/Std0.rtc:out'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtinject: Port not found: '
+            '/localhost/local.host_cxt/Std0.rtc:out')
+        self.assertEqual(ret, 1)
 
 
 def rtinject_suite():

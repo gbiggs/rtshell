@@ -27,7 +27,7 @@ class C1(OpenRTM_aist.DataFlowComponentBase):
             self._m_poa = imp.load_module('MyData__POA', f, p, d)
             if f:
                 f.close()
-            self._data_type = self._m.Blag
+            self._data_type = self._m.Bleg
             self._out_data = self._data_type(0, 0)
             self._outport = OpenRTM_aist.OutPort('output', self._out_data,
                     OpenRTM_aist.RingBuffer(8))
@@ -40,7 +40,7 @@ class C1(OpenRTM_aist.DataFlowComponentBase):
 
     def onExecute(self, ec_id):
         try:
-            val = eval('self._m.Blag(4, 2)')
+            val = eval('self._m.Bleg(4, 2)')
             self._outport.write(val)
             self._count += 1
         except:

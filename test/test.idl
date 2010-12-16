@@ -1,5 +1,5 @@
 module MyData {
-    struct Blag
+    struct Bleg
     {
         unsigned long val1;
         unsigned long val2;

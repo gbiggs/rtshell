@@ -74,10 +74,17 @@ class AutoModule(Module):
 ## evaluation of Python expressions
 
 class ModuleMgr(object):
-    def __init__(self, verbose=False, *args, **kwargs):
+    def __init__(self, verbose=False, paths=[], *args, **kwargs):
         super(ModuleMgr, self).__init__()
         self._mods = {'RTC': Module('RTC', mod=RTC)}
         self._verb = verbose
+        self._add_paths(paths)
+
+    def _add_paths(self, paths=[]):
+        for p in paths:
+            if self._verb:
+                print >>sys.stderr, 'Adding {0} to PYTHONPATH'.format(p)
+            sys.path.insert(0, p)
 
     def evaluate(self, expr):
         self._auto_import(expr)

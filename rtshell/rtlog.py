@@ -22,6 +22,7 @@ Implementation of the logging command.
 import OpenRTM_aist
 import optparse
 import os
+import os.path
 import RTC
 import rtctree.tree
 import rtctree.utils
@@ -318,44 +319,44 @@ settings compatible with the port.'''
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-a', '--absolute-times', dest='abs_times',
             action='store_true', default=False,
-            help='Times from the logged data are sent as recorded during '\
-            'replay, rather than adjusted to the current timeframe. '\
+            help='Times from the logged data are sent as recorded during '
+            'replay, rather than adjusted to the current timeframe. '
             '[Default: %default]')
     parser.add_option('-d', '--display-info', dest='display_info',
-            action='store_true', default=False, help='Display the log '\
+            action='store_true', default=False, help='Display the log '
             'information and exit.')
     parser.add_option('-e', '--end', dest='end', action='store', type='float',
             default=None,
-            help='Time or entry index to stop recording or playback. Must be '\
-            'within the bounds of the log. Specify -1 to record forever or '\
-            'replay to the end of the log. Use --index to specify that this '\
+            help='Time or entry index to stop recording or playback. Must be '
+            'within the bounds of the log. Specify -1 to record forever or '
+            'replay to the end of the log. Use --index to specify that this '
             'value is an index. [Default: %default]')
     parser.add_option('-f', '--filename', dest='filename', action='store',
-            type='string', default='', help='File name of the log file to '\
-            'record to/playback from. If not specified for recording, a '\
-            'default will be created based on the current time. Must be '\
+            type='string', default='', help='File name of the log file to '
+            'record to/playback from. If not specified for recording, a '
+            'default will be created based on the current time. Must be '
             'specified for playback.')
-    parser.add_option('-h', '--path', dest='paths', action='append',
-            type='string', default=[],
-            help='Extra module search paths to add to the PYTHONPATH.')
+    parser.add_option('--path', dest='paths', action='append', type='string',
+            default=[], help='Extra module search paths to add to the '
+            'PYTHONPATH.')
     parser.add_option('-i', '--index', dest='index', action='store_true',
-            default=False, help='Interpret the start and end values as entry '\
+            default=False, help='Interpret the start and end values as entry '
             'indices. [Default: %default]')
     parser.add_option('-l', '--logger', dest='logger', action='store',
-            type='string', default='simpkl', help='The type of logger to '\
-            'use. The default is the SimplePickle logger. Alternatively, '\
-            'the text logger (specify using "text") may be used. The text '\
+            type='string', default='simpkl', help='The type of logger to '
+            'use. The default is the SimplePickle logger. Alternatively, '
+            'the text logger (specify using "text") may be used. The text '
             'logger does not support playback.')
     parser.add_option('-m', '--mod', dest='modules', action='append',
             type='string', default=[],
-            help='Extra modules to import. If automatic module loading '\
-            'struggles with your data types, try listing the modules here. '\
+            help='Extra modules to import. If automatic module loading '
+            'struggles with your data types, try listing the modules here. '
             'The module and its __POA partner will be imported.')
     parser.add_option('-n', '--ignore-times', dest='ig_times',
-            action='store_true', default=False, help='Ignore the log '\
-            'timestamps and play back a fixed number of entries per '\
-            'execution. Use --rate to change the number played back per '\
-            'execution. The value of --rate will be treated as an integer '\
+            action='store_true', default=False, help='Ignore the log '
+            'timestamps and play back a fixed number of entries per '
+            'execution. Use --rate to change the number played back per '
+            'execution. The value of --rate will be treated as an integer '
             'in this case.')
     parser.add_option('-p', '--play', dest='play', action='store_true',
             default=False, help='Replay mode. [Default: %default]')
@@ -364,18 +365,18 @@ settings compatible with the port.'''
             help='Scale the playback speed of the log. [Default: %default]')
     parser.add_option('-s', '--start', dest='start', action='store',
             type='float', default=None,
-            help='Time or entry index to start playback from. Must be within '\
-            'the bounds of the log. Use --index to specify that this value '\
+            help='Time or entry index to start playback from. Must be within '
+            'the bounds of the log. Use --index to specify that this value '
             'is an index. [Default: %default]')
     parser.add_option('-t', '--timeout', dest='timeout', action='store',
-            type='float', default=None, help='Record/replay data for this '\
+            type='float', default=None, help='Record/replay data for this '
             'many seconds. This option overrides --start/--end.')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
             help='Output verbose information. [Default: %default]')
     parser.add_option('-x', '--exec-rate', dest='exec_rate', action='store',
             type='float', default=10.0,
-            help='Specify the rate in Hertz at which to run the component. '\
+            help='Specify the rate in Hertz at which to run the component. '
             '[Default: %default]')
 
     if argv:
@@ -402,7 +403,7 @@ settings compatible with the port.'''
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
         return 1
     return 0
 

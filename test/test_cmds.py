@@ -1721,6 +1721,30 @@ def rtfind_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtfindTests)
 
 
+class rtinjectTests(unittest.TestCase):
+    def setUp(self):
+        self._ns = start_ns()
+        self._std = launch_comp('std_comp')
+
+    def tearDown(self):
+        stop_comp(self._std)
+        stop_ns(self._ns)
+
+    def test_stdin(self):
+
+
+def rtinject_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtinjectTests)
+
+
+class rtlogTests(unittest.TestCase):
+    pass
+
+
+def rtlog_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtlogTests)
+
+
 class rtlsTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
@@ -2092,12 +2116,54 @@ def rtstodot_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtstodotests)
 
 
+class rtprintTests(unittest.TestCase):
+    pass
+
+
+def rtprint_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtprintTests)
+
+
+class rtresurrectTests(unittest.TestCase):
+    pass
+
+
+def rtresurrect_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtresurrectTests)
+
+
+class rtstartTests(unittest.TestCase):
+    pass
+
+
+def rtstart_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtstartTests)
+
+
+class rtstopTests(unittest.TestCase):
+    pass
+
+
+def rtstop_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtstopTests)
+
+
+class rtteardownTests(unittest.TestCase):
+    pass
+
+
+def rtteardown_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtteardownTests)
+
+
 def suite():
     return unittest.TestSuite([rtact_suite(), rtdeact_suite(),
         rtreset_suite(), rtcat_suite(), rtcheck_suite(), rtcomp_suite(),
         rtcon_suite(), rtconf_suite(), rtcryo_suite(), rtcwd_suite(),
         rtdel_suite(), rtdis_suite(), rtexit_suite(), rtfind_suite(),
-        rtls_suite(), rtmgr_suite(), rtstodot_suite()])
+        rtinject_suite(), rtlog_suite(), rtls_suite(), rtmgr_suite(),
+        rtprint_suite(), rtresurrect_suite(), rtstart_suite(),
+        rtstodot_suite(), rtstop_suite(), rtteardown_suite()])
 
 
 if __name__ == '__main__':

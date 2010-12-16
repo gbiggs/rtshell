@@ -1,0 +1,8 @@
+module MyData {
+    struct Blag
+    {
+        unsigned long val1;
+        unsigned long val2;
+    };
+};
+

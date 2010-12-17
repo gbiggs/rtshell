@@ -799,6 +799,26 @@ contribute patches.
  $ git clone git://github.com/gbiggs/rtshell.git
 
 
+Running the tests
+-----------------
+
+The command tests can be run from the source directory using a command like the
+following:
+
+ ~/src/rtshell $ ./test/test_cmds.py ~/share/OpenRTM-aist/examples/rtcs/
+
+The argument to the test_cmds.py command is a directory containing RTC shared
+libraries that can be loaded into a manager. It must contain the libraries for
+Motor, Controller and Sensor.
+
+An individual command's tests can be run by specifying those tests after the
+command. For example:
+
+ $ ./test/test_cmds.py ~/share/OpenRTM-aist/examples/rtcs/ rtactTests
+
+This will run only the tests for the rtact command.
+
+
 Changelog
 ---------
 
@@ -832,7 +852,7 @@ Changelog
 - rtteardown: Fail if the connector ID doesn't match.
 - rtresurrect/rtstart/rtstop/rtteardown: Accept input from standard input.
 - Refactored former rtsshell commands into rtshell-style libraries.
-- Added some unit tests.
+- Added tests.
 
 rtcshell-2.0
 - Fixes for Windows

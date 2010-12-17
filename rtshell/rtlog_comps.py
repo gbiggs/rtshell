@@ -165,6 +165,7 @@ class Player(gen_comp.GenComp):
                 print >>sys.stderr, 'WARNING: Specified end time is before '\
                         'the first entry time.'
 
+            self._start_time = time.time()
             # Fast-forward to the start time (with a sanity-check)
             if self._start > 0: # If 0 index, already there; if 0 time... hmm
                 if self._lims_ind:
@@ -174,7 +175,7 @@ class Player(gen_comp.GenComp):
                         self._set()
                         return RTC.RTC_ERROR
                     self._l.seek(index=self._start)
-                    self._offset = time.time() - self._l.pos[1].float
+                    self._log_start = self._l.pos[1].float
                 else:
                     if self._start > self._l.end[1]:
                         print >>sys.stderr, 'ERROR: Specified start time is '\
@@ -182,9 +183,12 @@ class Player(gen_comp.GenComp):
                         self._set()
                         return RTC.RTC_ERROR
                     self._l.seek(timestamp=self._start)
-                    self._offset = time.time() - self._l.pos[1].float
+                    self._log_start = self._l.pos[1].float
             else:
-                self._offset = time.time() - start
+                self._log_start = start
+            self._offset = self._start_time - self._log_start
+            self._vprint('Play start time is {0}, log start time is {1}'.format(
+                self._start_time, self._log_start))
             self._vprint('Time offset is {0}'.format(self._offset))
         except:
             traceback.print_exc()
@@ -213,7 +217,8 @@ class Player(gen_comp.GenComp):
                         execed += 1
             else:
                 # Calculate the current time in log-time
-                now = (time.time() - self._offset) * self._rate
+                now = (((time.time() - self._start_time) * self._rate) +
+                        self._log_start)
                 self._vprint('Current time in logspace is {0}'.format(now))
                 if self._end >= 0 and now > self._end:
                     self._vprint('Reached end time (current position: '\
@@ -256,7 +261,7 @@ class Player(gen_comp.GenComp):
         if p_name in self._ports:
             if not self._abs and self._ports[p_name].standard_type:
                 data.tm.sec += int(self._offset)
-                data.tm.nsec += int((self._offset * 1000000000) % 1000000000)
+                data.tm.nsec += int((self._offset % 1) * 1000000000)
             self._ports[p_name].port.write(data)
         return True
 

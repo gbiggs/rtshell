@@ -58,13 +58,17 @@ def connect_ports(source_cmd_path, source_full_path,
         raise rts_exceptions.NoSuchObjectError(dest_cmd_path)
 
     source_comp = tree.get_node(source_path)
-    if not source_comp or not source_comp.is_component:
+    if not source_comp:
+        raise rts_exceptions.NoSuchObjectError(source_cmd_path)
+    if not source_comp.is_component:
         raise rts_exceptions.NotAComponentError(source_cmd_path)
     source_port_obj = source_comp.get_port_by_name(source_port)
     if not source_port_obj:
         raise rts_exceptions.PortNotFoundError(source_path, source_port)
     dest_comp = tree.get_node(dest_path)
-    if not dest_comp or not dest_comp.is_component:
+    if not dest_comp:
+        raise rts_exceptions.NoSuchObjectError(dest_cmd_path)
+    if not dest_comp.is_component:
         raise rts_exceptions.NotAComponentError(dest_cmd_path)
     dest_port_obj = dest_comp.get_port_by_name(dest_port)
     if not dest_port_obj:

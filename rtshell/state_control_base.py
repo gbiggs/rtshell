@@ -78,7 +78,8 @@ def base_main(description, action, argv=None, tree=None):
 
     if not args:
         # If no path given then can't do anything.
-        print >>sys.stderr, '{0}: No component specified.'.format(sys.argv[0])
+        print >>sys.stderr, '{0}: No component specified.'.format(
+                os.path.basename(sys.argv[0]))
         return 1
     elif len(args) == 1:
         cmd_path = args[0]

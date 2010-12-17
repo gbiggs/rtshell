@@ -391,13 +391,13 @@ class SetConfigParamValueAct(Action):
 
     def __str__(self):
         return self._action_string('Set parameter "{0}" in set "{1}" on \
-component at path "{2}" to "{3}"'.format(self._param, self._set,
+component at path {2} to "{3}"'.format(self._param, self._set,
                 self._path_str, self._new_value))
 
     def _execute(self, rtctree):
         if option_store.OptionStore().verbose:
             print >>sys.stderr, 'Setting parameter "{0}" in set "{1}" on \
-component at path "{2}" to "{3}"'.format(self._param, self._set,
+component at path {2} to "{3}"'.format(self._param, self._set,
                     self._path_str, self._new_value)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:

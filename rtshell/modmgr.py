@@ -22,6 +22,7 @@ Objects for managing dynamically-loaded modules and evaluating strings.
 import imp
 import inspect
 import OpenRTM_aist
+import os.path
 import re
 import RTC
 import sys
@@ -149,7 +150,7 @@ class ModuleMgr(object):
                 self.load_mod(m + '__POA')
             except ImportError:
                 print >>sys.stderr, '{0}: Failed to import module {1}'.format(\
-                        sys.argv[0], m + '__POA')
+                        os.path.basename(sys.argv[0]), m + '__POA')
                 pass
 
     @property
@@ -172,14 +173,14 @@ class ModuleMgr(object):
             except ImportError:
                 print >>sys.stderr, \
                         '{0}: Warning: failed to import module {1}'.format(
-                                sys.argv[0], n)
+                                os.path.basename(sys.argv[0]), n)
                 continue
             try:
                 self.load_mod(n + '__POA')
             except ImportError:
                 print >>sys.stderr, \
                         '{0}: Warning: failed to import module {1}'.format(
-                                sys.argv[0], n + '__POA')
+                                os.path.basename(sys.argv[0]), n + '__POA')
                 continue
 
     def _repl_mod_name(self, expr):

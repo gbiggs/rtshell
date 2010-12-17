@@ -21,6 +21,7 @@ rtstop library.
 
 import optparse
 import os
+import os.path
 import rtctree.component
 import rtctree.path
 import rtctree.tree
@@ -120,7 +121,7 @@ If no file is given, the profile is read from standard input.'''
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
         return 1
     return 0
 

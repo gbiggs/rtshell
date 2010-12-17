@@ -219,8 +219,8 @@ The output format can be over-ridden with the --xml or --yaml options.
 If no file is given, the profile is read from standard input.'''
     parser = optparse.OptionParser(usage=usage, version=rtshell.RTSH_VERSION)
     parser.add_option('--dry-run', dest='dry_run', action='store_true',
-            default=False, help="Print what will be done but don't actually '\
-            'do anything.  [Default: %default]")
+            default=False, help="Print what will be done but don't actually "
+            "do anything.  [Default: %default]")
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
             help='Output verbose information. [Default: %default]')
@@ -252,7 +252,7 @@ If no file is given, the profile is read from standard input.'''
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(sys.argv[0], e)
+        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
         return 1
     return 0
 

@@ -58,16 +58,17 @@ def record_log(raw_paths, options, tree=None):
                 'Pre-loaded modules: {0}'.format(mm.loaded_mod_names)
 
     if options.timeout is not None:
-        print >>sys.stderr, 'Record for {0}s'.format(options.timeout)
+        print >>sys.stderr, 'Recording for {0}s.'.format(options.timeout)
     else:
         if options.end is not None:
             if options.index:
-                print >>sys.stderr, 'Record {0} entries.'.format(
+                print >>sys.stderr, 'Recording {0} entries.'.format(
                         int(options.end))
             else:
                 end_str = time.strftime('%Y-%m-%d %H:%M:%S',
                         time.localtime(options.end))
-                print >>sys.stderr, 'Record until {0}.'.format(end_str)
+                print >>sys.stderr, 'Recording until {0} ({1}).'.format(
+                        end_str, options.end)
 
     if options.logger == 'simpkl':
         l_type = simpkl_log.SimplePickleLog
@@ -206,7 +207,6 @@ def play_log(raw_paths, options, tree=None):
         end = -1 # Send -1 as the default
     else:
         end = options.end
-    print options.rate
     comp_name, mgr = comp_mgmt.make_comp('rtlog_player', tree,
             rtlog_comps.Player, port_specs, event=event, logger_type=l_type,
             filename=options.filename, lims_are_ind=options.index, start=start,

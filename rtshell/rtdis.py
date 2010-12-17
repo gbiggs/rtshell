@@ -88,8 +88,6 @@ def disconnect_ports(source_cmd_path, source_full_path,
     if not tree:
         tree = rtctree.tree.create_rtctree(paths=[source_path, dest_path],
                 filter=[source_path, dest_path])
-    if not tree:
-        return 1
 
     source_comp = tree.get_node(source_path)
     if not source_comp:

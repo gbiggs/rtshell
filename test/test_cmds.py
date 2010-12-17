@@ -1443,11 +1443,13 @@ class rtdisTests(unittest.TestCase):
             '/localhost/local.host_cxt/Std0.rtc:in',])
         self.assertEqual(ret, 0)
         # Now test
-        stdout, stderr, ret = call_process(['./rtdis', '-v',
+        stdout, stderr, ret = call_process(['./rtdis',
             '/localhost/local.host_cxt/Output0.rtc:out',
             '/localhost/local.host_cxt/Std0.rtc:in',])
         self.assertEqual(stdout, '')
-        self.assertEqual(stderr, 'rtdis: ')
+        self.assertEqual(stderr, 'rtdis: No connection from '
+            '/localhost/local.host_cxt/Output0.rtc:out to '
+            '/localhost/local.host_cxt/Std0.rtc:in')
         self.assertEqual(ret, 1)
         stdout, stderr, ret = call_process(['./rtcat', '-l',
             '/localhost/local.host_cxt/Output0.rtc:out'])

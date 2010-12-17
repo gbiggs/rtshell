@@ -313,15 +313,19 @@ class ConnectionNotFoundError(RtShellError):
         self._path2 = path2
 
     def __str__(self):
-        if type(self._path) == tuple:
-            return 'No connection from {0} to {1}.'.format(
-                    rtctree.path.format_path(self._path1), self._path2)
-        elif type(self._path) == list:
-            return 'No connection from {0} to {1}.'.format(
-                    rtctree.path.format_path((self._path, None)), self._path2)
+        if type(self._path1) == tuple:
+            path1_str = rtctree.path.format_path(self._path1)
+        elif type(self._path1) == list:
+            path1_str = rtctree.path.format_path((self._path1, None))
         else:
-            return 'No connection from {0} to {1}'.format(self._path,
-                    self._path2)
+            path1_str = self._path1
+        if type(self._path2) == tuple:
+            path2_str = rtctree.path.format_path(self._path2)
+        elif type(self._path2) == list:
+            path2_str = rtctree.path.format_path((self._path2, None))
+        else:
+            path2_str = self._path2
+        return 'No connection from {0} to {1}'.format(path1_str, path2_str)
 
 
 class ConnectionIDNotFoundError(RtShellError):

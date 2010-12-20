@@ -1,11 +1,15 @@
-Name
-----
+=======
+rtshell
+=======
 
-rtshell - Command line tools for RT-Middleware
+------------------------------------
+command line tools for RT-Middleware
+------------------------------------
 
+.. include:: docinfo_block.txt
 
 Commands
---------
+========
 
   rtact
     Activate components.
@@ -80,45 +84,14 @@ Commands
     Remove all connections in an RT-System using an RTSProfile.
 
 
-Environment
------------
-
-  RTCTREE_ORB_ARGS
-    A list of arguments, separated by semi-colons, to pass to the ORB
-    when creating it. Optional.
-
-  RTCTREE_NAMESERVERS
-    A list of name server addresses, separated by semi-colons, to parse
-    when creating the RTCTree. Each server in the list will be added to
-    the tree, making it available for browsing with rtshell. Optional.
-
-  RTSH_CWD
-    The current working directory in the tree. Do not set this variable;
-    it is set automatically by rtshell.
-
-The only variable that should normally be set by the user is
-RTCTREE_NAMESERVERS. Set this to a list of name server addresses,
-separated by semi-colons, that rtshell should interact with. For
-example, in a Bash shell, the following command will set the known name
-serves to **localhost**, **192.168.0.1:65346** and **example.com**::
-
-  $ export RTCTREE_NAMESERVERS=localhost;192.168.0.1:65346;example.com
-
-
-Diagnostics
------------
-
-All commands return 0 on success and non-zero on failure.
-
-
 RTC Tree
---------
+========
 
 The commands operate on the RTC Tree. This is a file system-like tree
 built by parsing name servers to find directories, components and
 managers. It can be treated like a normal file system.
 
-Name servers are treated as directories off the root directory, **/**.
+Name servers are treated as directories off the root directory, ``/``.
 Below them are 'files' and sub-directories. A sub-directory represents a
 naming context below the root naming context of a name server. Files are
 components and managers.
@@ -128,22 +101,22 @@ The first is the path given to a command. This is appended to the
 current working directory of the tree, and the first element is treated
 as a name server.
 
-The second source for name servers is the RTCTREE_NAMESERVERS
+The second source for name servers is the ``RTCTREE_NAMESERVERS``
 environment variable. This is a semi-colon separated list of name server
 addresses.
 
 
 Shell completion
-----------------
+================
 
 Users of a Bash-compatible shell can use the included completion script
 to make using the commands easier. The script is installed in
-${prefix}/share/rtshell. Run the following command to load it::
+``${prefix}/share/rtshell``. Run the following command to load it::
 
- $ source bash_completion
+  $ source bash_completion
 
-This can be added to the ~/.bashrc file to have it loaded in every new
-shell instance. Here are some examples of completion::
+This can be added to the ``~/.bashrc`` file to have it loaded in every
+new shell instance. Here are some examples of completion::
 
   $ rtcwd [TAB]
   $ rtcwd localhost/
@@ -160,7 +133,7 @@ shell instance. Here are some examples of completion::
 
 
 System requirements
--------------------
+===================
 
 rtshell requires **rtctree 3.0**. It must be installed for the commands
 to function.
@@ -174,7 +147,7 @@ It has not been tested with Python 3 and it is likely that several
 changes will be necessary to make it function using this version of
 Python.
 
-**rtinject**, **rtlog** and **rtprint** require the Python version of
+``rtinject``, ``rtlog`` and ``rtprint`` require the Python version of
 OpenRTM-aist.
 
 For Ubuntu users using a version of Ubuntu prior to 9.04, a suitable
@@ -182,37 +155,34 @@ Python version must be installed by hand. Consider upgrading to Ubuntu
 9.04 or later (10.04 offers LTS).
 
 
-Author
-------
-
-Geoffrey Biggs and contributors.
+.. include:: common_body.txt
 
 
 See also
---------
+========
 
-  **rtact** (1),
-  **rtcat** (1),
-  **rtcheck** (1),
-  **rtcomp** (1),
-  **rtcon** (1),
-  **rtconf** (1),
-  **rtcryo** (1),
-  **rtdeact** (1),
-  **rtdel** (1),
-  **rtdis** (1),
-  **rtexit** (1),
-  **rtfind** (1),
-  **rtinject** (1),
-  **rtlog** (1),
-  **rtls** (1),
-  **rtmgr** (1),
-  **rtprint** (1),
-  **rtpwd** (1),
-  **rtreset** (1),
-  **rtresurrect** (1),
-  **rtstart** (1),
-  **rtstodot** (1),
-  **rtstop** (1),
-  **rtteardown** (1)
+  ``rtact`` (1),
+  ``rtcat`` (1),
+  ``rtcheck`` (1),
+  ``rtcomp`` (1),
+  ``rtcon`` (1),
+  ``rtconf`` (1),
+  ``rtcryo`` (1),
+  ``rtdeact`` (1),
+  ``rtdel`` (1),
+  ``rtdis`` (1),
+  ``rtexit`` (1),
+  ``rtfind`` (1),
+  ``rtinject`` (1),
+  ``rtlog`` (1),
+  ``rtls`` (1),
+  ``rtmgr`` (1),
+  ``rtprint`` (1),
+  ``rtpwd`` (1),
+  ``rtreset`` (1),
+  ``rtresurrect`` (1),
+  ``rtstart`` (1),
+  ``rtstodot`` (1),
+  ``rtstop`` (1),
+  ``rtteardown`` (1)
 

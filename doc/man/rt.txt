@@ -1,0 +1,42 @@
+===
+rt
+===
+
+-------------------
+
+-------------------
+
+.. include:: docinfo_block.txt
+
+Synopsis
+========
+
+
+
+Description
+===========
+
+
+
+Options
+=======
+
+
+
+
+.. include:: common_body.txt
+
+
+Examples
+========
+
+::
+
+  $ 
+
+
+See Also
+========
+
+  ``rt`` (1)
+

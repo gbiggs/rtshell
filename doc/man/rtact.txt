@@ -1,0 +1,63 @@
+=====
+rtact
+=====
+
+-------------------
+activate components
+-------------------
+
+.. include: docinfo_block.txt
+
+Synopsis
+========
+
+rtact [options] <path>
+
+Description
+===========
+
+Activates the specified RT-Component, provided it is in the inactive
+state.
+
+Options
+=======
+
+-e EC_INDEX, --exec_context=EC_INDEX
+    Index of the execution context to change state in. [Default: ``0``]
+
+--version
+    show program's version number and exit
+
+-h, --help
+    show this help message and exit
+
+-v, --verbose
+    Output verbose information. [Default: ``False``]
+
+
+.. include:: common_body.txt
+
+
+Examples
+========
+
+::
+
+  $ rtact /localhost/local.host_cxt/ConsoleOut0.rtc
+
+Activate ConsoleOut0.rtc in all owned and participating execution
+contexts.
+
+::
+
+  $ rtact -e 2 /localhost/local.host_cxt/Motor0.rtc
+
+Activate Motor0.rtc in only the execution context with ID 2.
+
+See Also
+========
+
+  ``rtdeact`` (1),
+  ``rtreset`` (1),
+  ``rtcat`` (1)
+

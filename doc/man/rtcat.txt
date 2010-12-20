@@ -71,8 +71,8 @@ Show the basic information about the ``manager.mgr`` manager.
 See Also
 ========
 
-  ``rtcon`` (1),
-  ``rtconf`` (1),
-  ``rtprint`` (1),
-  ``rtstodot`` (1)
+``rtcon`` (1),
+``rtconf`` (1),
+``rtprint`` (1),
+``rtstodot`` (1)
 

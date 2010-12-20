@@ -131,14 +131,7 @@ def write_to_ports(raw_paths, options, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <path1>:<port1> [<path2>:<port2>...]
-Write a constant value to one or more ports.
-
-By default, the value is written once. Options are available to write a set
-number of times, or write regularly for a specified length of time.
-
-''' + rtshell.RTSH_PATH_USAGE + '''
-A connection will be made to the port using the default connection settings
-compatible with the port.'''
+Write a constant value to one or more ports.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-c', '--const', dest='const', action='store',

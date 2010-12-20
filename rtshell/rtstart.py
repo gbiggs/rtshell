@@ -107,9 +107,7 @@ def start(profile=None, xml=True, dry_run=False, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] [RTSProfile file]
-Start an RT system using an RT system profile specified in XML or YAML.
-
-If no file is given, the profile is read from standard input.'''
+Start an RT system using an RTSProfile.'''
     parser = optparse.OptionParser(usage=usage, version=rtshell.RTSH_VERSION)
     parser.add_option('--dry-run', dest='dry_run', action='store_true',
             default=False, help="Print what will be done but don't actually '\

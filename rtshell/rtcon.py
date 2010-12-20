@@ -93,26 +93,7 @@ def main(argv=None, tree=None):
         getattr(parser.values, option.dest)[key] = value
 
     usage = '''Usage: %prog [options] <source path> <destination path>
-Connect two ports.
-
-''' + rtshell.RTSH_PATH_USAGE + '''
-
-Ports are specified at the end of each path, preceeded by a colon (:).
-
-Specify port properties in the format 'property=value'. For example, to set the
-flow type of the port, you would use '--property dataport.dataflow_type=pull'.
-
-For data ports, the valid properties include:
-dataport.data_type
-dataport.dataflow_type
-dataport.interface_type
-dateport.subscription_type
-
-For service ports, the valid properties include:
-port.port_type
-
-Other properties may also be valid, depending on your OpenRTM
-implementation.'''
+Connect two ports.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-i', '--id', dest='id', action='store', type='string',

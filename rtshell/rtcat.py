@@ -424,11 +424,7 @@ def cat_target(cmd_path, full_path, options, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] [path]
-Display information about a manager or component.
-
-Equivalent to the POSIX 'cat' command.
-
-''' + rtshell.RTSH_PATH_USAGE
+Display information about a manager or component.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-l', dest='long', action='count', default=0,

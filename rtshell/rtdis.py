@@ -127,12 +127,7 @@ def disconnect_ports(source_cmd_path, source_full_path,
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <source path> [destination path]
-Remove a connection between two ports, or all connections from a component or
-port.
-
-''' + rtshell.RTSH_PATH_USAGE + '''
-
-Ports are specified at the end of each path, preceeded by a colon (:).'''
+Remove connections.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-i', '--id', dest='id', action='store', type='string',

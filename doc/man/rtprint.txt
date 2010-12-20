@@ -1,0 +1,51 @@
+===
+rt
+===
+
+-------------------
+
+-------------------
+
+.. include:: docinfo_block.txt
+
+Synopsis
+========
+
+
+
+Description
+===========
+
+
+By default, only the first value received from one or more ports is printed.
+Options are available to print multiple values or print regularly for a
+specified length of time. In any one loop of the port checks, if only one port
+out of multiple has data available, that is counted as a print.
+
+''' + rtshell.RTSH_PATH_USAGE + '''
+A connection will be made to the port using the default connection settings
+compatible with the port.'''
+
+
+Options
+=======
+
+
+
+.. include:: common_opts.txt
+
+.. include:: common_body.txt
+
+Examples
+========
+
+::
+
+  $ 
+
+
+See Also
+========
+
+  ``rt`` (1)
+

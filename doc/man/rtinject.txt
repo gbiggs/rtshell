@@ -1,0 +1,48 @@
+===
+rt
+===
+
+-------------------
+
+-------------------
+
+.. include:: docinfo_block.txt
+
+Synopsis
+========
+
+
+
+Description
+===========
+
+By default, the value is written once. Options are available to write a set
+number of times, or write regularly for a specified length of time.
+
+''' + rtshell.RTSH_PATH_USAGE + '''
+A connection will be made to the port using the default connection settings
+compatible with the port.'''
+
+
+Options
+=======
+
+
+
+.. include:: common_opts.txt
+
+.. include:: common_body.txt
+
+Examples
+========
+
+::
+
+  $ 
+
+
+See Also
+========
+
+  ``rt`` (1)
+

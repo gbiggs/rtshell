@@ -179,11 +179,7 @@ def check(profile=None, xml=True, state='Active', dry_run=False, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <RTSProfile specification file>
-Check that the running RT System conforms to an RTSProfile specification.
-
-The input format will be determined automatically from the file extension.
-If the file has no extension, the input format is assumed to be XML.
-The output format can be over-ridden with the --xml or --yaml options.'''
+Check that the running RT System conforms to an RTSProfile.'''
     parser = optparse.OptionParser(usage=usage, version=rtshell.RTSH_VERSION)
     parser.add_option('--dry-run', dest='dry_run', action='store_true',
             default=False, help="Print what will be done but don't actually '\

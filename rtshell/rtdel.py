@@ -77,13 +77,7 @@ def delete_all_zombies(options, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <path>
-Delete an object from a name server.
-
-This command is particularly useful to remove zombie registrations. However,
-care must be taken not to unlink a large section of the tree, as you will not
-be able to get it back.
-
-''' + rtshell.RTSH_PATH_USAGE
+Delete an object from a name server.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',

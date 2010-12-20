@@ -1,0 +1,52 @@
+===
+rt
+===
+
+-------------------
+
+-------------------
+
+.. include:: docinfo_block.txt
+
+Synopsis
+========
+
+
+
+Description
+===========
+
+Equivalent to the POSIX 'ls' command.
+
+The long display shows the following information in columns:
+State
+Total number of ports/Total connected
+Input ports/Inputs connected
+Output ports/Outputs connected
+Service ports/Service connected
+Name
+
+
+
+Options
+=======
+
+
+
+.. include:: common_opts.txt
+
+.. include:: common_body.txt
+
+Examples
+========
+
+::
+
+  $ 
+
+
+See Also
+========
+
+  ``rt`` (1)
+

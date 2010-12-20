@@ -56,9 +56,7 @@ def alter_component_state(action, cmd_path, full_path, options, tree=None):
 
 def base_main(description, action, argv=None, tree=None):
     usage = '''Usage: %prog [options] <path>
-{0}
-
-{1}'''.format(description, rtshell.RTSH_PATH_USAGE)
+{0}'''.format(description)
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-e', '--exec_context', dest='ec_index', type='int',

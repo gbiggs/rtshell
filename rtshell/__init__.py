@@ -18,22 +18,6 @@ Commands for managing RT Components and RTM-based systems from a shell.
 '''
 
 
-RTSH_PATH_USAGE =\
-'''A path is the address of object. Name servers and subcontexts on name
-servers are considered directories. Managers and RT Components are considered
-objects. As with the POSIX 'cat' command, the path specified as an argument to
-this command is appended to the current rtcsh working directory, which is
-stored in the RTCSH_CWD environment variable and changeable using the rtcd
-command.
-
-The name servers that are contacted will depend on the contents of the
-RTCSH_NAMESERVERS environment variable.
-
-For example, '/localhost/comp0.rtc' refers to the component named 'comp0.rtc'
-registered on the name server at 'localhost'. '/localhost/manager/comp0.rtc'
-refers to the component 'comp0.rtc' in the directory 'manager' on the
-'localhost' name server. 'comp0.rtc' refers to that component in the current
-directory.'''
 RTSH_VERSION = '3.0.0'
 
 

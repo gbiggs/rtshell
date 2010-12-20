@@ -136,12 +136,7 @@ def make_composite(mgr_path, mgr_full_path, comps, ports, options, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <Manager>
-Compose multiple components into a single component.
-
-''' + rtshell.RTSH_PATH_USAGE + '''
-
-Ports are specified at the end of each path, preceeded by a colon (:).
-'''
+Compose multiple components into a single component.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-c', '--comp', dest='comps', action='append',

@@ -48,7 +48,7 @@ Activate Motor0.rtc in only the execution context with ID 2.
 See Also
 ========
 
-  ``rtdeact`` (1),
-  ``rtreset`` (1),
-  ``rtcat`` (1)
+``rtdeact`` (1),
+``rtreset`` (1),
+``rtcat`` (1)
 

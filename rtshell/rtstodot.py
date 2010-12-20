@@ -113,16 +113,7 @@ def visualise(profile=None, xml=True, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] [RTSProfile file]
-Visualise RT Systems using dot files.
-
-If no file is given, the profile is read from standard input.
-
-Example: visualising the current configuration.
- $ rtcryo | rtstodot | dot -T xlib"
-
-Example: Outputting in EPS format.
- $ rtstodot rtsystem.rts | dot -T eps > rtsystem.eps
-'''
+Visualise RT Systems using dot files.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',

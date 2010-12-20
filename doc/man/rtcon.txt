@@ -1,0 +1,56 @@
+===
+rt
+===
+
+-------------------
+
+-------------------
+
+.. include:: docinfo_block.txt
+
+Synopsis
+========
+
+
+
+Description
+===========
+
+
+Specify port properties in the format 'property=value'. For example, to set the
+flow type of the port, you would use '--property dataport.dataflow_type=pull'.
+
+For data ports, the valid properties include:
+dataport.data_type
+dataport.dataflow_type
+dataport.interface_type
+dateport.subscription_type
+
+For service ports, the valid properties include:
+port.port_type
+
+Other properties may also be valid, depending on your OpenRTM
+implementation.'''
+
+Options
+=======
+
+
+
+.. include:: common_opts.txt
+
+.. include:: common_body.txt
+
+Examples
+========
+
+::
+
+  $ 
+
+
+See Also
+========
+
+  ``rt`` (1)
+

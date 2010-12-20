@@ -98,16 +98,7 @@ def read_from_ports(raw_paths, options, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <path1>:<port1> [<path2>:<port2>...]
-Print the data being sent by one or more output ports.
-
-By default, only the first value received from one or more ports is printed.
-Options are available to print multiple values or print regularly for a
-specified length of time. In any one loop of the port checks, if only one port
-out of multiple has data available, that is counted as a print.
-
-''' + rtshell.RTSH_PATH_USAGE + '''
-A connection will be made to the port using the default connection settings
-compatible with the port.'''
+Print the data being sent by one or more output ports.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-m', '--mod', dest='modules', action='append',

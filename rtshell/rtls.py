@@ -312,19 +312,7 @@ def list_target(cmd_path, full_path, options, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] [path]
-List a name server, directory, manager or component.
-
-Equivalent to the POSIX 'ls' command.
-
-The long display shows the following information in columns:
-State
-Total number of ports/Total connected
-Input ports/Inputs connected
-Output ports/Outputs connected
-Service ports/Service connected
-Name
-
-''' + rtshell.RTSH_PATH_USAGE
+List a name server, directory, manager or component.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-l', dest='long', action='store_true', default=False,

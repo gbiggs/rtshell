@@ -308,18 +308,7 @@ def display_info(options):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <path1>:<port1> [<path2>:<port2>...]
-Record data from output ports, or replay data into input ports.
-
-The default is to record. All specified ports must be output ports. If
-replay mode is enabled, all specified ports must be input ports
-matching the recorded data's data types.
-
-Options are available to limit the number of items recorded or played
-back, change the playback rate, and restrict the played-back items.
-
-''' + rtshell.RTSH_PATH_USAGE + '''
-Connections will be made to the ports using the default connection
-settings compatible with the port.'''
+Record data from output ports, or replay data into input ports.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-a', '--absolute-times', dest='abs_times',

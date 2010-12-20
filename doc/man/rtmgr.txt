@@ -1,0 +1,48 @@
+===
+rt
+===
+
+-------------------
+
+-------------------
+
+.. include:: docinfo_block.txt
+
+Synopsis
+========
+
+
+
+Description
+===========
+
+Control a manager, adding and removing shared libraries and components. To
+set a mananger's configuration, use rtconf. To view a manager's information,
+use rtcat.
+
+If multiple commands are given, they are executed in the order unload, load,
+delete, create.
+
+
+Options
+=======
+
+
+
+.. include:: common_opts.txt
+
+.. include:: common_body.txt
+
+Examples
+========
+
+::
+
+  $ 
+
+
+See Also
+========
+
+  ``rt`` (1)
+

@@ -218,11 +218,7 @@ def freeze_dry(servers, dest='-', xml=True, abstract='', vendor='', sysname='',
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] [name servers]
-Record a running RT System in an RTSProfile specification.
-
-Any name servers specified on the command line will be used to build the
-RTCTree. If no name servers are specified, the RTCTree's default behaviour will
-be used.'''
+Record a running RT System in an RTSProfile specification.'''
     parser = optparse.OptionParser(usage=usage, version=rtshell.RTSH_VERSION)
     parser.add_option('-a', '--abstract', dest='abstract', action='store',
             type='string', default='RT System created by rtcryo.',

@@ -117,11 +117,7 @@ def search(cmd_path, full_path, options, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog <search path> [options]
-Find entries in the RTC tree matching given constraints.
-
-Equivalent to the UNIX 'find' command.
-
-''' + rtshell.RTSH_PATH_USAGE
+Find entries in the RTC tree matching given constraints.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-i', '--iname', dest='iname', action='append',

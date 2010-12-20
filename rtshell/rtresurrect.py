@@ -210,13 +210,7 @@ def resurrect(profile=None, xml=True, dry_run=False, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <RTSProfile specification file>
-Recreate an RT system using an RT system profile specified in XML or YAML.
-
-The input format will be determined automatically from the file extension.
-If the file has no extension, the input format is assumed to be XML.
-The output format can be over-ridden with the --xml or --yaml options.
-
-If no file is given, the profile is read from standard input.'''
+Recreate an RT system using an RTSProfile.'''
     parser = optparse.OptionParser(usage=usage, version=rtshell.RTSH_VERSION)
     parser.add_option('--dry-run', dest='dry_run', action='store_true',
             default=False, help="Print what will be done but don't actually "

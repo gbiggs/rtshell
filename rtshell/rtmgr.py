@@ -74,14 +74,7 @@ def delete_component(cmd_path, full_path, instance_name, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <path>
-Control a manager, adding and removing shared libraries and components. To
-set a mananger's configuration, use rtconf. To view a manager's information,
-use rtcat.
-
-If multiple commands are given, they are executed in the order unload, load,
-delete, create.
-
-''' + rtshell.RTSH_PATH_USAGE
+Create and remove components with a manager.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-c', '--create', dest='mod_name', action='store',

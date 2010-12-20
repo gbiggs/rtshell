@@ -170,32 +170,7 @@ def activate_set(set_name, cmd_path, full_path, options, tree=None):
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog <path> [options] [command] [args]
-Display and edit configuration parameters and sets.
-
-A command should be one of:
-    list, set, get, act
-If no command is specified, the list command will be executed.
-
-The list command takes no arguments.
-
-The set command requires a parameter name and a value as arguments. If no set
-is specified (using --set), the parameter is changed in the currently active
-configuration set. For example:
-    --set=outdoor set max_speed 4
-    set max_speed 2
-
-The get command requires an optional set name and a parameter name as
-arguments. If no set is specified (using --set), the parameter value from the
-currently activate configuration set is retrieved. For example:
-    --set=outdoor get max_speed
-        4
-    get max_speed
-        2
-
-The act command requires a single argument: the name of a configuration
-set to activate.
-
-''' + rtshell.RTSH_PATH_USAGE
+Display and edit configuration parameters and sets.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-a', '--all', dest='all', action='store_true',

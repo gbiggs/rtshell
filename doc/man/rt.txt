@@ -23,9 +23,9 @@ Options
 
 
 
+.. include:: common_opts.txt
 
 .. include:: common_body.txt
-
 
 Examples
 ========

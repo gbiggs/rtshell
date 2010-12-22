@@ -1,0 +1,71 @@
+======
+rtstop
+======
+
+-----------------
+stop an RT-System
+-----------------
+
+.. include:: ../../common/docinfo_block.txt
+
+Synopsis
+========
+
+rtstop [options] [RTSProfile file]
+
+Description
+===========
+
+Stop an RT-System, deactivating all involved components, using an
+RTSProfile.  Components are deactivated in the order specified in the
+RTSProfile. Any components not marked as ``required`` in the RTSProfile
+will be ignored if they are not running.
+
+If no file is given, the RTSProfile is read from standard input.
+
+XML format is used by default; to use RTSProfiles specified in YAML,
+specify ``--yaml``.
+
+Options
+=======
+
+--dry-run
+  Print what will be done but don't actually do anything.
+
+-x, --xml
+  Use XML input format.
+
+-y, --yaml
+  Use YAML input format.
+
+.. include:: ../../common/common_opts.txt
+
+Start plans
+===========
+
+.. include:: ../../common/start_stop_plans.txt
+
+.. include:: ../../common/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtstop sys.rtsys
+
+Stop the RT-System specified in the file ``sys.rtsys``.
+
+::
+
+  $ rtstop sys.rtsys --dry-run
+
+Display the actions that will be performed to stop the system.
+
+See Also
+========
+
+  ``rtcheck`` (1),
+  ``rtresurrect`` (1),
+  ``rtstart`` (1)
+

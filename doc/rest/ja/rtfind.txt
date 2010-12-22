@@ -1,0 +1,88 @@
+======
+rtfind
+======
+
+--------------------
+search the RTC Tree
+--------------------
+
+.. include:: ../../common/docinfo_block.txt
+
+Synopsis
+========
+
+rtfind <search path> [options]
+
+Description
+===========
+
+Searches the known name servers in the RTC Tree for components, managers
+and other such objects. Constraints can be placed on the search to limit
+the results.
+
+Options
+=======
+
+-i INAME, --iname=INAME
+  Case-insensitive name pattern. This option can be specified multiple
+  times.
+
+-m MAX_DEPTH, --maxdepth=MAX_DEPTH
+  Maximum depth to search down to in the tree. The default is to search
+  the entire tree.
+
+-n NAME, --name=NAME
+  Case-sensitive name pattern. This option can be specified multiple
+  times.
+
+-t TYPE, --type=TYPE
+  Type of object: ``c`` (component), ``d`` (directory), ``m`` (manager),
+  ``n`` (name server), ``z`` (zombie).
+
+.. include:: ../../common/common_opts.txt
+
+.. include:: ../../common/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtfind / -t c
+
+Find all components in the tree. The search starts at the root
+directory.
+
+::
+
+  $ rtfind . -t cm
+
+Find all components and managers in or below the current working
+directory.
+
+::
+
+  $ rtfind . -n 'Conso*' -type c
+
+Find all components in or below the current working directory whose
+names start with ``Conso``.
+
+::
+
+  $ rtfind . -i 'console?.rtc' -type c
+
+Find all components in or below the current working directory whose
+names start start with ``console`` (case insensitive) and end with
+``.rtc`` (case insensitive), with only one character in between.
+
+::
+
+  $ for c in `rtfind . -type c -m 1`; do rtact ${c}; done
+
+(POSIX only) Activate all components in the current working directory.
+
+See Also
+========
+
+  ``rtls`` (1)
+

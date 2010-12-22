@@ -1,0 +1,82 @@
+=====
+rtcon
+=====
+
+-------------
+connect ports
+-------------
+
+.. include:: ../../common/docinfo_block.txt
+
+Synopsis
+========
+
+rtcon [options] <source path> <destination path>
+
+Description
+===========
+
+Connects two data or service ports together.
+
+For data ports, the valid properties include::
+
+  - dataport.data_type
+  - dataport.dataflow_type
+  - dataport.interface_type
+  - dateport.subscription_type
+
+For service ports, the valid properties include::
+
+  - port.port_type
+
+Other properties may also be valid, depending on your OpenRTM
+implementation.
+
+Options
+=======
+
+-i ID, --id=ID
+  ID of the connection.
+
+-n NAME, --name=NAME
+  Name of the connection.
+
+-p PROPERTIES, --property=PROPERTIES
+  Connection properties.
+
+.. include:: ../../common/common_opts.txt
+
+.. include:: ../../common/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtcon /localhost/ConsoleIn0.rtc:out /localhost/ConsoleOut0.rtc:in
+
+Connect the ``out`` port of ``ConsoleIn0.rtc`` to the ``in`` port of
+``ConsoleOut0.rtc`` using the default connection properties.
+
+::
+
+  $ rtcon Motor0.rtc:out Sensor0.rtc:in --property
+    dataport.dataflow_type=pull
+
+Connect the ``out`` port of ``Motor0.rtc`` to the ``in`` port of
+``Sensor0.rtc`` using a ``pull`` connection.
+
+::
+
+  $ rtcon Motor0.rtc:out Sensor0.rtc:in -i con1 -n motor_data
+
+Connect the ``out`` port of ``Motor0.rtc`` to the ``in`` port of
+``Sensor0.rtc``, giving the connection the name ``motor_data`` and the
+ID ``con1``.
+
+See Also
+========
+
+  ``rtcat`` (1),
+  ``rtdis`` (1)
+

@@ -1,0 +1,65 @@
+========
+rtstodot
+========
+
+--------------------
+visualise RT-Systems
+--------------------
+
+.. include:: ../../common/docinfo_block.txt
+
+Synopsis
+========
+
+rtstodot [options] [RTSProfile file]
+
+Description
+===========
+
+Visualise RT-Systems using the dot file format from Graphviz.
+
+If no file is given, the profile is read from standard input.
+
+XML format is used by default; to use RTSProfiles specified in YAML,
+specify ``--yaml``.
+
+Options
+=======
+
+-x, --xml
+  Use XML input format.
+
+-y, --yaml
+  Use YAML input format.
+
+.. include:: ../../common/common_opts.txt
+
+.. include:: ../../common/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtstodot sys.rtsys | dot -T xlib
+
+Visualise the system stored in ``sys.rtsys``.
+
+::
+
+  $ rtstodot sys.rtsys | dot -T eps > sys.eps
+
+Visualise the system stored in ``sys.rtsys`` and save it as an
+Encapsulated PostScript file.
+
+::
+
+  $ rtcryo | rtstodot | dot -T xlib
+
+Visualise the currently running system.
+
+See Also
+========
+
+  ``rtcryo`` (1)
+

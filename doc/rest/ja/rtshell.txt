@@ -1,0 +1,192 @@
+=======
+rtshell
+=======
+
+------------------------------------
+command line tools for RT-Middleware
+------------------------------------
+
+.. include:: ../../common/docinfo_block.txt
+
+Commands
+========
+
+  rtact
+    Activate components.
+
+  rtcat
+    View component information and meta-data.
+
+  rtcheck
+    Check the consistency of a running system against an RTSProfile.
+
+  rtcomp
+    Create composite components.
+
+  rtcon
+    Connect ports together.
+
+  rtconf
+    View and change configuration parameters and sets.
+
+  rtcryo
+    Preserve a running system as an RTSProfile.
+
+  rtcwd
+    Change the current working directory in the RTC Tree.
+
+  rtdeact
+    Deactivate components.
+
+  rtdel
+    Delete registrations from a name server.
+
+  rtdis
+    Disconnect ports.
+
+  rtexit
+    Make an RT-Component stop running and exit.
+
+  rtfind
+    Search for components, managers, etc. in the known name servers.
+
+  rtinject
+    Inject data into an input port.
+
+  rtlog
+    Record and replay logs of data sent by ports.
+
+  rtls
+    List the current working directory in the RTC Tree.
+
+  rtmgr
+    Use managers to create and delete RT-Components.
+
+  rtprint
+    Display the data being written by an output port.
+
+  rtpwd
+    Print the current working directory in the RTC Tree.
+
+  rtreset
+    Reset components in the error state.
+
+  rtresurrect
+    Restore a running system from an RTSProfile.
+
+  rtstart
+    Start an entire RT-System using an RTSProfile.
+
+  rtstodot
+    Visualise the running RT-System using the dot file format.
+
+  rtstop
+    Stop an entire RT-System using an RTSProfile.
+
+  rtteardown
+    Remove all connections in an RT-System using an RTSProfile.
+
+
+RTC Tree
+========
+
+The commands operate on the RTC Tree. This is a file system-like tree
+built by parsing name servers to find directories, components and
+managers. It can be treated like a normal file system.
+
+Name servers are treated as directories off the root directory, ``/``.
+Below them are 'files' and sub-directories. A sub-directory represents a
+naming context below the root naming context of a name server. Files are
+components and managers.
+
+The name servers parsed to build the tree are taken from two sources.
+The first is the path given to a command. This is appended to the
+current working directory of the tree, and the first element is treated
+as a name server.
+
+The second source for name servers is the ``RTCTREE_NAMESERVERS``
+environment variable. This is a semi-colon separated list of name server
+addresses.
+
+
+Shell completion
+================
+
+Users of a Bash-compatible shell can use the included completion script
+to make using the commands easier. The script is installed in
+``${prefix}/share/rtshell``. Run the following command to load it::
+
+  $ source bash_completion
+
+This can be added to the ``~/.bashrc`` file to have it loaded in every
+new shell instance. Here are some examples of completion::
+
+  $ rtcwd [TAB]
+  $ rtcwd localhost/
+  $ rtcwd localhost/[TAB]
+  $ rtcwd localhost/kenroke.host_cxt/
+  $ rtcwd localhost/kenroke.host_cxt/[TAB][TAB]
+  ConsoleIn0.rtc  ConfigSample0.rtc  manager.mgr  Sensor0.rtc
+  $ rtcwd localhost/kenroke.host_cxt/[ENTER]
+  $ rtconf ConfigSample0.rtc set [TAB]
+  double_param0  double_param1  int_param0     int_param1     str_param0
+  str_param1     vector_param0
+  $ rtcon Sensor0.rtc:[TAB]
+  in   out
+
+
+System requirements
+===================
+
+rtshell requires **rtctree 3.0**. It must be installed for the commands
+to function.
+
+The commands that work with RTSProfile files require **rtsprofile 2.0**.
+It must be installed for these commands to function.
+
+rtshell uses the new string formatting operations that were introduced
+in Python 2.6. It will not function with an earlier version of Python.
+It has not been tested with Python 3 and it is likely that several
+changes will be necessary to make it function using this version of
+Python.
+
+``rtinject``, ``rtlog`` and ``rtprint`` require the Python version of
+OpenRTM-aist.
+
+For Ubuntu users using a version of Ubuntu prior to 9.04, a suitable
+Python version must be installed by hand. Consider upgrading to Ubuntu
+9.04 or later (10.04 offers LTS).
+
+
+.. include:: ../../common/common_body.txt
+
+
+See also
+========
+
+  ``rtact`` (1),
+  ``rtcat`` (1),
+  ``rtcheck`` (1),
+  ``rtcomp`` (1),
+  ``rtcon`` (1),
+  ``rtconf`` (1),
+  ``rtcryo`` (1),
+  ``rtcwd`` (1),
+  ``rtdeact`` (1),
+  ``rtdel`` (1),
+  ``rtdis`` (1),
+  ``rtexit`` (1),
+  ``rtfind`` (1),
+  ``rtinject`` (1),
+  ``rtlog`` (1),
+  ``rtls`` (1),
+  ``rtmgr`` (1),
+  ``rtprint`` (1),
+  ``rtpwd`` (1),
+  ``rtreset`` (1),
+  ``rtresurrect`` (1),
+  ``rtstart`` (1),
+  ``rtstodot`` (1),
+  ``rtstop`` (1),
+  ``rtteardown`` (1)
+

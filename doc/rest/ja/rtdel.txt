@@ -1,0 +1,75 @@
+=====
+rtdel
+=====
+
+--------------------------
+delete name server entries
+--------------------------
+
+.. include:: ../../common/docinfo_block.txt
+
+Synopsis
+========
+
+rtdel [options] <path>
+
+Description
+===========
+
+Deletes an object's registration from a name server. This command will
+not shut down the object itself. If another reference to the object does
+not exist, it will no longer be accessible. Care must be taken when
+deleting naming contexts and managers not to unlink a large section of
+the tree, as you will not be able to get it back.
+
+This command is particularly useful to remove zombie registrations. It
+can mass-remove all known zombies in a single pass.
+
+Options
+=======
+
+-z, --zombies
+  Delete only zombies.
+
+.. include:: ../../common/common_opts.txt
+
+.. include:: ../../common/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtdel /localhost/Motor0.rtc
+
+Delete the ``Motor0.rtc`` component from the ``localhost`` name server.
+The component will not be shut down.
+
+::
+
+  $ rtdel -z /localhost/Motor0.rtc
+
+Delete the ``Motor0.rtc`` component from the ``localhost`` name server,
+but only if it is a zombie.
+
+::
+
+  $ rtdel /localhost/local.host_cxt
+
+Delete the ``local.host_cxt`` naming context from the ``localhost`` name
+server. Any components and managers registered below the context will
+become inaccessible.
+
+::
+
+  $ rtdel -z
+
+Delete all known zombies from all known name servers.
+
+
+See Also
+========
+
+  ``rtls`` (1),
+  ``rtmgr`` (1)
+

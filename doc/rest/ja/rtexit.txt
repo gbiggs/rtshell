@@ -1,0 +1,43 @@
+======
+rtexit
+======
+
+-----------------------
+shut down RT-Components
+-----------------------
+
+.. include:: ../../common/docinfo_block.txt
+
+Synopsis
+========
+
+rtexit [options] <path>
+
+Description
+===========
+
+Tell a running RT-Component to exit. The component will execute its
+shutdown methods, including the relevant callbacks, clean up its
+resources, and exit.
+
+Options
+=======
+
+.. include:: ../../common/common_opts.txt
+
+.. include:: ../../common/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtexit /localhost/ConsoleOut0.rtc
+
+Tell the ``ConsoleOut0.rtc`` component to exit.
+
+See Also
+========
+
+  ``rt`` (1)
+

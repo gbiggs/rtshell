@@ -1,0 +1,68 @@
+===========
+rtresurrect
+===========
+
+--------------------------------------------
+resurrect RT-Systems from stored RTSProfiles
+--------------------------------------------
+
+.. include:: ../../common/docinfo_block.txt
+
+Synopsis
+========
+
+rtresurrect [options] [RTSProfile file]
+
+Description
+===========
+
+Load an RTSProfile and use it with already-running components to restore
+an RT-System. The connections between the components and the
+configuration parameter values are restored. Any components not marked
+as ``required`` in the RTSProfile will be ignored if they are not
+running.
+
+If no file is given, the RTSProfile is read from standard input.
+
+XML format is used by default; to use RTSProfiles specified in YAML,
+specify ``--yaml``.
+
+Options
+=======
+
+--dry-run
+  Print what will be done but don't actually do anything.
+
+-x, --xml
+  Use XML input format.
+
+-y, --yaml
+  Use YAML input format.
+
+.. include:: ../../common/common_opts.txt
+
+.. include:: ../../common/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtresurrect sys.rtsys
+
+Recreate the RT-System specified in the file ``sys.rtsys``.
+
+::
+
+  $ rtresurrect sys.rtsys --dry-run
+
+Display the actions that will be performed to recreate the system.
+
+See Also
+========
+
+  ``rtcheck`` (1),
+  ``rtcon`` (1),
+  ``rtconf`` (1),
+  ``rtstart`` (1)
+

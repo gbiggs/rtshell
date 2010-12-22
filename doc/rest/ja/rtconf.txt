@@ -1,0 +1,173 @@
+======
+rtconf
+======
+
+-------------------------------
+manage configuration parameters
+-------------------------------
+
+.. include:: ../../common/docinfo_block.txt
+
+Synopsis
+========
+
+rtconf <path> [options] [command] [args]
+
+Description
+===========
+
+Display and edit configuration parameters and sets.
+
+A command should be one of:
+
+  - list
+  - set
+  - get
+  - act
+
+If no command is specified, the list command will be executed.
+
+::
+
+  list
+
+The ``list`` command displays the configuration sets and parameters. It
+takes no arguments. By default, hidden sets (sets who's name is
+surrounded by ``__``) are not displayed.
+
+::
+
+  set <parameter> <value>
+
+The ``set`` command changes the value of a configuration parameter in
+one set. It requires a parameter name and a value as arguments.  If no
+configuration set is specified (using ``--set``), the parameter is
+changed in the currently active configuration set.
+
+::
+
+  get <parameter>
+
+The ``get`` command prints the value of a configuration parameter in one
+configuration set. It requires a parameter name as its argument. If no
+configuration set is specified (using ``--set``), the parameter value
+from the currently activate configuration set is retrieved.
+
+::
+
+  act <set>
+
+The act command requires a configuration set as its argument. It
+activates that set.
+
+Options
+=======
+
+-a, --all
+  Do not ignore hidden sets. This option must be specified to work with
+  hidden configuration sets.
+
+-l
+  Show more information.
+
+-s SET_NAME, --set=SET_NAME
+  Choose the configuration set to work with. If not specified, the
+  default set is used.
+
+.. include:: ../../common/common_opts.txt
+
+.. include:: ../../common/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtconf /localhost/ConfigSample0.rtc list
+  +default*
+  +mode0
+  +mode1
+
+Display the configuration sets in the ``ConfigSample0.rtc`` component.
+
+::
+
+  $ rtconf /localhost/ConfigSample0.rtc -l list
+  -default*
+    double_param0  0.99
+    double_param1  -0.99
+  ...
+
+Display the configuration sets and their parameters in the
+``ConfigSample0.rtc`` component.
+
+::
+
+  $ rtconf /localhost/ConfigSample0.rtc -a list
+  +__constraints__
+  +__widget__
+  +default*
+  +mode0
+  +mode1
+
+Display the configuration sets and their parameters in the
+``ConfigSample0.rtc`` component, including hidden sets.
+
+::
+
+  $ rtconf /localhost/ConfigSample0.rtc -l -s default list
+  -__constraints__
+    double_param0  0<=x<=100
+    double_param1
+  ...
+
+Display the parameters of the ``default`` configuration set in the
+``ConfigSample0.rtc`` component.
+
+::
+
+  $ rtconf /localhost/ConfigSample0.rtc set int_param0 42
+
+Change the value of the ``int_param0`` parameter to 42 in the
+currently-active configuration set.
+
+::
+
+  $ rtconf /localhost/ConfigSample0.rtc -s mode0 set int_param0 42
+
+Change the value of the ``int_param0`` parameter to 42 in the ``mode0``
+set.
+
+::
+
+  $ rtconf /localhost/ConfigSample0.rtc get int_param0
+  0
+
+Get the value of the ``int_param0`` parameter in the currently-active
+configuration set.
+
+::
+
+  $ rtconf /localhost/ConfigSample0.rtc -s mode0 get int_param0
+  12345
+
+Get the value of the ``int_param0`` parameter in the ``mode0``
+configuration set.
+
+::
+
+  $ rtconf /localhost/ConfigSample0.rtc act mode1
+
+Activate the ``mode1`` configuration set.
+
+::
+
+  $ rtconf /localhost/ConfigSample0.rtc -a act __widget__
+
+Activate the ``__widget__`` configuration set.
+
+See Also
+========
+
+  ``rtcat`` (1)
+

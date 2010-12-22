@@ -1,0 +1,95 @@
+======
+rtcryo
+======
+
+------------------------------
+save RT-Systems to RTSProfiles
+------------------------------
+
+.. include:: ../../common/docinfo_block.txt
+
+Synopsis
+========
+
+rtcryo [options] [name servers]
+
+Description
+===========
+
+Analyses a running RT-System and saves it to an RTSProfile. The
+connections between the components and their current configuration
+parameters are saved. Only components with connections are considered to
+be a part of the RT-System.
+
+If no filename is given, the RTSProfile is written to standard output.
+
+XML format is used by default; to use RTSProfiles specified in YAML,
+specify ``--yaml``.
+
+Options
+=======
+
+-a ABSTRACT, --abstract=ABSTRACT
+  Brief description of the RT-System.
+
+-n SYSNAME, --system-name=SYSNAME
+  Name of the RT-System. The default is ``RTSystem``.
+
+-o OUTPUT, --output=OUTPUT
+  Output file name. If none is specified, stdout is used.
+
+-v VERSION, --system-version=VERSION
+  Version of the RT-System. The default is ``0``.
+
+-e VENDOR, --vendor=VENDOR
+  Vendor of the RT-System.
+
+-x, --xml
+  Use XML input format.
+
+-y, --yaml
+  Use YAML input format.
+
+.. include:: ../../common/common_opts.txt
+
+.. include:: ../../common/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtcryo
+
+Save the components that are part of the RT-System from all known name
+servers, and print the RTSProfile to stdout.
+
+::
+
+  $ rtcryo -o sys.rtsys
+
+Save the components that are part of the RT-System from all known name
+servers, and save the RTSProfile to the file ``sys.rtsys``.
+
+::
+
+  $ rtcryo localhost
+
+Save the components that are part of the RT-System from only the
+``localhost`` name server to the RTSProfile.
+
+::
+
+  $ rtcryo -n 'mysystem' -v 1.0
+
+Set the name of the system in the RTSProfile to ``mysystem`` and the
+RT-System version to ``1.0``.
+
+See Also
+========
+
+  ``rtcheck`` (1),
+  ``rtcon`` (1),
+  ``rtconf`` (1),
+  ``rtstart`` (1)
+

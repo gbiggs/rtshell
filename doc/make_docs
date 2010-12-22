@@ -1,0 +1,136 @@
+#!/usr/bin/env python
+
+
+import optparse
+import os
+import os.path
+import subprocess
+import sys
+import traceback
+
+
+def vprint(verb, msg):
+    if verb:
+        print >>sys.stderr, msg
+
+
+def call_process(args):
+    p = subprocess.Popen(args, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+    output = p.communicate()
+    output = (output[0].strip(), output[1].strip())
+    return_code = p.returncode
+    return output[0], output[1], return_code
+
+
+def compile_docs(src_dir, dest_dir, cmd, ext, verb=False):
+    vprint(verb, 'Compiling from {0} to {1}'.format(src_dir, dest_dir))
+    os.makedirs(dest_dir)
+    for f in os.listdir(src_dir):
+        src = os.path.join(src_dir, f)
+        if os.path.isfile(src):
+            dest = os.path.join(dest_dir, os.path.splitext(f)[0] + ext)
+            vprint(verb, 'Compiling {0} to {1}'.format(src, dest))
+            stdout, stderr, ret = call_process([cmd, src, dest])
+            if ret != 0:
+                raise RuntimeError('Failed to compile {0} to {1}:\n{2}'.format(
+                    src, dest, stderr))
+
+
+def lang_dir(lang='en'):
+    if lang == 'en':
+        return ''
+    elif lang == 'ja':
+        return 'ja'
+
+
+def rest_dir():
+    return 'rest'
+
+
+def man_dir():
+    return 'man'
+
+
+def html_dir():
+    return 'html'
+
+
+def pdf_dir():
+    return 'pdf'
+
+
+def generate_man(lang='en', verb=False):
+    src = os.path.join(rest_dir(), lang_dir(lang))
+    dest = os.path.join(man_dir(), lang_dir(lang), 'man1')
+    vprint(verb, 'Generating man pages for language {0}'.format(lang))
+    compile_docs(src, dest, 'rst2man.py', '.1', verb=verb)
+
+
+def generate_html(lang='en', verb=False):
+    raise NotImplementedError
+
+
+def generate_pdf(lang='en', verb=False):
+    raise NotImplementedError
+
+
+def generate_docs(doctype='man', lang='en', verb=False):
+    if doctype == 'man':
+        generate_man(lang=lang, verb=verb)
+    elif doctype == 'html':
+        generate_html(lang=lang, verb=verb)
+    elif doctype == 'pdf':
+        generate_pdf(lang=lang, verb=verb)
+    else:
+        raise ValueError('Unknown documentation type: {0}'.format(doctype))
+
+
+def check_timestamps(lang='en', verb=False):
+    pass
+
+
+def main(argv):
+    usage = ('Usage:: %prog [options] [type]\n'
+        'Generate documentation from the reStructuredText source files.\n'
+        'All languages will be generated if none are specified.')
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option('-e', dest='en', action='store_true', default=False,
+            help='Generate the English documentation.')
+    parser.add_option('-j', dest='ja', action='store_true', default=False,
+            help='Generate the Japanese documentation.')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+            default=False, help='Output verbose information.')
+
+    try:
+        options, args = parser.parse_args()
+    except optparse.OptionError, e:
+        print >>sys.stderr, 'OptionError:', e
+        return 1
+
+    if not options.en and not options.ja:
+        langs = ['en', 'ja']
+    else:
+        langs = []
+        if options.en:
+            langs.append('en')
+        if options.ja:
+            langs.append('ja')
+    print 'Languages: {0}'.format(langs)
+
+    try:
+        for l in langs:
+            check_timestamps(l, verb=options.verbose)
+            for doctype in args:
+                generate_docs(doctype=doctype, lang=l, verb=options.verbose)
+    except Exception, e:
+        if options.verbose:
+            traceback.print_exc()
+        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
+        return 1
+    return 0
+
+
+if __name__ == '__main__':
+    main(sys.argv)
+

@@ -1,12 +1,13 @@
 Paths
 =====
 
-A path is the address of object. Name servers and naming contexts on
-name servers are considered directories. Managers and RT-Components are
-considered objects. As with the POSIX ``cat`` command, the path
-specified as an argument to commands is appended to the current rtshell
-working directory, which is stored in the RTCSH_CWD environment variable
-and changeable using the rtcwd command.
+``rtshell`` uses *paths* to indicate objects in the RTC Tree. A path is
+the address of object. Name servers and naming contexts on name servers
+are considered directories. Managers and RT-Components are considered
+objects. As with the POSIX ``cat`` command, the path specified as an
+argument to commands is appended to the current rtshell working
+directory, which is stored in the RTCSH_CWD environment variable and
+changeable using the rtcwd command.
 
 The available paths depend on the known name servers at the time the
 command is executed. This is a combination of the servers listed in the

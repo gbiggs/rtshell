@@ -1,0 +1,63 @@
+==========
+rtteardown
+==========
+
+--------------------------------------
+remove all connections in an RT-System
+--------------------------------------
+
+.. include:: docinfo_block.txt
+
+Synopsis
+========
+
+rtteardown [options] [RTSProfile file]
+
+Description
+===========
+
+Tears down an RT-System. Loads an RTSProfile and use it to remove the
+connections that make up the RT-System from running components.
+
+If no file is given, the RTSProfile is read from standard input.
+
+XML format is used by default; to use RTSProfiles specified in YAML,
+specify ``--yaml``.
+
+Options
+=======
+
+--dry-run
+  Print what will be done but don't actually do anything.
+
+-x, --xml
+  Use XML input format.
+
+-y, --yaml
+  Use YAML input format.
+
+.. include:: common_opts.txt
+
+.. include:: common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtteardown sys.rtsys
+
+Destroy the RT-System specified in the file ``sys.rtsys``.
+
+::
+
+  $ rtteardown sys.rtsys --dry-run
+
+Display the actions that will be performed to destroy the system.
+
+See Also
+========
+
+  ``rtcheck`` (1),
+  ``rtresurrect`` (1)
+

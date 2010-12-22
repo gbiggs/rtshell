@@ -89,6 +89,13 @@ showing information such as the status of components.
 
 Get a long listing of all objects in the ``localhost`` name server.
 
+::
+
+  $ watch -n 1 rtls -l
+
+(POSIX only) Display the status of all components in the current working
+directory, updating the display once per second.
+
 
 See Also
 ========

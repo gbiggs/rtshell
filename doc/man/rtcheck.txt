@@ -19,22 +19,24 @@ Description
 Checks the consistency of a running system against an RTSProfile. Identifies
 errors including missing connections and components in the incorrect state.
 
+XML format is used by default; to use RTSProfiles specified in YAML,
+specify ``--yaml``.
+
 Options
 =======
 
 --dry-run
-  Print what will be done but don't actually do anything. [Default:
-  False]
+  Print what will be done but don't actually do anything.
 
 -s STATE, --state=STATE
-  The expected state of the RT Components in the system. [Default:
-  Active]
+  The expected state of the RT Components in the system. The default is
+  ``Active``.
 
 -x, --xml
-  Use XML input format. [Default: True]
+  Use XML input format.
 
 -y, --yaml
-  Use YAML input format. [Default: False]
+  Use YAML input format.
 
 .. include:: common_opts.txt
 

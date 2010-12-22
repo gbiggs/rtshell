@@ -110,8 +110,8 @@ def main(argv=None, tree=None):
 Start an RT system using an RTSProfile.'''
     parser = optparse.OptionParser(usage=usage, version=rtshell.RTSH_VERSION)
     parser.add_option('--dry-run', dest='dry_run', action='store_true',
-            default=False, help="Print what will be done but don't actually '\
-            'do anything. [Default: %default]")
+            default=False, help="Print what will be done but don't actually "
+            "do anything. [Default: %default]")
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
             help='Output verbose information. [Default: %default]')

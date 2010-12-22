@@ -16,14 +16,14 @@ rtact [options] <path>
 Description
 ===========
 
-Activates the specified RT-Component, provided it is in the inactive
+Activates the specified RT-Component, provided it is in the ``inactive``
 state.
 
 Options
 =======
 
 -e EC_INDEX, --exec_context=EC_INDEX
-    Index of the execution context to change state in. [Default: ``0``]
+    Index of the execution context to change state in. The default is 0.
 
 .. include:: common_opts.txt
 

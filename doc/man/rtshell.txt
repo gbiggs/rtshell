@@ -32,6 +32,9 @@ Commands
   rtcryo
     Preserve a running system as an RTSProfile.
 
+  rtcwd
+    Change the current working directory in the RTC Tree.
+
   rtdeact
     Deactivate components.
 
@@ -168,6 +171,7 @@ See also
   ``rtcon`` (1),
   ``rtconf`` (1),
   ``rtcryo`` (1),
+  ``rtcwd`` (1),
   ``rtdeact`` (1),
   ``rtdel`` (1),
   ``rtdis`` (1),

@@ -228,8 +228,7 @@ Record a running RT System in an RTSProfile specification.'''
             help='Name of the RT System. [Default: %default]')
     parser.add_option('-o', '--output', dest='output', action='store',
             type='string', default='-',
-            help='Output file name. Specify - for standard out. [Default: '\
-            'standard out]')
+            help='Output file name. [Default: standard out]')
     parser.add_option('-v', '--system-version', dest='version', action='store',
             type='string', default='0',
             help='Version of the RT System. [Default: %default]')

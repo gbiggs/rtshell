@@ -101,7 +101,7 @@ def teardown(profile=None, xml=True, dry_run=False, tree=None):
 
 
 def main(argv=None, tree=None):
-    usage = '''Usage: %prog [options] <RTSProfile specification file>
+    usage = '''Usage: %prog [options] [RTSProfile file]
 Destroy an RT system using an RTSProfile.'''
     parser = optparse.OptionParser(usage=usage, version=rtshell.RTSH_VERSION)
     parser.add_option('--dry-run', dest='dry_run', action='store_true',

@@ -1,0 +1,75 @@
+=====
+rtdis
+=====
+
+----------------
+disconnect ports
+----------------
+
+.. include:: docinfo_block.txt
+
+Synopsis
+========
+
+rtdis [options] <source path> [destination path]
+
+Description
+===========
+
+Removes connections from between ports. A single connection can be
+removed, or all connections from a single port or all of a component's
+ports.
+
+Options
+=======
+
+-i ID, --id=ID
+  ID of the connection.
+
+.. include:: common_opts.txt
+
+.. include:: common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtdis /localhost/ConsoleIn0.rtc:out /localhost/ConsoleOut0.rtc:in
+
+Remove all connections between the ``out`` port of ``ConsoleIn0.rtc``
+and the ``in`` port of ``ConsoleOut0.rtc``.
+
+::
+
+  $ rtdis /localhost/ConsoleIn0.rtc:out
+
+Remove all connections connected to the ``out`` port of
+``ConsoleIn0.rtc``.
+
+::
+
+  $ rtdis /localhost/ConsoleIn0.rtc
+
+Remove all connections connected to all ports of ``ConsoleIn0.rtc``.
+
+::
+
+  $ rtdis -i con1 /localhost/ConsoleIn0.rtc:out
+
+Remove the connection connected to the ``out`` port of
+``ConsoleIn0.rtc`` that has the ID ``con1``.
+
+::
+
+  $ rtdis -i con1 /localhost/ConsoleIn0.rtc
+
+Remove the connection connected to any port of ``ConsoleIn0.rtc`` that
+has the ID ``con1``.
+
+See Also
+========
+
+  ``rtcat`` (1),
+  ``rtcon`` (1)
+

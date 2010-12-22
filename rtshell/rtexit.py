@@ -57,8 +57,8 @@ def exit_target(cmd_path, full_path, options, tree=None):
 
 
 def main(argv=None, tree=None):
-    usage = '''Usage: %prog [options] [path]
-Make a component exit, cleaning up its execution contexts and children.'''
+    usage = '''Usage: %prog [options] <path>
+Make a component exit.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',

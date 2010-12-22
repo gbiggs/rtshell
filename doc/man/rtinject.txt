@@ -1,33 +1,54 @@
-===
-rt
-===
+========
+rtinject
+========
 
--------------------
-
--------------------
+----------------------
+inject data into ports
+----------------------
 
 .. include:: docinfo_block.txt
 
 Synopsis
 ========
 
-
+rtinject [options] <path1:port1> [path2:port2...]
 
 Description
 ===========
 
-By default, the value is written once. Options are available to write a set
-number of times, or write regularly for a specified length of time.
+Writes constant values to one or more ports. By default, the value is
+written once. Options are available to write a set number of times, or
+write regularly for a specified length of time.
 
-''' + rtshell.RTSH_PATH_USAGE + '''
-A connection will be made to the port using the default connection settings
-compatible with the port.'''
-
+A connection will be made to the port using the default connection
+settings compatible with the port.
 
 Options
 =======
 
+-c CONST, --const=CONST
+  The constant value to send, as a Python expression. If not specified,
+  values will be read from stdin. Any occurances of ``{time}`` in the
+  constant expression will be replaced with the current time.
 
+-m MODULES, --mod=MODULES
+  Extra modules to import. If automatic module loading struggles with
+  the constant's data types, try listing the modules here. The module
+  and its ``__POA`` partner will be imported.
+
+-n MAX, --number=MAX
+  Specify the number of times to write to the port. The default is to
+  write once. Specify -1 to continuously write forever.
+
+-p PATHS, --path=PATHS
+  Extra module search paths to add to the ``PYTHONPATH``.
+
+-r RATE, --rate=RATE
+  Specify the rate in Hertz at which to emit data.
+
+-t TIMEOUT, --timeout=TIMEOUT
+  Write data for this many seconds, then stop. This option overrides
+  ``--number``.
 
 .. include:: common_opts.txt
 
@@ -38,11 +59,82 @@ Examples
 
 ::
 
-  $ 
+  $ rtinject /localhost/ConsoleOut0.rtc:in
+
+Inject the first value received at stdin into the ``in`` port of
+``ConsoleOut0.rtc``.
+
+::
+
+  $ rtinject /localhost/ConsoleOut0.rtc:in -c
+    'RTC.TimedLong({time}, 42)'
+
+Inject the constant ``42`` with the current system time into the ``in``
+port of ``ConsoleOut0.rtc``. Note the quotes used to protect the Python
+expression.
+
+::
+
+  $ rtinject /localhost/ConsoleOut0.rtc:in -c
+    'RTC.TimedLong(RTC.Time(1, 0), 42)'
+
+Inject the constant ``42`` with a timestamp of 1 second into the ``in``
+port of ``ConsoleOut0.rtc``.
+
+::
+
+  $ rtinject /localhost/ConsoleOut0.rtc:in -n 5
+
+Inject the first five values received at stdin into the ``in`` port of
+``ConsoleOut0.rtc``.
+
+::
+
+  $ rtinject /localhost/ConsoleOut0.rtc:in -n 5 -c
+    'RTC.TimedLong({time}, 42)'
+
+Inject the constant ``42`` with the current system time into the ``in``
+port of ``ConsoleOut0.rtc`` five times.
+
+::
+
+  $ rtinject /localhost/ConsoleOut0.rtc:in -t 5 -r 10 -c
+    'RTC.TimedLong({time}, 42)'
+
+Inject the constant ``42`` with the current system time into the ``in``
+port of ``ConsoleOut0.rtc`` at 10Hz for five seconds.
+
+::
+
+  $ rtinject /localhost/MyComp0.rtc:in -c 'MyData.MyVal(84)'
+
+Inject the constant ``MyData.MyVal(84)`` ``in`` port of ``MyComp0.rtc``
+once. The data type is specified in a Python module in the
+``PYTHONPATH``, which was generated from an OMG IDL file.
+
+::
+
+  $ rtinject /localhost/MyComp0.rtc:in -p /usr/local/mods
+    -c 'MyData.MyVal(84)'
+
+Inject the constant ``MyData.MyVal(84)`` ``in`` port of ``MyComp0.rtc``
+once. The data type is specified in a Python module that is not in the
+``PYTHONPATH``. The path is specified using the ``-p`` option.
+
+::
+
+  $ rtinject /localhost/MyComp0.rtc:in -p /usr/local/mods -m mymod
+    -c 'MyData.MyVal(84)'
+
+Inject the constant ``MyData.MyVal(84)`` ``in`` port of ``MyComp0.rtc``
+once. The data type is specified in the ``mymod`` Python module, which
+is in the ``PYTHONPATH``.
 
 
 See Also
 ========
 
-  ``rt`` (1)
+  ``rtcat`` (1),
+  ``rtlog`` (1),
+  ``rtprint`` (1)
 

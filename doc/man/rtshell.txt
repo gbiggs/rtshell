@@ -51,7 +51,7 @@ Commands
     Inject data into an input port.
 
   rtlog
-    Record and replay logs of data send by ports.
+    Record and replay logs of data sent by ports.
 
   rtls
     List the current working directory in the RTC Tree.

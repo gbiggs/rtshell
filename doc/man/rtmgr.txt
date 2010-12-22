@@ -1,33 +1,52 @@
-===
-rt
-===
+=====
+rtmgr
+=====
 
--------------------
-
--------------------
+----------------
+utilise managers
+----------------
 
 .. include:: docinfo_block.txt
 
 Synopsis
 ========
 
-
+rtmgr [options] <path>
 
 Description
 ===========
 
-Control a manager, adding and removing shared libraries and components. To
-set a mananger's configuration, use rtconf. To view a manager's information,
-use rtcat.
+Control a manager, adding and removing shared libraries and components.
+Components can be instantiated from shared libraries loaded into the
+manager.
 
-If multiple commands are given, they are executed in the order unload, load,
-delete, create.
+To set a mananger's configuration, use ``rtconf(1)``. To view a
+manager's information, use ``rtcat(1)``.
+
+If multiple commands are given, they are executed in the order unload,
+load, delete, create.
 
 
 Options
 =======
 
+-c MOD_NAME, --create=MOD_NAME
+  Create a new component instance from the specified loaded module.
+  Properties of the new component an be specified after the module name
+  prefixed with a question mark.
 
+-d INSTANCE_NAME, --delete=INSTANCE_NAME
+  Shut down and delete the specified component instance.
+
+-i INIT_FUNC, --init-func=INIT_FUNC
+  Initialisation function for use with the ``--load`` option.
+
+-l MOD_PATH, --load=MOD_PATH
+  Load the module into the manager. An initialisation function must be
+  specified using the ``--init-func`` option.
+
+-u MOD_PATH_U, --unload=MOD_PATH_U
+  Unload the module from the manager.
 
 .. include:: common_opts.txt
 
@@ -38,11 +57,42 @@ Examples
 
 ::
 
-  $ 
+  $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so
+    -i mycomp_init
+
+Load the ``mycomp.so`` shared library into the manager.
+
+::
+
+  $ rtmgr /localhost/manager.mgr -c mycomp
+
+Instantiate a new component from the ``mycomp`` shared library.
+
+::
+
+  $ rtmgr /localhost/manager.mgr -d MyComp0
+
+Shut down and delete the component named ``MyComp0`` from the manager.
+
+::
+
+  $ rtmgr /localhost/manager.mgr -u /usr/local/lib/mycomp.so
+
+Unload the ``mycomp.so`` shared library from the manager.
+
+::
+
+  $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so
+    -i mycomp_init -c mycomp
+
+Load the ``mycomp.so`` shared library into the manager and create a
+component from it.
 
 
 See Also
 ========
 
-  ``rt`` (1)
+  ``rtcat`` (1),
+  ``rtconf`` (1),
+  ``rtexit`` (1)
 

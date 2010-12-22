@@ -136,28 +136,27 @@ Write a constant value to one or more ports.'''
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-c', '--const', dest='const', action='store',
             type='string', default='',
-            help='The constant value to send, as a Python expression. \
-If not specified, values will be read from standard in.')
+            help='The constant value to send, as a Python expression. If '
+            'not specified, values will be read from standard in.')
     parser.add_option('-m', '--mod', dest='modules', action='append',
             type='string', default=[],
-            help='Extra modules to import. If automatic module loading '\
-            'struggles with your data types, try listing the modules here. '\
+            help='Extra modules to import. If automatic module loading '
+            'struggles with your data types, try listing the modules here. '
             'The module and its __POA partner will be imported.')
     parser.add_option('-n', '--number', dest='max', action='store',
             type='int', default='1',
-            help='Specify the number of times to write to the port. \
-[Default: %default]')
+            help='Specify the number of times to write to the port. '
+            '[Default: %default]')
     parser.add_option('-p', '--path', dest='paths', action='append',
             type='string', default=[],
             help='Extra module search paths to add to the PYTHONPATH.')
     parser.add_option('-r', '--rate', dest='rate', action='store',
             type='float', default=1.0,
-            help='Specify the rate in Hertz at which to emit data. \
-[Default: %default]')
+            help='Specify the rate in Hertz at which to emit data. '
+            '[Default: %default]')
     parser.add_option('-t', '--timeout', dest='timeout', action='store',
-            type='float', default=-1, help='Write data for this many seconds, \
-then stop. Specify -1 for no timeout. This option overrides --number. \
-[Default: %default]')
+            type='float', default=-1, help='Write data for this many seconds, '
+            'then stop. This option overrides --number. [Default: %default]')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
             help='Output verbose information. [Default: %default]')

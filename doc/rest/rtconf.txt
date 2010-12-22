@@ -6,7 +6,7 @@ rtconf
 manage configuration parameters
 -------------------------------
 
-.. include:: docinfo_block.txt
+.. include:: ../common/docinfo_block.txt
 
 Synopsis
 ========
@@ -74,9 +74,9 @@ Options
   Choose the configuration set to work with. If not specified, the
   default set is used.
 
-.. include:: common_opts.txt
+.. include:: ../common/common_opts.txt
 
-.. include:: common_body.txt
+.. include:: ../common/common_body.txt
 
 Examples
 ========

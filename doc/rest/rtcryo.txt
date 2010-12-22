@@ -6,7 +6,7 @@ rtcryo
 save RT-Systems to RTSProfiles
 ------------------------------
 
-.. include:: docinfo_block.txt
+.. include:: ../common/docinfo_block.txt
 
 Synopsis
 ========
@@ -50,9 +50,9 @@ Options
 -y, --yaml
   Use YAML input format.
 
-.. include:: common_opts.txt
+.. include:: ../common/common_opts.txt
 
-.. include:: common_body.txt
+.. include:: ../common/common_body.txt
 
 Examples
 ========

@@ -6,7 +6,7 @@ rtfind
 search the RTC Tree
 --------------------
 
-.. include:: docinfo_block.txt
+.. include:: ../common/docinfo_block.txt
 
 Synopsis
 ========
@@ -39,9 +39,9 @@ Options
   Type of object: ``c`` (component), ``d`` (directory), ``m`` (manager),
   ``n`` (name server), ``z`` (zombie).
 
-.. include:: common_opts.txt
+.. include:: ../common/common_opts.txt
 
-.. include:: common_body.txt
+.. include:: ../common/common_body.txt
 
 Examples
 ========

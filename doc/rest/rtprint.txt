@@ -6,7 +6,7 @@ rtprint
 display data from ports
 -----------------------
 
-.. include:: docinfo_block.txt
+.. include:: ../common/docinfo_block.txt
 
 Synopsis
 ========
@@ -57,9 +57,9 @@ Options
   Read data for this many seconds, then stop.  This option overrides
   ``--number``.
 
-.. include:: common_opts.txt
+.. include:: ../common/common_opts.txt
 
-.. include:: common_body.txt
+.. include:: ../common/common_body.txt
 
 Examples
 ========

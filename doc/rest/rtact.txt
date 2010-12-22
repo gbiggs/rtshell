@@ -6,7 +6,7 @@ rtact
 activate components
 -------------------
 
-.. include: docinfo_block.txt
+.. include: ../common/docinfo_block.txt
 
 Synopsis
 ========
@@ -25,9 +25,9 @@ Options
 -e EC_INDEX, --exec_context=EC_INDEX
     Index of the execution context to change state in. The default is 0.
 
-.. include:: common_opts.txt
+.. include:: ../common/common_opts.txt
 
-.. include:: common_body.txt
+.. include:: ../common/common_body.txt
 
 Examples
 ========

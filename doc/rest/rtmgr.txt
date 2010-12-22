@@ -6,7 +6,7 @@ rtmgr
 utilise managers
 ----------------
 
-.. include:: docinfo_block.txt
+.. include:: ../common/docinfo_block.txt
 
 Synopsis
 ========
@@ -48,9 +48,9 @@ Options
 -u MOD_PATH_U, --unload=MOD_PATH_U
   Unload the module from the manager.
 
-.. include:: common_opts.txt
+.. include:: ../common/common_opts.txt
 
-.. include:: common_body.txt
+.. include:: ../common/common_body.txt
 
 Examples
 ========

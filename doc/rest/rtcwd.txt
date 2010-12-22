@@ -6,7 +6,7 @@ rtcwd
 change the current working directory
 ------------------------------------
 
-.. include:: docinfo_block.txt
+.. include:: ../common/docinfo_block.txt
 
 Synopsis
 ========
@@ -18,7 +18,7 @@ Description
 
 Changes the current working directory in the RTC Tree.
 
-.. include:: common_body.txt
+.. include:: ../common/common_body.txt
 
 Examples
 ========

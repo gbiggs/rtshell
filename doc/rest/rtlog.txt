@@ -6,7 +6,7 @@ rtlog
 record and replay log files
 ---------------------------
 
-.. include:: docinfo_block.txt
+.. include:: ../common/docinfo_block.txt
 
 Synopsis
 ========
@@ -102,9 +102,9 @@ Options
   Specify the rate in Hertz at which to run the component. The default
   is 100Hz.
 
-.. include:: common_opts.txt
+.. include:: ../common/common_opts.txt
 
-.. include:: common_body.txt
+.. include:: ../common/common_body.txt
 
 Examples
 ========

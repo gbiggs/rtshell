@@ -6,7 +6,7 @@ rtstop
 stop an RT-System
 -----------------
 
-.. include:: docinfo_block.txt
+.. include:: ../common/docinfo_block.txt
 
 Synopsis
 ========
@@ -38,14 +38,14 @@ Options
 -y, --yaml
   Use YAML input format.
 
-.. include:: common_opts.txt
+.. include:: ../common/common_opts.txt
 
 Start plans
 ===========
 
-.. include:: start_stop_plans.txt
+.. include:: ../common/start_stop_plans.txt
 
-.. include:: common_body.txt
+.. include:: ../common/common_body.txt
 
 Examples
 ========

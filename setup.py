@@ -34,17 +34,33 @@ import sys
 
 # Hacky method of installing the documentation. Need a nice hook for this.
 def get_files(dir):
-    return [f for f in os.listdir(dir) if os.isfile(f)]
+    return [os.path.join(dir, f) for f in os.listdir(dir) \
+            if os.path.isfile(os.path.join(dir, f))]
 
-p = subprocess.Popen(['./doc/make_docs', 'man', 'html', 'pdf'],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-p.communicate()
-man_files_en = get_files(os.path.join(os.getcwd(), 'doc/man/man1'))
-html_files_en = get_files(os.path.join(os.getcwd(), 'doc/html'))
-pdf_files_en = get_files(os.path.join(os.getcwd(), 'doc/pdf'))
-man_files_ja = get_files(os.path.join(os.getcwd(), 'doc/man/ja/man1'))
-html_files_ja = get_files(os.path.join(os.getcwd(), 'doc/html/ja'))
-pdf_files_ja = get_files(os.path.join(os.getcwd(), 'doc/pdf/ja'))
+cwd = os.path.join(os.getcwd(), 'doc')
+s = raw_input('Generate documentation? ')
+if s.lower() == 'y' or s.lower() == 'YES':
+    print 'Generating documentation'
+    p = subprocess.Popen(['./make_docs', 'man', 'html', 'pdf', '-v'],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+    stdout, stderr = p.communicate()
+    if p.returncode != 0:
+        print 'Failed to generate documentation. Check docutils are installed.'
+        print stderr
+try:
+    man_files_en = get_files(os.path.join(os.getcwd(), 'doc/man/man1'))
+    html_files_en = get_files(os.path.join(os.getcwd(), 'doc/html'))
+    pdf_files_en = get_files(os.path.join(os.getcwd(), 'doc/pdf'))
+    man_files_ja = get_files(os.path.join(os.getcwd(), 'doc/man/ja/man1'))
+    html_files_ja = get_files(os.path.join(os.getcwd(), 'doc/html/ja'))
+    pdf_files_ja = get_files(os.path.join(os.getcwd(), 'doc/pdf/ja'))
+except OSError:
+    man_files_en = []
+    html_files_en = []
+    pdf_files_en = []
+    man_files_ja = []
+    html_files_ja = []
+    pdf_files_ja = []
 
 
 base_scripts = ['rtact',

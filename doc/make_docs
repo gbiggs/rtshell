@@ -42,6 +42,23 @@ def compile_docs(src_dir, dest_dir, cmd, ext, verb=False):
                     src, dest, stderr))
 
 
+def compile_tex(src_dir, dest_dir, verb=False):
+    vprint(verb, 'Compiling from {0} to {1}'.format(src_dir, dest_dir))
+    if os.path.exists(dest_dir):
+        if not os.path.isdir(dest_dir):
+            raise RuntimeError('File exists at destination directory '
+                '{0}'.format(dest_dir))
+    else:
+        os.makedirs(dest_dir)
+    tex_files = [os.path.join(src_dir, f) for f in os.listdir(src_dir) \
+            if os.path.splitext(f)[1] == '.tex']
+    for f in tex_files:
+        dest = os.path.join(dest_dir, os.path.splitext(f)[0] + '.pdf')
+        vprint(verb, 'Compiling {0} to {1}'.format(f, dest))
+        stdout, stderr, ret = call_process(['rubber', '-d', '--into',
+            dest_dir, f])
+
+
 def lang_dir(lang='en'):
     if lang == 'en':
         return ''
@@ -59,6 +76,10 @@ def man_dir():
 
 def html_dir():
     return 'html'
+
+
+def tex_dir():
+    return 'tex'
 
 
 def pdf_dir():
@@ -81,9 +102,11 @@ def generate_html(lang='en', verb=False):
 
 def generate_pdf(lang='en', verb=False):
     src = os.path.join(rest_dir(), lang_dir(lang))
+    tex = os.path.join(tex_dir(), lang_dir(lang))
     dest = os.path.join(pdf_dir(), lang_dir(lang))
     vprint(verb, 'Generating PDF documents for language {0}'.format(lang))
-    compile_docs(src, dest, 'rst2latex.py', '.tex', verb=verb)
+    compile_docs(src, tex, 'rst2latex.py', '.tex', verb=verb)
+    compile_tex(tex, dest, verb=verb)
 
 
 def generate_docs(doctype='man', lang='en', verb=False):

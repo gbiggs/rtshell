@@ -33,9 +33,13 @@ import sys
 
 
 # Hacky method of installing the documentation. Need a nice hook for this.
-def get_files(dir):
-    return [os.path.join(dir, f) for f in os.listdir(dir) \
+def get_files(dir, ext=None):
+    files = [os.path.join(dir, f) for f in os.listdir(dir) \
             if os.path.isfile(os.path.join(dir, f))]
+    if ext:
+        return [f for f in files if os.path.splitext(f)[1] == ext]
+    else:
+        return files
 
 cwd = os.path.join(os.getcwd(), 'doc')
 s = raw_input('Generate documentation? ')
@@ -50,10 +54,10 @@ if s.lower() == 'y' or s.lower() == 'YES':
 try:
     man_files_en = get_files(os.path.join(os.getcwd(), 'doc/man/man1'))
     html_files_en = get_files(os.path.join(os.getcwd(), 'doc/html'))
-    pdf_files_en = get_files(os.path.join(os.getcwd(), 'doc/pdf'))
+    pdf_files_en = get_files(os.path.join(os.getcwd(), 'doc/pdf'), ext='.pdf')
     man_files_ja = get_files(os.path.join(os.getcwd(), 'doc/man/ja/man1'))
     html_files_ja = get_files(os.path.join(os.getcwd(), 'doc/html/ja'))
-    pdf_files_ja = get_files(os.path.join(os.getcwd(), 'doc/pdf/ja'))
+    pdf_files_ja = get_files(os.path.join(os.getcwd(), 'doc/pdf/ja'), ext='.pdf')
 except OSError:
     man_files_en = []
     html_files_en = []

@@ -25,7 +25,12 @@ def call_process(args):
 
 def compile_docs(src_dir, dest_dir, cmd, ext, verb=False):
     vprint(verb, 'Compiling from {0} to {1}'.format(src_dir, dest_dir))
-    os.makedirs(dest_dir)
+    if os.path.exists(dest_dir):
+        if not os.path.isdir(dest_dir):
+            raise RuntimeError('File exists at destination directory '
+                '{0}'.format(dest_dir))
+    else:
+        os.makedirs(dest_dir)
     for f in os.listdir(src_dir):
         src = os.path.join(src_dir, f)
         if os.path.isfile(src):
@@ -68,11 +73,17 @@ def generate_man(lang='en', verb=False):
 
 
 def generate_html(lang='en', verb=False):
-    raise NotImplementedError
+    src = os.path.join(rest_dir(), lang_dir(lang))
+    dest = os.path.join(html_dir(), lang_dir(lang))
+    vprint(verb, 'Generating HTML pages for language {0}'.format(lang))
+    compile_docs(src, dest, 'rst2html.py', '.html', verb=verb)
 
 
 def generate_pdf(lang='en', verb=False):
-    raise NotImplementedError
+    src = os.path.join(rest_dir(), lang_dir(lang))
+    dest = os.path.join(pdf_dir(), lang_dir(lang))
+    vprint(verb, 'Generating PDF documents for language {0}'.format(lang))
+    compile_docs(src, dest, 'rst2latex.py', '.tex', verb=verb)
 
 
 def generate_docs(doctype='man', lang='en', verb=False):

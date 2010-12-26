@@ -28,7 +28,24 @@ from distutils.command.install_data import install_data
 from distutils.core import setup
 import os
 import os.path
+import subprocess
 import sys
+
+
+# Hacky method of installing the documentation. Need a nice hook for this.
+def get_files(dir):
+    return [f for f in os.listdir(dir) if os.isfile(f)]
+
+p = subprocess.Popen(['./doc/make_docs', 'man', 'html', 'pdf'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+p.communicate()
+man_files_en = get_files(os.path.join(os.getcwd(), 'doc/man/man1'))
+html_files_en = get_files(os.path.join(os.getcwd(), 'doc/html'))
+pdf_files_en = get_files(os.path.join(os.getcwd(), 'doc/pdf'))
+man_files_ja = get_files(os.path.join(os.getcwd(), 'doc/man/ja/man1'))
+html_files_ja = get_files(os.path.join(os.getcwd(), 'doc/html/ja'))
+pdf_files_ja = get_files(os.path.join(os.getcwd(), 'doc/pdf/ja'))
+
 
 base_scripts = ['rtact',
                 'rtcat',
@@ -83,7 +100,11 @@ if sys.platform == 'win32':
     data_files = []
 else:
     scripts = base_scripts
-    data_files = [('share/rtshell', ['bash_completion', 'shell_support.in'])]
+    data_files = [('share/rtshell', ['bash_completion', 'shell_support.in']),
+            ('share/man/man1', man_files_en),
+            ('share/man/ja/man1', man_files_ja),
+            ('share/doc/rtshell', html_files_en + pdf_files_en),
+            ('share/doc/rtshell/ja', html_files_ja + pdf_files_ja)]
 
 
 class InstallRename(install_scripts):

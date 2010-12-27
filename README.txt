@@ -540,12 +540,6 @@ Loaded shared libraries can be removed from the manager.
  $
 
 
-Known problems
---------------
-
-The tools currently do not work well with the JAVA orb.
-
-
 Repository
 ----------
 
@@ -583,6 +577,9 @@ Changelog
 
 3.0
 - Merged rtcshell and rtsshell into a single toolkit.
+- Added complete documentation for every command (man pages, HTML, PDF).
+- New command: rtdoc (Print component documentation - thanks to Yosuke
+  Matsusaka).
 - New command: rtexit (Make a component exit).
 - New command: rtlog (Log and replay data streams).
 - New command: rtcheck (Check a system matches an RtsProfile file).

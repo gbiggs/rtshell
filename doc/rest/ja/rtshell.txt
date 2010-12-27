@@ -8,6 +8,28 @@ command line tools for RT-Middleware
 
 .. include:: ../../common/docinfo_block.txt
 
+Description
+===========
+
+rtshell provides commands used to manage individual RT components and
+managers, as well as complete RT Systems. It can be used with the
+OpenRTM-aist middleware or middlewares that use a compatible CORBA-based
+introspection system.
+
+Many of the commands allow components and managers running on
+nameservers to be treated like a file system. Directories can be
+entered, components can be cat'd and activated/deactivated/reset,
+connections made and removed, and so on.  Other commands are used in
+conjunction with RtsProfile XML/YAML files to manage complete RT
+Systems.
+
+The commands are aimed at users of OpenRTM-aist who wish to manage
+components on low-resource systems, systems where a GUI is not available
+(particularly where no network connection is available to manage
+components from another computer), as well as those who face other
+difficulties using RTSystemEditor.  Being familiar with using a
+command-line is a benefit when using these commands of rtshell.
+
 Commands
 ========
 
@@ -43,6 +65,9 @@ Commands
 
   rtdis
     Disconnect ports.
+
+  rtdoc
+    Print RT-Component documentation.
 
   rtexit
     Make an RT-Component stop running and exit.

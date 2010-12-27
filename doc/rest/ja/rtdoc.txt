@@ -6,7 +6,7 @@ rtdoc
 print RT-Component documentation
 --------------------------------
 
-.. include:: ../common/docinfo_block.txt
+.. include:: ../../common/docinfo_block.txt
 
 Synopsis
 ========
@@ -29,7 +29,7 @@ Options
 -f FORMAT, --format=FORMAT
   Output format (one of ``rst``, ``html`` or ``latex``).
 
-.. include:: ../common/common_opts.txt
+.. include:: ../../common/common_opts.txt
 
 RT-Component documentation
 ==========================
@@ -128,7 +128,7 @@ To document configuration parameters, set the parameter in the
   'conf.default.param', '0',
   'conf.__description__.param', 'A test parameter.',
 
-.. include:: ../common/common_body.txt
+.. include:: ../../common/common_body.txt
 
 Examples
 ========

@@ -13,7 +13,7 @@ Copyright (C) 2009-2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-Command to display component document.
+Command to display RT-Component documentation.
 
 '''
 
@@ -25,6 +25,7 @@ from rtshell import rtdoc
 
 if __name__ == '__main__':
     sys.exit(rtdoc.main())
+
 
 # vim: tw=79
 

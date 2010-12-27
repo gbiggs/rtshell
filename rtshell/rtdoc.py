@@ -90,7 +90,7 @@ def get_section_title(sec):
     if sec == 'intro':
         return 'Introduction'
     elif sec == 'reqs':
-        return 'Requirements'
+        return 'Pre-requisites'
     elif sec == 'install':
         return 'Installation'
     elif sec == 'usage':

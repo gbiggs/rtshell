@@ -1,4 +1,4 @@
-:Author: Geoffrey Biggs
+:Author: Geoffrey Biggs and contributors
 :Date: 2010-12-19
 :Copyright: EPL-1.0
 :Version: 3.0

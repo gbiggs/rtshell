@@ -1,0 +1,169 @@
+=====
+rtdoc
+=====
+
+--------------------------------
+print RT-Component documentation
+--------------------------------
+
+.. include:: ../common/docinfo_block.txt
+
+Synopsis
+========
+
+rtdoc [options] <path>
+
+Description
+===========
+
+Print the documentation for an RT-Component.
+
+Some RT-Components contain documentation internally, stored in hidden
+configuration sets. This tool prints that documentation in several
+convenient formats, including reStructuredText, HTML and LaTeX (suitable
+for compiling to PDF).
+
+Options
+=======
+
+-f FORMAT, --format=FORMAT
+  Output format (one of ``rst``, ``html`` or ``latex``).
+
+.. include:: ../common/common_opts.txt
+
+RT-Component documentation
+==========================
+
+To be compatible with this tool, an RT-Component must store its
+documentation in a configuration set called ``__doc__``. Any parameters
+in this set that are *not* hidden are added to the documentation as
+sections.
+
+The common sections are:
+
+  intro
+    An introduction to the component, giving a brief description of its
+    purpose. (Title: ``Introduction``.)
+
+  reqs
+    Pre-requisites for using the component, such as other software that
+    must be installed. (Title: ``Pre-requisites``.)
+
+  install
+    How to install the component. (Title: ``Installation``.)
+
+  usage
+    How to launch and use the component. (Title: ``Usage``.)
+
+  misc
+    Any other information important to using the component. (Title:
+    ``Miscellaneous``.)
+
+  changelog
+    A description of changes to the component since the previous
+    versions. (Title: ``Changelog``.)
+
+In addition, a ``ports`` section and a ``config`` section are
+automatically created if the component has any ports or any
+configuration parameters in its ``default`` configuration set. Any other
+sections present in the ``__doc__`` set will also be added to the
+documentation.
+
+You can also set three parameters to add extra information to the
+documentation preamble:
+
+  __license__
+    The license of the component, such as ``GPL`` or ``BSD``.
+
+  __contact__
+    Contact information, such as the author's email address.
+
+  __url__
+    The component's home page.
+
+These parameters can be set either in the component source or in a
+configuration file loaded when the component is launched. It is
+recommended that the parameters be set in the source so that the
+documentation is always available. Note that in-source documentation
+will increase the size of the component binary and memory requirements.
+Keep the documentation brief to avoid this causing problems in
+low-memory systems.
+
+For example, to set them in the source, use something similar to the
+following::
+
+  'conf.__doc__.__license__', 'EPL',
+  'conf.__doc__.__contact__', 'a@example.com',
+  'conf.__doc__.__url__', 'http://www.openrtm.org',
+  'conf.__doc__.intro', 'This is the introduction.',
+  'conf.__doc__.reqs', 'This component requires nothing.',
+  'conf.__doc__.install', 'Type "make install"',
+  'conf.__doc__.usage', 'Run comp_standalone.',
+  'conf.__doc__.misc', 'Extra information.',
+  'conf.__doc__.changelog', 'No changes.',
+  'conf.__doc__.Another', 'A non-standard section.',
+
+By default, the sections are included in the following order:
+
+  intro, reqs, usage, ports, config, misc, changelog, [other sections]
+
+This can be changed by setting the ``__order__`` parameter in the
+``__doc__`` set. It must be set to a comma-separated list of parameter
+names, where each parameter name is a section in the documentation. For
+example::
+
+  'conf.__doc__.__order__', 'intro,ports,config,reqs,Another'
+
+Any sections not mentioned in this parameter are added after the
+specified sections. The order in which they are added is not defined.
+
+To document ports, add a ``description`` property to the port. For
+example::
+
+  self._inport.addProperty('description', 'This port receives stuff.')
+
+To document configuration parameters, set the parameter in the
+``__description__`` set. For example::
+
+  'conf.default.param', '0',
+  'conf.__description__.param', 'A test parameter.',
+
+.. include:: ../common/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtdoc /localhost/ConsoleOut0.rtc
+
+Print the ``ConsoleOut0.rtc`` component's documentation to stdout.
+
+::
+
+  $ rtdoc /localhost/ConsoleOut0.rtc > doc.html
+
+Print the ``ConsoleOut0.rtc`` component's documentation to the file
+``doc.html``.
+
+::
+
+  $ rtdoc /localhost/ConsoleOut0.rtc -f rst
+
+Print the ``ConsoleOut0.rtc`` component's documentation in
+reStructuredText format.
+
+::
+
+  $ rtdoc /localhost/ConsoleOut0.rtc -f latex > doc.tex &&
+    rubber -d doc.tex
+
+Make a PDF of ``ConsoleOut0.rtc``'s documentation, using the ``rubber``
+tool to compile the LaTeX file.
+
+See Also
+========
+
+  ``rtconf`` (1),
+  ``rubber`` (1)
+

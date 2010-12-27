@@ -1532,6 +1532,146 @@ def rtdis_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtdisTests)
 
 
+class rtdocTests(unittest.TestCase):
+    def setUp(self):
+        self._ns = start_ns()
+        self._std = launch_comp('std_comp')
+        self._doc = launch_comp('doc_comp')
+        self._doc2 = launch_comp('doc2_comp')
+        make_zombie()
+        self._mgr = launch_manager()
+        wait_for_comp('Std0.rtc')
+        wait_for_comp('Doc0.rtc')
+        wait_for_comp('Doc20.rtc')
+
+    def tearDown(self):
+        stop_comp(self._std)
+        stop_comp(self._doc)
+        stop_comp(self._doc2)
+        clean_zombies()
+        stop_manager(self._mgr)
+        stop_ns(self._ns)
+
+    def _check_stdout(self, stdout, title):
+        self.assert_(title in stdout)
+        self.assert_('Documentation component' in stdout)
+        self.assert_('Geoffrey Biggs' in stdout)
+        self.assert_('test' in stdout)
+        self.assert_('EPL' in stdout)
+        self.assert_('example.com' in stdout)
+        self.assert_('http://www.openrtm.org' in stdout)
+        self.assert_('This is the introduction.' in stdout)
+        self.assert_('This component requires nothing.' in stdout)
+        self.assert_('You cannot install this component.' in stdout)
+        self.assert_('You cannot use it, either.' in stdout)
+        self.assert_('Miscellaneous is hard to spell.' in stdout)
+        self.assert_('No changes.' in stdout)
+        self.assert_('param' in stdout)
+        self.assert_('This port receives stuff.' in stdout)
+        self.assert_('Another section.' in stdout)
+
+    def test_doc(self):
+        stdout, stderr, ret = call_process(['./rtdoc',
+            '/localhost/local.host_cxt/Doc0.rtc'])
+        self.assertEqual(stderr, ''),
+        self.assertEqual(ret, 0)
+        self._check_stdout(stdout, 'Doc0.rtc')
+
+    def test_doc_rst(self):
+        stdout, stderr, ret = call_process(['./rtdoc',
+            '/localhost/local.host_cxt/Doc0.rtc', '-f', 'rst'])
+        self.assertEqual(stderr, ''),
+        self.assertEqual(ret, 0)
+        self._check_stdout(stdout, 'Doc0.rtc')
+
+    def test_doc_html(self):
+        stdout, stderr, ret = call_process(['./rtdoc',
+            '/localhost/local.host_cxt/Doc0.rtc', '-f', 'html'])
+        self.assertEqual(stderr, ''),
+        self.assertEqual(ret, 0)
+        self._check_stdout(stdout, 'Doc0.rtc')
+
+    def test_doc_latex(self):
+        stdout, stderr, ret = call_process(['./rtdoc',
+            '/localhost/local.host_cxt/Doc0.rtc', '-f', 'latex'])
+        self.assertEqual(stderr, ''),
+        self.assertEqual(ret, 0)
+        self._check_stdout(stdout, 'Doc0.rtc')
+
+    def test_no_doc(self):
+        stdout, stderr, ret = call_process(['./rtdoc',
+            '/localhost/local.host_cxt/Std0.rtc', '-f', 'rst'])
+        self.assert_(stdout.startswith('Std0.rtc\n'))
+        self.assert_('Introduction' not in stdout)
+        self.assert_('Requirements' not in stdout)
+        self.assert_('Installation' not in stdout)
+        self.assert_('Usage' not in stdout)
+        self.assertEqual(stderr, ''),
+        self.assertEqual(ret, 0)
+
+    def test_no_ports_config(self):
+        stdout, stderr, ret = call_process(['./rtdoc',
+            '/localhost/local.host_cxt/Doc20.rtc', '-f', 'rst'])
+        self.assert_(stdout.startswith('Doc20.rtc\n'))
+        self.assert_('Ports' not in stdout)
+        self.assert_('Configuration parameters' not in stdout)
+        self.assertEqual(stderr, ''),
+        self.assertEqual(ret, 0)
+
+    def test_manager(self):
+        test_notacomp(self, './rtdoc', obj1='manager.mgr')
+
+    def test_port(self):
+        test_notacomp(self, './rtdoc', obj1='Std0.rtc:in')
+
+    def test_trailing_slash(self):
+        test_notacomp(self, './rtdoc', obj1='Std0.rtc/')
+
+    def test_no_object(self):
+        test_noobject(self, './rtdoc', obj1='NotAComp0.rtc')
+
+    def test_zombie_object(self):
+        test_zombie(self, './rtdoc', obj1='Zombie0.rtc')
+
+    def test_no_arg(self):
+        stdout, stderr, ret = call_process('./rtdoc')
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtdoc: No component specified.')
+        self.assertEqual(ret, 1)
+
+    def test_order(self):
+        stdout, stderr, ret = call_process(['./rtdoc',
+            '/localhost/local.host_cxt/Doc0.rtc', '-f', 'rst'])
+        stdout = stdout.partition('Usage'),
+        self.assert_('Installation' in stdout[0][0])
+        self.assert_('Installation' not in stdout[0][2])
+        self.assert_('Changelog' not in stdout[0][0])
+        self.assert_('Changelog' in stdout[0][2])
+        self.assert_('Another' not in stdout[0][0])
+        self.assert_('Another' in stdout[0][2])
+        self.assertEqual(stderr, ''),
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = call_process(['./rtconf', '-a', '-s', '__doc__',
+            '/localhost/local.host_cxt/Doc0.rtc', 'set', '__order__',
+            'intro,changelog,misc,usage,install,ports,config'])
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = call_process(['./rtdoc',
+            '/localhost/local.host_cxt/Doc0.rtc', '-f', 'rst'])
+        stdout = stdout.partition('Usage'),
+        self.assert_('Installation' not in stdout[0][0])
+        self.assert_('Installation' in stdout[0][2])
+        self.assert_('Changelog' in stdout[0][0])
+        self.assert_('Changelog' not in stdout[0][2])
+        self.assert_('Another' not in stdout[0][0])
+        self.assert_('Another' in stdout[0][2])
+        self.assertEqual(stderr, ''),
+        self.assertEqual(ret, 0)
+
+
+def rtdoc_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtdocTests)
+
+
 class rtexitTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
@@ -3001,10 +3141,10 @@ def rtteardown_suite():
 
 
 def suite():
-    return unittest.TestSuite([rtact_suite(), rtdeact_suite(),
-        rtreset_suite(), rtcat_suite(), rtcheck_suite(), rtcomp_suite(),
-        rtcon_suite(), rtconf_suite(), rtcryo_suite(), rtcwd_suite(),
-        rtdel_suite(), rtdis_suite(), rtexit_suite(), rtfind_suite(),
+    return unittest.TestSuite([rtact_suite(), rtdeact_suite(), rtreset_suite(),
+        rtcat_suite(), rtcheck_suite(), rtcomp_suite(), rtcon_suite(),
+        rtconf_suite(), rtcryo_suite(), rtcwd_suite(), rtdel_suite(),
+        rtdis_suite(), rtdoc_suite(), rtexit_suite(), rtfind_suite(),
         rtinject_suite(), rtlog_suite(), rtls_suite(), rtmgr_suite(),
         rtprint_suite(), rtresurrect_suite(), rtstart_suite(),
         rtstodot_suite(), rtstop_suite(), rtteardown_suite()])

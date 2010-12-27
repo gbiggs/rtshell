@@ -58,108 +58,113 @@ def get_ports_docs(comp):
             datatype = p.properties['dataport.data_type']
         else:
             datatype = ''
-        try:
+        if 'description' in p.properties:
             description = p.properties['description']
-        except KeyError:
+        else:
             description = ''
         result.append('   "{0}", "{1}", "{2}", "{3}"'.format(p.name,
             p.porttype, datatype, escape(description)))
     return result
 
 
-def get_props_docs(comp):
+def get_config_docs(comp):
     result = []
     result.append('.. csv-table:: Configration parameters')
     result.append('   :header: "Name", "Description"')
     result.append('   :widths: 12, 38')
     result.append('   ')
 
+    desc_set = None
+    if '__description__' in comp.conf_sets:
+        desc_set = comp.conf_sets['__description__']
     for n in comp.conf_sets['default'].data:
-        try:
-            description = comp.conf_sets['__description__'].data[n]
-        except KeyError:
+        if desc_set and desc_set.has_param(n):
+            description = desc_set.data[n]
+        else:
             description = ''
         result.append('   "{0}", "{1}"'.format(n, escape(description)))
     return result
 
 
-def get_comp_docs(object, tree):
+def get_section_title(sec):
+    if sec == 'intro':
+        return 'Introduction'
+    elif sec == 'reqs':
+        return 'Requirements'
+    elif sec == 'install':
+        return 'Installation'
+    elif sec == 'usage':
+        return 'Usage'
+    elif sec == 'misc':
+        return 'Miscellaneous'
+    elif sec == 'changelog':
+        return 'Changelog'
+    else:
+        return sec
+
+
+def do_section(result, comp, doc_set, sec):
+    if sec == 'ports' and comp.ports:
+        result += section('Ports', 1)
+        result += get_ports_docs(comp)
+        result.append('')
+    elif (sec == 'config' and
+            'default' in comp.conf_sets and comp.conf_sets['default'].data):
+        result += section('Configuration parameters', 1)
+        result += get_config_docs(comp)
+        result.append('')
+    elif doc_set and doc_set.has_param(sec):
+        title = get_section_title(sec)
+        body = doc_set.data[sec]
+        result += section(title)
+        result.append(doc_set.data[sec])
+        result.append('')
+
+
+def get_comp_docs(comp, tree):
     result = []
-    result += section(object.name, 0)
-    result.append(object.description)
+    result += section(comp.name, 0)
+    result.append(comp.description)
     result.append('')
 
-    result.append(':Vendor: {0}'.format(object.vendor))
-    result.append(':Version: {0}'.format(object.version))
-    result.append(':Category: {0}'.format(object.category))
-    try:
-        doc = object.conf_sets['__document__'].data['license']
-        result.append(':{0}: {1}'.format('License', doc))
-    except KeyError:
-        pass
-    try:
-        doc = object.conf_sets['__document__'].data['contact']
-        result.append(':{0}: {1}'.format('Contact', doc))
-    except KeyError:
-        pass
-    try:
-        doc = object.conf_sets['__document__'].data['url']
-        result.append(':{0}: {1}'.format('URL', doc))
-    except KeyError:
-        pass
+    result.append(':Vendor: {0}'.format(comp.vendor))
+    result.append(':Version: {0}'.format(comp.version))
+    result.append(':Category: {0}'.format(comp.category))
+
+    doc_set = None
+    order = ['intro', 'reqs', 'install', 'usage', 'ports', 'config', 'misc',
+            'changelog']
+    sections = ['ports', 'config']
+    if '__doc__' in comp.conf_sets:
+        doc_set = comp.conf_sets['__doc__']
+        if doc_set.has_param('__order__') and doc_set.data['__order__']:
+            order = doc_set.data['__order__'].split(',')
+        sections += [k for k in doc_set.data.keys() if not k.startswith('__')]
+
+    if doc_set:
+        if doc_set.has_param('__license__'):
+            result.append(':License: {0}'.format(
+                comp.conf_sets['__doc__'].data['__license__']))
+        if doc_set.has_param('__contact__'):
+            result.append(':Contact: {0}'.format(
+                comp.conf_sets['__doc__'].data['__contact__']))
+        if doc_set.has_param('__url__'):
+            result.append(':URL: {0}'.format(
+                comp.conf_sets['__doc__'].data['__url__']))
     result.append('')
 
-    try:
-        doc = object.conf_sets['__document__'].data['introduction']
-        result += section('Introduction', 1)
-        result.append(doc)
-        result.append('')
-    except KeyError:
-        pass
-    try:
-        doc = object.conf_sets['__document__'].data['requirements']
-        result += section('Requirements', 1)
-        result.append(doc)
-        result.append('')
-    except KeyError:
-        pass
-    try:
-        doc = object.conf_sets['__document__'].data['install']
-        result += section('Install', 1)
-        result.append(doc)
-        result.append('')
-    except KeyError:
-        pass
-    try:
-        doc = object.conf_sets['__document__'].data['usage']
-        result += section('Usage', 1)
-        result.append(doc)
-        result.append('')
-    except KeyError:
-        pass
+    # Add sections specified in the ordering first
+    for s in order:
+        if s not in sections:
+            if doc_set:
+                print >>sys.stderr, ('{0}: Unknown section in order: '
+                    '{1}'.format(os.path.basename(sys.argv[0]), s))
+            continue
+        do_section(result, comp, doc_set, s)
 
-    result += section('Ports', 1)
-    result += get_ports_docs(object)
-    result.append('')
-
-    result += section('Configuration parameters', 1)
-    result += get_props_docs(object)
-    result.append('')
-
-    try:
-        doc = object.conf_sets['__documentation__'].data['misc']
-        result += section('Miscellaneous information', 1)
-        result.append(doc)
-        result.append('')
-    except KeyError:
-        pass
-    try:
-        doc = object.conf_sets['__document__'].data['changelog']
-        result += section('Changelog', 1)
-        result.append(doc)
-        result.append('')
-    except KeyError:
-        pass
+    # Add any sections that were not in the ordering last
+    for s in [s for s in sections if s not in order]:
+        do_section(result, comp, doc_set, s)
 
     return result
 
@@ -168,6 +173,8 @@ def get_docs(cmd_path, full_path, options, tree=None):
     path, port = rtctree.path.parse_path(full_path)
     if not path[-1]:
         # There was a trailing slash
+        raise rts_exceptions.NotAComponentError(cmd_path)
+    if port:
         raise rts_exceptions.NotAComponentError(cmd_path)
 
     if not tree:

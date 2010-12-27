@@ -15,7 +15,7 @@ Copyright (C) 2010
 Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 
-Simple output component for tests.
+Component with lots of documentation.
 
 '''
 
@@ -62,15 +62,17 @@ comp_spec = ['implementation_id', 'Doc',
         'max_instance', '2',
         'language', 'Python',
         'lang_type', 'script',
-        'conf.__document__.license', 'EPL',
-        'conf.__document__.contact', 'a@example.com',
-        'conf.__document__.url', 'http://www.openrtm.org',
-        'conf.__document__.introduction', 'This is the introduction.',
-        'conf.__document__.requirements', 'This component requires nothing.',
-        'conf.__document__.install', 'You cannot install this component.',
-        'conf.__document__.usage', 'You cannot use it, either.',
-        'conf.__document__.misc', 'Miscellaneous is hard to spell.',
-        'conf.__document__.changelog', 'No changes.',
+        'conf.__doc__.__order__', '',
+        'conf.__doc__.__license__', 'EPL',
+        'conf.__doc__.__contact__', 'a@example.com',
+        'conf.__doc__.__url__', 'http://www.openrtm.org',
+        'conf.__doc__.intro', 'This is the introduction.',
+        'conf.__doc__.reqs', 'This component requires nothing.',
+        'conf.__doc__.install', 'You cannot install this component.',
+        'conf.__doc__.usage', 'You cannot use it, either.',
+        'conf.__doc__.misc', 'Miscellaneous is hard to spell.',
+        'conf.__doc__.changelog', 'No changes.',
+        'conf.__doc__.Another', 'Another section.',
         'conf.default.param', '0',
         'conf.__description__.param', 'A test parameter.',
         '']
@@ -83,7 +85,7 @@ def CompInit(manager):
 
 def ModuleInit(manager):
     CompInit(manager)
-    manager.createComponent('Std')
+    manager.createComponent('Doc')
 
 
 def main():

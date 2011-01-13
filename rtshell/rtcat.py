@@ -145,10 +145,10 @@ def find_composite_comp(tree, member, inst_name):
     return tree.iterate(get_fp, filter=['is_manager', is_correct_mgr])
 
 
-def format_composite(object, tree, start_indent=0, use_colour=True, long=0):
+def format_composite(comp, tree, start_indent=0, use_colour=True, long=0):
     result = []
     indent = start_indent
-    for o in object.orgs:
+    for o in comp.orgs:
         if not o.sdo_id:
             sdo_id = 'Unknown'
         else:
@@ -169,7 +169,7 @@ def format_composite(object, tree, start_indent=0, use_colour=True, long=0):
             result.append('{0}{1}{2}'.format(''.ljust(indent),
                 'ID'.ljust(padding), o.org_id))
             for m in o.members:
-                c_path = find_composite_comp(tree, object, m)
+                c_path = find_composite_comp(tree, comp, m)
                 if c_path:
                     result.append('{0}{1}{2}'.format(''.ljust(indent),
                         'Member'.ljust(padding), c_path[0]))
@@ -180,10 +180,10 @@ def format_composite(object, tree, start_indent=0, use_colour=True, long=0):
     return result
 
 
-def format_comp_member(object, tree, start_indent=0, use_colour=True, long=0):
+def format_comp_member(comp, tree, start_indent=0, use_colour=True, long=0):
     result = []
     indent = start_indent
-    for po in object.parent_orgs:
+    for po in comp.parent_orgs:
         if not po.sdo_id:
             sdo_id = 'Unknown'
         else:
@@ -203,7 +203,7 @@ def format_comp_member(object, tree, start_indent=0, use_colour=True, long=0):
             padding = 6 # = len('Path') + 2
             result.append('{0}{1}{2}'.format(''.ljust(indent),
                 'ID'.ljust(padding), po.org_id))
-            composite_path = find_composite_comp(tree, object, po.sdo_id)
+            composite_path = find_composite_comp(tree, comp, po.sdo_id)
             if composite_path:
                 result.append('{0}{1}{2}'.format(''.ljust(indent),
                     'Path'.ljust(padding), composite_path[0]))
@@ -214,7 +214,7 @@ def format_comp_member(object, tree, start_indent=0, use_colour=True, long=0):
     return result
 
 
-def format_ec(ec, object, start_indent=0, use_colour=True, long=0):
+def format_ec(ec, start_indent=0, use_colour=True, long=0):
     result = []
     indent = start_indent
     handle_str = rtctree.utils.build_attr_string('bold',
@@ -271,26 +271,26 @@ def format_ec(ec, object, start_indent=0, use_colour=True, long=0):
     return result
 
 
-def format_component(object, tree, use_colour=True, long=0):
+def format_component(comp, tree, use_colour=True, long=0):
     result = []
-    result.append('{0}  {1}'.format(object.name,
-            object.get_state_string(add_colour=use_colour)))
+    result.append('{0}  {1}'.format(comp.name,
+            comp.get_state_string(add_colour=use_colour)))
 
     indent = 2
-    profile_items = [('Category', object.category),
-                     ('Description', object.description),
-                     ('Instance name', object.instance_name),
-                     ('Type name', object.type_name),
-                     ('Vendor', object.vendor),
-                     ('Version', object.version)]
-    if object.parent:
-        profile_items.append(('Parent', object.parent_object))
-    if object.is_composite:
-        if object.is_composite_member:
+    profile_items = [('Category', comp.category),
+                     ('Description', comp.description),
+                     ('Instance name', comp.instance_name),
+                     ('Type name', comp.type_name),
+                     ('Vendor', comp.vendor),
+                     ('Version', comp.version)]
+    if comp.parent:
+        profile_items.append(('Parent', comp.parent_object))
+    if comp.is_composite:
+        if comp.is_composite_member:
             profile_items.append(('Type', 'Composite composite member'))
         else:
             profile_items.append(('Type', 'Composite'))
-    elif object.is_composite_member:
+    elif comp.is_composite_member:
         profile_items.append(('Type', 'Monolithic composite member'))
     else:
         profile_items.append(('Type', 'Monolithic'))
@@ -300,10 +300,10 @@ def format_component(object, tree, use_colour=True, long=0):
                                          item[0].ljust(pad_length),
                                          item[1]))
 
-    if object.properties:
+    if comp.properties:
         result.append('{0}Extra properties:'.format(''.ljust(indent)))
         indent += 2
-        extra_props = object.properties
+        extra_props = comp.properties
         keys = extra_props.keys()
         keys.sort()
         pad_length = max([len(key) for key in keys]) + 2
@@ -313,26 +313,26 @@ def format_component(object, tree, use_colour=True, long=0):
                                              extra_props[key]))
         indent -= 2
 
-    if object.is_composite:
-        result += format_composite(object, tree, start_indent=indent,
+    if comp.is_composite:
+        result += format_composite(comp, tree, start_indent=indent,
                 use_colour=use_colour, long=long)
-    if object.is_composite_member:
-        result += format_comp_member(object, tree, start_indent=indent,
+    if comp.is_composite_member:
+        result += format_comp_member(comp, tree, start_indent=indent,
                 use_colour=use_colour, long=long)
-    for ec in object.owned_ecs:
-        result += format_ec(ec, object, start_indent=indent,
+    for ec in comp.owned_ecs:
+        result += format_ec(ec, start_indent=indent,
                 use_colour=use_colour, long=long)
-    for p in object.ports:
-        result += format_port(p, object, start_indent=indent,
+    for p in comp.ports:
+        result += format_port(p, comp, start_indent=indent,
                 use_colour=use_colour, long=long)
 
     return result
 
 
-def format_manager(object, use_colour=True, long=0):
+def format_manager(mgr, use_colour=True, long=0):
     def add_profile_entry(dest, title, key):
-        if key in object.profile:
-            dest.append('{0}: {1}'.format(title, object.profile[key]))
+        if key in mgr.profile:
+            dest.append('{0}: {1}'.format(title, mgr.profile[key]))
         else:
             print >>sys.stderr, '{0}: Warning: "{1}" profile entry is \
 missing. Possible version conflict between rtshell and OpenRTM-aist.'.format(\
@@ -365,11 +365,11 @@ missing. Possible version conflict between rtshell and OpenRTM-aist.'.format(\
     add_profile_entry(result, '  Name', 'os.name')
     # List loaded libraries
     result.append('Loaded modules:')
-    for lm in object.loaded_modules:
+    for lm in mgr.loaded_modules:
         result.append('  Filepath: {0}'.format(lm['file_path']))
     # List loadable libraries
     result.append('Loadable modules:')
-    for lm in object.loadable_modules:
+    for lm in mgr.loadable_modules:
         result.append('  {0}'.format(lm['module_file_path']))
 
     return result

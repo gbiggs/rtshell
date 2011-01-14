@@ -6,7 +6,7 @@ rtpwd
 print the current working directory
 -----------------------------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
 Synopsis
 ========
@@ -18,7 +18,7 @@ Description
 
 Displays the current working directory in the RTC Tree.
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
 Examples
 ========

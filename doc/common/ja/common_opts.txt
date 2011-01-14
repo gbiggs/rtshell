@@ -1,9 +1,9 @@
 --version
-    Show program's version number and exit
+    プログラムのバージョン番号を表示して終了する
 
 -h, --help
-    Show a help message and exit
+    ヘルプを表示して終了する
 
 -v, --verbose
-    Output verbose information. [Default: ``False``]
+    冗長な情報を出す [デフォルト： ``False``]
 

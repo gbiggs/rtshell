@@ -6,7 +6,7 @@ rtstart
 start an RT-System
 ------------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
 Synopsis
 ========
@@ -38,14 +38,14 @@ Options
 -y, --yaml
   Use YAML input format.
 
-.. include:: ../../common/common_opts.txt
+.. include:: ../../common/ja/common_opts.txt
 
 Start plans
 ===========
 
-.. include:: ../../common/start_stop_plans.txt
+.. include:: ../../common/ja/start_stop_plans.txt
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
 Examples
 ========

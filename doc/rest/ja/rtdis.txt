@@ -6,7 +6,7 @@ rtdis
 disconnect ports
 ----------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
 Synopsis
 ========
@@ -26,9 +26,9 @@ Options
 -i ID, --id=ID
   ID of the connection.
 
-.. include:: ../../common/common_opts.txt
+.. include:: ../../common/ja/common_opts.txt
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
 Examples
 ========

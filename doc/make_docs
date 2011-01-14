@@ -36,7 +36,7 @@ def compile_docs(src_dir, dest_dir, cmd, ext, verb=False):
         if not os.path.isfile(src):
             continue
         dest = os.path.join(dest_dir, os.path.splitext(f)[0] + ext)
-        if not os.path.isfile(check):
+        if not os.path.isfile(dest):
             # check_timestamps will have printed a warning earlier
             continue
         vprint(verb, 'Compiling {0} to {1}'.format(src, dest))

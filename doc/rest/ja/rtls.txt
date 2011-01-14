@@ -6,7 +6,7 @@ rtls
 list directories in the RTC Tree
 --------------------------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
 Synopsis
 ========
@@ -43,9 +43,9 @@ Options
 -R, --recurse
   List recursively.
 
-.. include:: ../../common/common_opts.txt
+.. include:: ../../common/ja/common_opts.txt
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
 Examples
 ========

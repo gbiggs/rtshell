@@ -6,7 +6,7 @@ rtshell
 command line tools for RT-Middleware
 ------------------------------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
 Description
 ===========
@@ -183,7 +183,7 @@ Python version must be installed by hand. Consider upgrading to Ubuntu
 9.04 or later (10.04 offers LTS).
 
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
 
 See also

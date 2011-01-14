@@ -6,7 +6,7 @@ rtcat
 view component information and meta-data
 ----------------------------------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
 Synopsis
 ========
@@ -28,9 +28,9 @@ Options
   Show more information. Specify multiple times for even more
   information. [Default:: ``False``]
 
-.. include:: ../../common/common_opts.txt
+.. include:: ../../common/ja/common_opts.txt
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
 Examples
 ========

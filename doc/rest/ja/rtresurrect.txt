@@ -6,7 +6,7 @@ rtresurrect
 resurrect RT-Systems from stored RTSProfiles
 --------------------------------------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
 Synopsis
 ========
@@ -39,9 +39,9 @@ Options
 -y, --yaml
   Use YAML input format.
 
-.. include:: ../../common/common_opts.txt
+.. include:: ../../common/ja/common_opts.txt
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
 Examples
 ========

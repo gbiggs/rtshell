@@ -1,0 +1,80 @@
+Paths
+=====
+
+``rtshell`` uses *paths* to indicate objects in the RTC Tree. A path is
+the address of object. Name servers and naming contexts on name servers
+are considered directories. Managers and RT-Components are considered
+objects. As with the POSIX ``cat`` command, the path specified as an
+argument to commands is appended to the current rtshell working
+directory, which is stored in the RTCSH_CWD environment variable and
+changeable using the rtcwd command.
+
+The available paths depend on the known name servers at the time the
+command is executed. This is a combination of the servers listed in the
+``RTCSH_NAMESERVERS`` environment variable and the servers used in given
+paths.
+
+For example, ``/localhost/comp0.rtc`` refers to the component named
+``comp0.rtc`` registered on the name server at ``localhost``.
+``/localhost/manager/comp0.rtc`` refers to the component ``comp0.rtc``
+in the directory ``manager`` on the ``localhost`` name server.
+``./comp0.rtc`` refers to that component in the current directory.
+
+Some commands that create new ports accept extra options in the paths,
+such as a name for the automatically generated port, or a formatter. The
+format for specifying these paths is::
+
+  path:port.name#formatter
+
+For example::
+
+  /localhost/blurg.host_cxt/comp0.rtc:input.stuff#a_printer
+
+This specifies that the automatically generated port should be named
+``stuff``, and the data type it handles should be printed using the
+``a_printer`` function (which must be available, usually it is provided
+by the user in a loadable module). The port will be connected to the
+``input`` port of the ``comp0.rtc`` component.
+
+The name component is optional. If it is not present, neither
+should the ``.`` character be. For example::
+
+  /localhost/blurg.host_cxt/comp0.rtc:input#a_printer
+
+The formatter component is optional. If it is not present, neither
+should the ``#`` character be. For example::
+
+  /localhost/blurg.host_cxt/comp0.rtc:input.stuff
+
+Environment
+===========
+
+  RTCTREE_ORB_ARGS
+    A list of arguments, separated by semi-colons, to pass to the ORB
+    when creating it. Optional.
+
+  RTCTREE_NAMESERVERS
+    A list of name server addresses, separated by semi-colons, to parse
+    when creating the RTCTree. Each server in the list will be added to
+    the tree, making it available for browsing with rtshell.  Optional.
+
+  RTSH_CWD
+    The current working directory in the tree. Do not set this variable;
+    it is set automatically by rtshell.
+
+The only variable that should normally be set by the user is
+``RTCTREE_NAMESERVERS``. Set this to a list of name server addresses,
+separated by semi-colons, that rtshell should interact with. For
+example, in a Bash shell, the following command will set the known name
+serves to ``localhost``, ``192.168.0.1:65346`` and ``example.com``::
+
+  $ export RTCTREE_NAMESERVERS=localhost;192.168.0.1:65346;example.com
+
+
+Diagnostics
+===========
+
+Returns zero on success and non-zero on failure.
+
+Verbose output and error messages are printed to stderr.
+

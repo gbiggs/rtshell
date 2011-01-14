@@ -53,6 +53,10 @@ def lang_dir(lang='en'):
         return 'ja'
 
 
+def common_dir():
+    return 'common'
+
+
 def rest_dir():
     return 'rest'
 
@@ -101,9 +105,8 @@ def generate_docs(doctype='man', lang='en', verb=False):
         raise ValueError('Unknown documentation type: {0}'.format(doctype))
 
 
-def check_timestamps(lang='en', verb=False):
-    src_dir = os.path.join(rest_dir(), lang_dir('en'))
-    check_dir = os.path.join(rest_dir(), lang_dir(lang))
+def check_timestamps_in_dir(lang, src_dir, check_dir, verb=False):
+    vprint(verb, 'Checking timestamps for directory {0}'.format(check_dir))
     for f in os.listdir(src_dir):
         src = os.path.join(src_dir, f)
         if not os.path.isfile(src):
@@ -118,6 +121,16 @@ def check_timestamps(lang='en', verb=False):
         if src_time > check_time:
             print >>sys.stderr, ('File {0} for language {1} is out of '
                 'date.'.format(f, lang))
+
+
+def check_timestamps(lang='en', verb=False):
+    vprint(verb, 'Checking timestamps for language {0}'.format(lang))
+    src_dir = os.path.join(rest_dir(), lang_dir('en'))
+    check_dir = os.path.join(rest_dir(), lang_dir(lang))
+    check_timestamps_in_dir(lang, src_dir, check_dir)
+    common_src_dir = os.path.join(common_dir(), lang_dir('en'))
+    common_check_dir = os.path.join(common_dir(), lang_dir(lang))
+    check_timestamps_in_dir(lang, common_src_dir, common_check_dir)
 
 
 def main(argv):

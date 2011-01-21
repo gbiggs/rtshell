@@ -2,74 +2,70 @@
 rtcat
 =====
 
-----------------------------------------
-view component information and meta-data
-----------------------------------------
+--------------------------------------
+RTコンポーネントのメタデータを表示する
+--------------------------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtcat [options] <path>
 
-Description
-===========
+概要
+====
 
-Equivalent to the POSIX ``cat`` command. Reads and displays the
-meta-information of RT-Components, ports and managers, as well as
-displaying the information obtained from the introspection interfaces of
-these objects.
+POSIXの``cat``コマンドと同じです。RTコンポーネント、ポート及びマネージャ
+のメタデータを読んでターミナルに表示します。
 
-Options
-=======
+オプション
+==========
 
 -l
-  Show more information. Specify multiple times for even more
-  information. [Default:: ``False``]
+  詳しい情報を示します。複数回を指定するともっと詳しい情報が表示
+  されます。[ディフォルト：``False``]
 
 .. include:: ../../common/ja/common_opts.txt
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtcat /localhost/local.host_cxt/Motor0.rtc
 
-Show the basic information about the ``Motor0.rtc`` component.
+``Motor0.rtc``の簡単な情報を示します。
 
 ::
 
   $ rtcat /localhost/local.host_cxt/Motor0.rtc -l
 
-Show more information about the ``Motor0.rtc`` component, including port
-and execution context details.
+ポートとExecution Contextを含めて``Motor0.rtc``の詳しい情報を表示
+します。
 
 ::
 
   $ rtcat /localhost/local.host_cxt/Motor0.rtc -ll
 
-Show even more information about the ``Motor0.rtc`` component, including
-current connections on each port.
+ポートの接続を含めて``Motor0.rtc``の詳しい情報を表示します。
 
 ::
 
   $ rtcat /localhost/local.host_cxt/Motor0.rtc:in -l
 
-Show only the information about the port named ``in`` on the
-``Motor0.rtc`` component.
+``Motor0.rtc``の``in``ポートのみの情報を表示します。
 
 ::
 
   $ rtcat /localhost/local.host_cxt/manager.mgr
 
-Show the basic information about the ``manager.mgr`` manager.
+``manager.mgr``というマネージャの簡単な情報を示します。
 
-See Also
-========
+参照
+====
 
 ``rtcon`` (1),
 ``rtconf`` (1),

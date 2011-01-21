@@ -171,13 +171,13 @@ The commands that work with RTSProfile files require **rtsprofile 2.0**.
 It must be installed for these commands to function.
 
 rtshell uses the new string formatting operations that were introduced
-in Python 2.6. It will not function with an earlier version of Python.
-It has not been tested with Python 3 and it is likely that several
-changes will be necessary to make it function using this version of
-Python.
+in **Python 2.6**. It will not function with an earlier version of
+Python.  It has not been tested with Python 3 and it is likely that
+several changes will be necessary to make it function using this version
+of Python.
 
-``rtinject``, ``rtlog`` and ``rtprint`` require the Python version of
-OpenRTM-aist.
+``rtinject``, ``rtlog`` and ``rtprint`` require the **Python version of
+OpenRTM-aist**.
 
 For Ubuntu users using a version of Ubuntu prior to 9.04, a suitable
 Python version must be installed by hand. Consider upgrading to Ubuntu

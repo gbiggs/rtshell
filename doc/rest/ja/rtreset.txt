@@ -2,50 +2,49 @@
 rtreset
 =======
 
-----------------
-reset components
-----------------
+----------------------------
+コンポーネントをリセットする
+----------------------------
 
 .. include: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtreset [options] <path>
 
-Description
-===========
+概要
+====
 
-Resets the specified RT-Component, provided it is in the ``error``
-state.
+エラーステートにあるのRTコンポーネントをリセットします。
 
-Options
-=======
+オプション
+==========
 
 -e EC_INDEX, --exec_context=EC_INDEX
-    Index of the execution context to change state in. The default is 0.
+    このexecution contextの中でリセットする。ディフォルトは0。
 
 .. include:: ../../common/ja/common_opts.txt
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtreset /localhost/local.host_cxt/ConsoleOut0.rtc
 
-Reset ConsoleOut0.rtc in all owned and participating execution contexts.
+``ConsoleOut0.rtc``のすべてのECにリセットにする。
 
 ::
 
   $ rtreset -e 2 /localhost/local.host_cxt/Motor0.rtc
 
-Reset Motor0.rtc in only the execution context with ID 2.
+``Motor0.rtc``を「２」というIDで示されるECだけにリセットにする。
 
-See Also
-========
+参照
+====
 
 ``rtact`` (1),
 ``rtdeact`` (1),

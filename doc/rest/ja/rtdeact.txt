@@ -2,9 +2,9 @@
 rtdeact
 =======
 
---------------------------------------
-コンポーネントをディアクティベートする
---------------------------------------
+--------------------------------
+コンポーネントを deactivate する
+--------------------------------
 
 .. include: ../../common/ja/docinfo_block.txt
 
@@ -16,13 +16,13 @@ rtdeact [options] <path>
 概要
 ====
 
-アクティブのRTコンポーネントを非アクティブにします。
+Active のRTコンポーネントを deactivate します。
 
 オプション
 ==========
 
 -e EC_INDEX, --exec_context=EC_INDEX
-    このexecution contextの中でディアクティブする。ディフォルトは0。
+    このexecution contextの中のみで deactivate する。ディフォルトは0。
 
 .. include:: ../../common/ja/common_opts.txt
 
@@ -35,13 +35,13 @@ rtdeact [options] <path>
 
   $ rtdeact /localhost/local.host_cxt/ConsoleOut0.rtc
 
-``ConsoleOut0.rtc``のすべてのECに非アクティブにする。
+``ConsoleOut0.rtc``のすべてのECに deactivate する。
 
 ::
 
   $ rtdeact -e 2 /localhost/local.host_cxt/Motor0.rtc
 
-``Motor0.rtc``を「２」というIDで示されるECだけに非アクティブにする。
+``Motor0.rtc``を「２」というIDで示されるECのみに deactivate する。
 
 参照
 ====

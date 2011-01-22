@@ -2,59 +2,59 @@
 rtcwd
 =====
 
-------------------------------------
-change the current working directory
-------------------------------------
+----------------------------------
+現在のワーキングダイレクトリの変更
+----------------------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtcwd [path]
 
-Description
-===========
+概要
+====
 
-Changes the current working directory in the RTC Tree.
+RTCツリーの中の現在のワーキングダイレクトリを変更します。
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtcwd
 
-Change to the root directory.
+ルートダイレクトリに移動します。
 
 ::
 
   $ rtcwd /
 
-Change to the root directory.
+ルートダイレクトリに移動します。
 
 ::
 
   $ rtcwd /localhost/local.host_cxt
 
-Change to the ``/localhost/local.host_cxt`` directory.
+``/localhost/local.host_cxt``というダイレクトリに移動します。
 
 ::
 
   $ rtcwd ..
 
-Change to the parent directory.
+親ダイレクトリに移動します。
 
 ::
 
   $ rtcwd ../..
 
-Change to the grandparent directory.
+親ダイレクトリの親ダイレクトリに移動します。
 
-See Also
-========
+参照
+====
 
   ``rtls`` (1),
   ``rtpwd`` (1)

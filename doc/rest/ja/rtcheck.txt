@@ -2,72 +2,69 @@
 rtcheck
 =======
 
----------------------------
-check RT-System consistency
----------------------------
+------------------------
+RTシステムをチェックする
+------------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtcheck [options] <RTSProfile specification file>
 
-Description
-===========
+概要
+====
 
-Checks the consistency of a running system against an RTSProfile. Identifies
-errors including missing connections and components in the incorrect state.
+起動中のRTシステムをRTSProfileと比べて欠けている接続やステートが違うコン
+ポーネントなどのようなエラーを報告します。
 
-XML format is used by default; to use RTSProfiles specified in YAML,
-specify ``--yaml``.
+ディフォルトでRTSProfileファイルをXMLとしてロードします。YAMLを使う場合
+は``--yaml``を使ってください。
 
-Options
-=======
+オプション
+==========
 
 --dry-run
-  Print what will be done but don't actually do anything.
+  何をするかを表示するが実行しない
 
 -s STATE, --state=STATE
-  The expected state of the RT Components in the system. The default is
-  ``Active``.
+  全コンポーネントの予想ステート。ディフォルトは``Active``です。
 
 -x, --xml
-  Use XML input format.
+  XMLフォーマットを使う。
 
 -y, --yaml
-  Use YAML input format.
+  YAMLフォーマットを使う。
 
 .. include:: ../../common/ja/common_opts.txt
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtcheck sys.rtsys
 
-Check if the system specified in the RTSProfile stored in ``sys.rtsys``
-is correctly set up in the current running components, with all
-components in the ``active`` state.
+``sys.rtsys``というRTSProfileファイルに保存されたシステムはエラーなしに
+起動中ですべてのコンポーネントは active だと確認します。
 
 ::
 
   $ rtcheck sys.rtsys -s Inactive
 
-The same as above, but expect the components to be in the ``inactive``
-state.
+全コンポーネントは inactive のステートにある以外、以上と同じです。
 
 ::
 
   $ rtcheck sys.rtsys --dry-run
 
-Display the actions that will be performed to check the system state.
+システムチェックのために何をするかを表示します。
 
-See Also
-========
+参照
+====
 
 ``rtcat`` (1),
 ``rtresurrect`` (1),

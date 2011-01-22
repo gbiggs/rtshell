@@ -16,13 +16,13 @@ rtreset [options] <path>
 概要
 ====
 
-エラーステートにあるのRTコンポーネントをリセットします。
+エラーステートにあるRTコンポーネントをリセットします。
 
 オプション
 ==========
 
 -e EC_INDEX, --exec_context=EC_INDEX
-    このexecution contextの中でリセットする。ディフォルトは0。
+    このexecution contextの中のみでリセットする。ディフォルトは0。
 
 .. include:: ../../common/ja/common_opts.txt
 
@@ -41,7 +41,7 @@ rtreset [options] <path>
 
   $ rtreset -e 2 /localhost/local.host_cxt/Motor0.rtc
 
-``Motor0.rtc``を「２」というIDで示されるECだけにリセットにする。
+``Motor0.rtc``を「２」というIDで示されるECのみにリセットにする。
 
 参照
 ====

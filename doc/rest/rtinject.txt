@@ -28,7 +28,7 @@ Options
 
 -c CONST, --const=CONST
   The constant value to send, as a Python expression. If not specified,
-  values will be read from stdin. Any occurances of ``{time}`` in the
+  values will be read from stdin. Any occurrences of ``{time}`` in the
   constant expression will be replaced with the current time.
 
 -m MODULES, --mod=MODULES

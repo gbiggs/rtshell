@@ -40,8 +40,8 @@ Options
 
 .. include:: ../../common/ja/common_opts.txt
 
-Start plans
-===========
+ステート変更のプラン
+====================
 
 .. include:: ../../common/ja/start_stop_plans.txt
 

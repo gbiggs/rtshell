@@ -2,97 +2,92 @@
 rtdoc
 =====
 
---------------------------------
-print RT-Component documentation
---------------------------------
+------------------------------------------------
+RTコンポーネントのドキュメンテーションを表示する
+------------------------------------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtdoc [options] <path>
 
-Description
-===========
+概要
+====
 
-Print the documentation for an RT-Component.
+RTコンポーネントのドキュメンテーションを表示します。
 
-Some RT-Components contain documentation internally, stored in hidden
-configuration sets. This tool prints that documentation in several
-convenient formats, including reStructuredText, HTML and LaTeX (suitable
-for compiling to PDF).
+あるRTコンポーネントは隠されたコンフィグレーションセットにドキュメンテー
+ションを保存します。このツールでそのドキュメンテーションを複数のフォー
+マットで表示できます。対応フォーマットは reStructuredText、HTML、および
+PDFようのLaTeXです。
 
-Options
-=======
+オプション
+==========
 
 -f FORMAT, --format=FORMAT
-  Output format (one of ``rst``, ``html`` or ``latex``).
+  フォーマットを選択します。``rst``、``html``および``latex``から選択し
+  てください。
 
 .. include:: ../../common/ja/common_opts.txt
 
-RT-Component documentation
-==========================
+RTコンポーネントのドキュメンテーション
+======================================
 
-To be compatible with this tool, an RT-Component must store its
-documentation in a configuration set called ``__doc__``. Any parameters
-in this set that are *not* hidden are added to the documentation as
-sections.
+このツールに対応するためにRTコンポーネントは``__doc__``というセットに
+ドキュメンテーションを保存しないとなりません。このせっとの隠されていな
+いパラメータはすべてドキュメンテーションのセクションになります。隠され
+たセットは名が``__``で囲まれています。
 
-The common sections are:
+一般のセクションは以下の用です::
 
   intro
-    An introduction to the component, giving a brief description of its
-    purpose. (Title: ``Introduction``.)
+    コンポーネントの紹介です。目的を短く説明します。(Title:
+    ``Introduction``.)
 
   reqs
-    Pre-requisites for using the component, such as other software that
-    must be installed. (Title: ``Pre-requisites``.)
+    ほかの必要なソフトなどのコンポーネントを使うような要件です。
+    (Title: ``Pre-requisites``.)
 
   install
-    How to install the component. (Title: ``Installation``.)
+    コンポーネントのインストール手続きです。
+    (Title: ``Installation``.)
 
   usage
-    How to launch and use the component. (Title: ``Usage``.)
+    コンポーネントの使い方です。(Title: ``Usage``.)
 
   misc
-    Any other information important to using the component. (Title:
-    ``Miscellaneous``.)
+    ほかの必要な情報です。(Title: ``Miscellaneous``.)
 
   changelog
-    A description of changes to the component since the previous
-    versions. (Title: ``Changelog``.)
+    コンポーネントのバージョンの間の変更を説明します。
+    (Title: ``Changelog``.)
 
-In addition, a ``ports`` section and a ``config`` section are
-automatically created if the component has any ports or any
-configuration parameters in its ``default`` configuration set. Any other
-sections present in the ``__doc__`` set will also be added to the
-documentation.
+そのうえ、コンポーネントはポートがある場合、``ports``というセクションが
+自動的に作られて、``default``というセットにコンフィグレーションパラメー
+タがある場合、``config``というセクションが自動的に作られます。
+``__doc__``セットにほかのセクションがある場合、それも自動的に作られます。
 
-You can also set three parameters to add extra information to the
-documentation preamble:
+ドキュメンテーションの前書きに情報も以下の追加できます。``__doc__``
+セットにパラメータを設定してください。
 
   __license__
-    The license of the component, such as ``GPL`` or ``BSD``.
+    コンポーネントのライセンス。LGPL、BSD等。
 
   __contact__
-    Contact information, such as the author's email address.
+    開発者の連絡先。メールアドレス等。
 
   __url__
-    The component's home page.
+    コンポーネントのウェブサイト。
 
-These parameters can be set either in the component source or in a
-configuration file loaded when the component is launched. It is
-recommended that the parameters be set in the source so that the
-documentation is always available. Note that in-source documentation
-will increase the size of the component binary and memory requirements.
-Keep the documentation brief to avoid this causing problems in
-low-memory systems.
+ドキュメンテーションのパラメータはソースまたはコンフィグレーションファイ
+ルに設定することは加能です。ソースに設定したらコンポーネントを使う時に必
+要なメモリーが大きくなることはあるので、ファイルの方がおすすめです。
 
-For example, to set them in the source, use something similar to the
-following::
+ソースに設定する場合は以下のようにできます::
 
-  'conf.__doc__.__license__', 'EPL',
+  'conf.__doc__.__license__', 'LGPL',
   'conf.__doc__.__contact__', 'a@example.com',
   'conf.__doc__.__url__', 'http://www.openrtm.org',
   'conf.__doc__.intro', 'This is the introduction.',
@@ -103,66 +98,65 @@ following::
   'conf.__doc__.changelog', 'No changes.',
   'conf.__doc__.Another', 'A non-standard section.',
 
-By default, the sections are included in the following order:
+ディフォルトでセクションは以下の順番に表示します。
 
-  intro, reqs, usage, ports, config, misc, changelog, [other sections]
+  intro, reqs, usage, ports, config, misc, changelog, [他のセクション]
 
-This can be changed by setting the ``__order__`` parameter in the
-``__doc__`` set. It must be set to a comma-separated list of parameter
-names, where each parameter name is a section in the documentation. For
-example::
+``__doc__``セットの``__order__``というパラメータを設定したら変わること
+は加能です。コンマで分かれたパラメータ名のリストに設定してください。パ
+ラメータ名はセクションを示します::
 
   'conf.__doc__.__order__', 'intro,ports,config,reqs,Another'
 
-Any sections not mentioned in this parameter are added after the
-specified sections. The order in which they are added is not defined.
+このパラメータに入っていないセクションはその後に表示します。
 
-To document ports, add a ``description`` property to the port. For
-example::
+ポートのドキュメンテーションは``description``というプロパティをポートに
+追加して提供します::
 
   self._inport.addProperty('description', 'This port receives stuff.')
 
-To document configuration parameters, set the parameter in the
-``__description__`` set. For example::
+コンフィグレーションパラメータのドキュメンテーションは
+``__description__``というセットに提供します::
 
   'conf.default.param', '0',
   'conf.__description__.param', 'A test parameter.',
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtdoc /localhost/ConsoleOut0.rtc
 
-Print the ``ConsoleOut0.rtc`` component's documentation to stdout.
+``ConsoleOut0.rtc``のドキュメンテーションをスタンダードアウトに表示しま
+す。
 
 ::
 
   $ rtdoc /localhost/ConsoleOut0.rtc > doc.html
 
-Print the ``ConsoleOut0.rtc`` component's documentation to the file
-``doc.html``.
+``ConsoleOut0.rtc``のドキュメンテーションを``doc.html``というファイルに
+保存します。
 
 ::
 
   $ rtdoc /localhost/ConsoleOut0.rtc -f rst
 
-Print the ``ConsoleOut0.rtc`` component's documentation in
-reStructuredText format.
+``ConsoleOut0.rtc``のドキュメンテーションをreStructuredTextフォーマット
+に表示します。
 
 ::
 
   $ rtdoc /localhost/ConsoleOut0.rtc -f latex > doc.tex &&
     rubber -d doc.tex
 
-Make a PDF of ``ConsoleOut0.rtc``'s documentation, using the ``rubber``
-tool to compile the LaTeX file.
+``ConsoleOut0.rtc``のドキュメンテーションを``rubber``ツールによってPDF
+に保存します。
 
-See Also
-========
+参照
+====
 
   ``rtconf`` (1),
   ``rubber`` (1)

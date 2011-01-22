@@ -2,9 +2,9 @@
 rtact
 =====
 
-----------------------------------
-コンポーネントをアクティベートする
-----------------------------------
+------------------------------
+コンポーネントを activate する
+------------------------------
 
 .. include: ../../common/ja/docinfo_block.txt
 
@@ -16,13 +16,13 @@ rtact [options] <path>
 概要
 ====
 
-非アクティブのRTコンポーネントをアクティブにします。
+Inactive のRTコンポーネントを activate します。
 
 オプション
 ==========
 
 -e EC_INDEX, --exec_context=EC_INDEX
-    このexecution contextの中でアクティブする。ディフォルトは0。
+    このexecution contextの中のみで activate する。ディフォルトは0。
 
 .. include:: ../../common/ja/common_opts.txt
 
@@ -35,13 +35,13 @@ rtact [options] <path>
 
   $ rtact /localhost/local.host_cxt/ConsoleOut0.rtc
 
-``ConsoleOut0.rtc``のすべてのECにアクティブにする。
+``ConsoleOut0.rtc``のすべてのECに activate する。
 
 ::
 
   $ rtact -e 2 /localhost/local.host_cxt/Motor0.rtc
 
-``Motor0.rtc``を「２」というIDで示されるECだけにアクティブにする。
+``Motor0.rtc``を「２」というIDで示されるECのみに activate する。
 
 参照
 ====

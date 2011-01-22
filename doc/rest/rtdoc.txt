@@ -82,17 +82,16 @@ documentation preamble:
     The component's home page.
 
 These parameters can be set either in the component source or in a
-configuration file loaded when the component is launched. It is
-recommended that the parameters be set in the source so that the
-documentation is always available. Note that in-source documentation
-will increase the size of the component binary and memory requirements.
-Keep the documentation brief to avoid this causing problems in
-low-memory systems.
+configuration file loaded when the component is launched. Because
+in-source documentation increases the size of the component binary and
+memory requirements, it is recommended that the documentation be set in
+a configuration file, with the possible exception of brief contact and
+usage information.
 
 For example, to set them in the source, use something similar to the
 following::
 
-  'conf.__doc__.__license__', 'EPL',
+  'conf.__doc__.__license__', 'LGPL',
   'conf.__doc__.__contact__', 'a@example.com',
   'conf.__doc__.__url__', 'http://www.openrtm.org',
   'conf.__doc__.intro', 'This is the introduction.',

@@ -2,73 +2,73 @@
 rtdel
 =====
 
---------------------------
-delete name server entries
---------------------------
+----------------------------------
+ネームサーバからオブジェクトを消す
+----------------------------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtdel [options] <path>
 
-Description
-===========
+概要
+====
 
-Deletes an object's registration from a name server. This command will
-not shut down the object itself. If another reference to the object does
-not exist, it will no longer be accessible. Care must be taken when
-deleting naming contexts and managers not to unlink a large section of
-the tree, as you will not be able to get it back.
+ネームサーバからオブジェクトの登録を消します。このコマンドでオブジェク
+トを終了することはできません。オブジェクトはほかのところに登録されてい
+ない場合、そのオブジェクトにもう接続できない状態になるので注意してくだ
+さい。コンテクストやマネージャを消す時ほかのオブジェクトも消す可能性は
+あるので注意してください。
 
-This command is particularly useful to remove zombie registrations. It
-can mass-remove all known zombies in a single pass.
+このコマンドでゾンビを消すことに便利です。一つのコマンドですべてのゾン
+ビを消すことが可能です。
 
-Options
-=======
+オプション
+==========
 
 -z, --zombies
-  Delete only zombies.
+  ゾンビ飲みを消す。
 
-.. include:: ../../common/common_opts.txt
+.. include:: ../../common/ja/common_opts.txt
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtdel /localhost/Motor0.rtc
 
-Delete the ``Motor0.rtc`` component from the ``localhost`` name server.
-The component will not be shut down.
+``localhost``というネームサーバから``Motor0.rtc``を消します。コンポーネ
+ントは終了しません。
 
 ::
 
   $ rtdel -z /localhost/Motor0.rtc
 
-Delete the ``Motor0.rtc`` component from the ``localhost`` name server,
-but only if it is a zombie.
+``localhost``というネームサーバから``Motor0.rtc``というゾンビを消しま
+す。``Motor0.rtc``はゾンビではない場合は消しません。
 
 ::
 
   $ rtdel /localhost/local.host_cxt
 
-Delete the ``local.host_cxt`` naming context from the ``localhost`` name
-server. Any components and managers registered below the context will
-become inaccessible.
+``localhost``というネームサーバから``local.host_cxt``というコンテクスト
+を消します。そのコンテクストの中のコンポーネントやマネージャはすべて消
+します。
 
 ::
 
   $ rtdel -z
 
-Delete all known zombies from all known name servers.
+すべてのネームサーバからすべてのゾンビを消します。
 
 
-See Also
-========
+参照
+====
 
   ``rtls`` (1),
   ``rtmgr`` (1)

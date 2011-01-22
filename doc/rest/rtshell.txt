@@ -8,6 +8,29 @@ command line tools for RT-Middleware
 
 .. include:: ../common/docinfo_block.txt
 
+
+Description
+===========
+
+rtshell provides commands used to manage individual RT components and
+managers, as well as complete RT Systems. It can be used with the
+OpenRTM-aist middleware or middlewares that use a compatible CORBA-based
+introspection system.
+
+Many of the commands allow components and managers running on
+nameservers to be treated like a file system. Directories can be
+entered, components can be cat'd and activated/deactivated/reset,
+connections made and removed, and so on.  Other commands are used in
+conjunction with RtsProfile XML/YAML files to manage complete RT
+Systems.
+
+The commands are aimed at users of OpenRTM-aist who wish to manage
+components on low-resource systems, systems where a GUI is not available
+(particularly where no network connection is available to manage
+components from another computer), as well as those who face other
+difficulties using RTSystemEditor.  Being familiar with using a
+command-line is a benefit when using these commands of rtshell.
+
 Commands
 ========
 
@@ -44,6 +67,9 @@ Commands
   rtdis
     Disconnect ports.
 
+  rtdoc
+    Print RT-Component documentation.
+
   rtexit
     Make an RT-Component stop running and exit.
 
@@ -57,7 +83,7 @@ Commands
     Record and replay logs of data sent by ports.
 
   rtls
-    List the current working directory in the RTC Tree.
+    List a directory in the RTC Tree.
 
   rtmgr
     Use managers to create and delete RT-Components.
@@ -145,13 +171,13 @@ The commands that work with RTSProfile files require **rtsprofile 2.0**.
 It must be installed for these commands to function.
 
 rtshell uses the new string formatting operations that were introduced
-in Python 2.6. It will not function with an earlier version of Python.
-It has not been tested with Python 3 and it is likely that several
-changes will be necessary to make it function using this version of
-Python.
+in **Python 2.6**. It will not function with an earlier version of
+Python.  It has not been tested with Python 3 and it is likely that
+several changes will be necessary to make it function using this version
+of Python.
 
-``rtinject``, ``rtlog`` and ``rtprint`` require the Python version of
-OpenRTM-aist.
+``rtinject``, ``rtlog`` and ``rtprint`` require the **Python version of
+OpenRTM-aist**.
 
 For Ubuntu users using a version of Ubuntu prior to 9.04, a suitable
 Python version must be installed by hand. Consider upgrading to Ubuntu
@@ -159,6 +185,12 @@ Python version must be installed by hand. Consider upgrading to Ubuntu
 
 
 .. include:: ../common/common_body.txt
+
+
+Bugs
+====
+
+The tools have been reported to not work well with the JAVA ORB.
 
 
 See also

@@ -1,0 +1,44 @@
+RTSProfileには、RTシステムのステート変化を管理するための施設を含んでいま
+す。コンポーネントステートの変更の順番を指定することは可能で、コンポーネ
+ントは別のコンポーネントの後にステートを変更することは必要な時にその順番
+を自動的に経産可能です。
+
+``rtstart(1)``と``rtstop(1)``はこの情報を利用します。``rtstart``は
+``Activation``ブロックに含まれていた情報を利用して、``rtstop``は
+``Deactivation``ブロックに含まれていた情報を利用します。実行された時、そ
+れらは全システムの状態の変更のために計画を構築し実行します。エラーが出る
+か計画が完成までに止まりません。
+
+--dry-runというオプションを追加すると計画は表示されますが実行はしません。
+計画の出力は以下のようです::
+
+ {1} Activate /localhost/ConfigSample0.rtc in execution context 0 (Required)
+ {2} [Order 1] Activate /localhost/Motor0.rtc in execution context 0 (Required)
+ {4} [Order 3/Wait 5000ms] Activate /localhost/Controller0.rtc in execution context 0 (Required)
+ {3} [Order 2/Sync to Motor0, Order 5/Sync to Controller0] Activate /localhost/Sensor0.rtc in execution context 0 (Required)
+ {5} [Order 4/After ConfigSample0's action] Activate /localhost/ConsoleIn0.rtc in execution context 0 (Required)
+
+各ラインの初めの括弧の中の数は*アクションID*です。これらは実行の時にも表
+示され、アクションの簡単な識別は可能です。
+
+続いて、角括弧中の値が出る可能性はあります。これは、実行されているアク
+ションに関するどんな*前条件*を示します:
+
+  Order
+    順番を管理します。RTSProfile の condition の rts:sequence 値で設定可
+    能です。他の前条件がない場合、アクションはこの順番によって実行します。
+
+  Wait
+    アクションが実行される前に規定時間が過ぎることが必要だと示します。
+
+  Sync
+    指定されたコンポーネントが目的状態に達するまで実行する行動を妨げます。
+
+  After
+    ``Sync``と似てます。違いは、それらが指定されたアクションが別のコンポ
+    ーネント上で最初に行なわれるのを待つということです。言いかえれば、そ
+    のアクションは、別のコンポーネントのアクションの後に、だがそれが目的
+    状態に達したという確証の前に実行されます。
+
+ラインの残りはアクションの説明です。
+

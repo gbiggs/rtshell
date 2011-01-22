@@ -2,103 +2,103 @@
 rtls
 ====
 
---------------------------------
-list directories in the RTC Tree
---------------------------------
+--------------------------------------
+ダイレクトリのオブジェクトをリストする
+--------------------------------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtls [options] [path]
 
-Description
-===========
+概要
+====
 
-List the contents of the a directory in the RTC Tree. The default is to
-list the contents of the current working directory.
+RTCツリーのダイレクトリにあるオブジェクトをリストします。ディフォルトは
+現在のワーキングダイレクトリをリストします。
 
-The long display shows the following information in columns for
-RT-Components:
+長い表示は以下の列も表示します。
 
- - State
+ - ステート
 
- - Total number of ports/Total connected
+ - ポートの数 / 接続されたポートの数
 
- - Input ports/Inputs connected
+ - インポートの数 / 接続されたインポートの数
 
- - Output ports/Outputs connected
+ - アウトポートの数 / 接続されたアウトポートの数
 
- - Service ports/Service connected
+ - サービスポートの数 / 接続されたサービスポートの数
 
- - Name
+ - 名
 
-Options
-=======
+オプション
+==========
 
 -l
-  Use a long listing format.
+  長い情報を表示する
 
 -R, --recurse
-  List recursively.
+  リカースに表示する
 
-.. include:: ../../common/common_opts.txt
+.. include:: ../../common/ja/common_opts.txt
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtls
 
-List the contents of the current working directory.
+現在のワーキングダイレクトリをリストします。
 
 ::
 
   $ rtls /
 
-List the contents of the root directory of the RTC Tree. This will show
-a list of known name servers.
+RTCツリーのルートダイレクトリをリストします。このコマンドはネームサーバ
+を表示します。
 
 ::
 
   $ rtls /localhost
 
-List the objects registered directly to the ``localhost`` name server.
+``localhost``というネームサーバの直接登録されてオブジェクトをリストしま
+す。
 
 ::
 
   $ rtls -R /localhost
 
-List all objects in the ``localhost`` name server, even those registered
-to other naming contexts and managers below the name server.
+``localhost``というネームサーバのすべての登録されたオブジェクトをリスト
+します。
 
 ::
 
   $ rtls -l /localhost
 
-Get a long listing of the objects registered below ``/localhost``,
-showing information such as the status of components.
+``localhost``というネームサーバの登録されたオブジェクトを長いほうに
+リストします。コンポーネントのステートなどを見ることが加能です。
 
 ::
 
   $ rtls -lR /localhost
 
-Get a long listing of all objects in the ``localhost`` name server.
+すべての``localhost``に登録されたオブジェクトの長い情報をリストします。
 
 ::
 
   $ watch -n 1 rtls -l
 
-(POSIX only) Display the status of all components in the current working
-directory, updating the display once per second.
+（POSIXのみ）現在のワーキングダイレクトリのコンポーネントのステートを
+表示して、1秒ずつ表示されたデータをアップデートします。
 
 
-See Also
-========
+参照
+====
 
   ``rtcat`` (1),
   ``rtcwd`` (1),

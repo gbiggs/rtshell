@@ -2,84 +2,79 @@
 rtconf
 ======
 
--------------------------------
-manage configuration parameters
--------------------------------
+------------------------------------
+コンフィグレーションパラメータの管理
+------------------------------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtconf <path> [options] [command] [args]
 
-Description
-===========
+概要
+====
 
-Display and edit configuration parameters and sets.
+コンフィグレーションパラメータとセットを表示して編集します。
 
-A command should be one of:
+「command」は以下の一つを使ってください。
 
   - list
   - set
   - get
   - act
 
-If no command is specified, the list command will be executed.
+「command」は指定されていない場合、``list``コマンドを実行します。
 
 ::
 
   list
 
-The ``list`` command displays the configuration sets and parameters. It
-takes no arguments. By default, hidden sets (sets who's name is
-surrounded by ``__``) are not displayed.
+``list``コマンドはコンフィグレーションセットとパラメータを表示します。
+隠されたセット（セット名は``__``で始まる）は表示しません。
 
 ::
 
   set <parameter> <value>
 
-The ``set`` command changes the value of a configuration parameter in
-one set. It requires a parameter name and a value as arguments.  If no
-configuration set is specified (using ``--set``), the parameter is
-changed in the currently active configuration set.
+コンフィグレーションパラメータの値を編集します。パラメータ名と新しい値
+を指定してください。``--set``オプションは指定されていない場合、現在の
+アクティブセットのパラメータを編集します。
 
 ::
 
   get <parameter>
 
-The ``get`` command prints the value of a configuration parameter in one
-configuration set. It requires a parameter name as its argument. If no
-configuration set is specified (using ``--set``), the parameter value
-from the currently activate configuration set is retrieved.
+一つのパラメータの値を表示します。パラメータ名を指定してください。
+``--set``オプションは指定されていない場合、現在のアクティブセットの値を
+表示します。
 
 ::
 
-  act <set>
+  act
 
-The act command requires a configuration set as its argument. It
-activates that set.
+アクティブセットを変更します。セット名は``--set``で指定してください。
 
-Options
-=======
+オプション
+==========
 
 -a, --all
-  Do not ignore hidden sets. This option must be specified to work with
-  hidden configuration sets.
+  隠されたセットを無視しない。隠されたセットを編集したがる方はこのオプ
+  ションを指定してください。
 
 -l
-  Show more information.
+  詳しい情報を表示する。
 
 -s SET_NAME, --set=SET_NAME
-  Choose the configuration set to work with. If not specified, the
-  default set is used.
+  セットを選択する。指定されていない場合、現在のアクティブセットを使う。
 
-.. include:: ../../common/common_opts.txt
+.. include:: ../../common/ja/common_opts.txt
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
@@ -88,7 +83,7 @@ Examples
   +mode0
   +mode1
 
-Display the configuration sets in the ``ConfigSample0.rtc`` component.
+``ConfigSample0.rtc``のセットを表示します。
 
 ::
 
@@ -98,8 +93,7 @@ Display the configuration sets in the ``ConfigSample0.rtc`` component.
     double_param1  -0.99
   ...
 
-Display the configuration sets and their parameters in the
-``ConfigSample0.rtc`` component.
+``ConfigSample0.rtc``のセットとパラメータを表示します。
 
 ::
 
@@ -110,8 +104,7 @@ Display the configuration sets and their parameters in the
   +mode0
   +mode1
 
-Display the configuration sets and their parameters in the
-``ConfigSample0.rtc`` component, including hidden sets.
+隠されたセットを含めて``ConfigSample0.rtc``のセットを表示します。
 
 ::
 
@@ -121,53 +114,48 @@ Display the configuration sets and their parameters in the
     double_param1
   ...
 
-Display the parameters of the ``default`` configuration set in the
-``ConfigSample0.rtc`` component.
+``ConfigSample0.rtc``の``default``セットのパラメータを表示します。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc set int_param0 42
 
-Change the value of the ``int_param0`` parameter to 42 in the
-currently-active configuration set.
+現在のアクティブセットの``int_param0``パラメータの値を42に編集します。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc -s mode0 set int_param0 42
 
-Change the value of the ``int_param0`` parameter to 42 in the ``mode0``
-set.
+``mode0``というセットの``int_param0``を42に編集します。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc get int_param0
   0
 
-Get the value of the ``int_param0`` parameter in the currently-active
-configuration set.
+現在のアクティブセットの``int_param0``パラメータの値を取得します。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc -s mode0 get int_param0
   12345
 
-Get the value of the ``int_param0`` parameter in the ``mode0``
-configuration set.
+``mode0``というセットの``int_param0``パラメータの値を取得します。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc act mode1
 
-Activate the ``mode1`` configuration set.
+現在のアクティブセットを``mode1``というセットにします。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc -a act __widget__
 
-Activate the ``__widget__`` configuration set.
+現在のアクティブセットを``__widget__``というセットにします。
 
-See Also
-========
+参照
+====
 
   ``rtcat`` (1)
 

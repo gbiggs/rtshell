@@ -2,87 +2,85 @@
 rtfind
 ======
 
---------------------
-search the RTC Tree
---------------------
+---------------
+RTCツリーに探す
+---------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtfind <search path> [options]
 
-Description
-===========
+概要
+====
 
-Searches the known name servers in the RTC Tree for components, managers
-and other such objects. Constraints can be placed on the search to limit
-the results.
+RTCツリーのネームサーバにコンポーネントやマネジャーなどを探します。探す
+条件を設定することは加能です。
 
-Options
-=======
+オプション
+==========
 
 -i INAME, --iname=INAME
-  Case-insensitive name pattern. This option can be specified multiple
-  times.
+  小文字と大文字を区別なしで名を探す。複数回指定可能。
 
 -m MAX_DEPTH, --maxdepth=MAX_DEPTH
-  Maximum depth to search down to in the tree. The default is to search
-  the entire tree.
+  探す時の深さ制限。ディフォルトはすべてのツリーに探します。
 
 -n NAME, --name=NAME
-  Case-sensitive name pattern. This option can be specified multiple
-  times.
+  小文字と大文字を区別して名を探す。複数回指定可能。
 
 -t TYPE, --type=TYPE
-  Type of object: ``c`` (component), ``d`` (directory), ``m`` (manager),
-  ``n`` (name server), ``z`` (zombie).
+  オブジェクトの種類。文字で指定してください。
+  ``c`` (コンポーネント), ``d`` (ダイレクトリ), ``m`` (マネージャ),
+  ``n`` (ネームサーバ), ``z`` (ゾンビ).
 
-.. include:: ../../common/common_opts.txt
+.. include:: ../../common/ja/common_opts.txt
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtfind / -t c
 
-Find all components in the tree. The search starts at the root
-directory.
+RTCツリーの中のすべてのコンポーネントを探します。探すことはルートダイレ
+クトリから始まります。
 
 ::
 
   $ rtfind . -t cm
 
-Find all components and managers in or below the current working
-directory.
+現在のワーキングダイレクトリの下のすべてのコンポーネントとマネージャを
+探します。
 
 ::
 
   $ rtfind . -n 'Conso*' -type c
 
-Find all components in or below the current working directory whose
-names start with ``Conso``.
+現在のワーキングダイレクトリの下に名が``Conso``で始まるコンポーネントを
+探します。
 
 ::
 
   $ rtfind . -i 'console?.rtc' -type c
 
-Find all components in or below the current working directory whose
-names start start with ``console`` (case insensitive) and end with
-``.rtc`` (case insensitive), with only one character in between.
+現在のワーキングダイレクトリの下の名が``console``で始まって``.rtc``で終
+わって間に一字のみあるコンポーネントを探します。小文字と大文字を区別しま
+せん。
 
 ::
 
   $ for c in `rtfind . -type c -m 1`; do rtact ${c}; done
 
-(POSIX only) Activate all components in the current working directory.
+（POSIXのみ）現在のワーキングダイレクトリのすべてのコンポーネントを
+activate します。
 
-See Also
-========
+参照
+====
 
   ``rtls`` (1)
 

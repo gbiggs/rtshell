@@ -1,0 +1,163 @@
+=====
+rtdoc
+=====
+
+------------------------------------------------
+RTコンポーネントのドキュメンテーションを表示する
+------------------------------------------------
+
+.. include:: ../../common/ja/docinfo_block.txt
+
+書式
+====
+
+rtdoc [options] <path>
+
+概要
+====
+
+RTコンポーネントのドキュメンテーションを表示します。
+
+あるRTコンポーネントは隠されたコンフィグレーションセットにドキュメンテー
+ションを保存します。このツールでそのドキュメンテーションを複数のフォー
+マットで表示できます。対応フォーマットは reStructuredText、HTML、および
+PDFようのLaTeXです。
+
+オプション
+==========
+
+-f FORMAT, --format=FORMAT
+  フォーマットを選択します。``rst``、``html``および``latex``から選択し
+  てください。
+
+.. include:: ../../common/ja/common_opts.txt
+
+RTコンポーネントのドキュメンテーション
+======================================
+
+このツールに対応するためにRTコンポーネントは``__doc__``というセットに
+ドキュメンテーションを保存しないとなりません。このせっとの隠されていな
+いパラメータはすべてドキュメンテーションのセクションになります。隠され
+たセットは名が``__``で囲まれています。
+
+一般のセクションは以下の用です::
+
+  intro
+    コンポーネントの紹介です。目的を短く説明します。(Title:
+    ``Introduction``.)
+
+  reqs
+    ほかの必要なソフトなどのコンポーネントを使うような要件です。
+    (Title: ``Pre-requisites``.)
+
+  install
+    コンポーネントのインストール手続きです。
+    (Title: ``Installation``.)
+
+  usage
+    コンポーネントの使い方です。(Title: ``Usage``.)
+
+  misc
+    ほかの必要な情報です。(Title: ``Miscellaneous``.)
+
+  changelog
+    コンポーネントのバージョンの間の変更を説明します。
+    (Title: ``Changelog``.)
+
+そのうえ、コンポーネントはポートがある場合、``ports``というセクションが
+自動的に作られて、``default``というセットにコンフィグレーションパラメー
+タがある場合、``config``というセクションが自動的に作られます。
+``__doc__``セットにほかのセクションがある場合、それも自動的に作られます。
+
+ドキュメンテーションの前書きに情報も以下の追加できます。``__doc__``
+セットにパラメータを設定してください。
+
+  __license__
+    コンポーネントのライセンス。LGPL、BSD等。
+
+  __contact__
+    開発者の連絡先。メールアドレス等。
+
+  __url__
+    コンポーネントのウェブサイト。
+
+ドキュメンテーションのパラメータはソースまたはコンフィグレーションファイ
+ルに設定することは加能です。ソースに設定したらコンポーネントを使う時に必
+要なメモリーが大きくなることはあるので、ファイルの方がおすすめです。
+
+ソースに設定する場合は以下のようにできます::
+
+  'conf.__doc__.__license__', 'LGPL',
+  'conf.__doc__.__contact__', 'a@example.com',
+  'conf.__doc__.__url__', 'http://www.openrtm.org',
+  'conf.__doc__.intro', 'This is the introduction.',
+  'conf.__doc__.reqs', 'This component requires nothing.',
+  'conf.__doc__.install', 'Type "make install"',
+  'conf.__doc__.usage', 'Run comp_standalone.',
+  'conf.__doc__.misc', 'Extra information.',
+  'conf.__doc__.changelog', 'No changes.',
+  'conf.__doc__.Another', 'A non-standard section.',
+
+ディフォルトでセクションは以下の順番に表示します。
+
+  intro, reqs, usage, ports, config, misc, changelog, [他のセクション]
+
+``__doc__``セットの``__order__``というパラメータを設定したら変わること
+は加能です。コンマで分かれたパラメータ名のリストに設定してください。パ
+ラメータ名はセクションを示します::
+
+  'conf.__doc__.__order__', 'intro,ports,config,reqs,Another'
+
+このパラメータに入っていないセクションはその後に表示します。
+
+ポートのドキュメンテーションは``description``というプロパティをポートに
+追加して提供します::
+
+  self._inport.addProperty('description', 'This port receives stuff.')
+
+コンフィグレーションパラメータのドキュメンテーションは
+``__description__``というセットに提供します::
+
+  'conf.default.param', '0',
+  'conf.__description__.param', 'A test parameter.',
+
+.. include:: ../../common/ja/common_body.txt
+
+例
+==
+
+::
+
+  $ rtdoc /localhost/ConsoleOut0.rtc
+
+``ConsoleOut0.rtc``のドキュメンテーションをスタンダードアウトに表示しま
+す。
+
+::
+
+  $ rtdoc /localhost/ConsoleOut0.rtc > doc.html
+
+``ConsoleOut0.rtc``のドキュメンテーションを``doc.html``というファイルに
+保存します。
+
+::
+
+  $ rtdoc /localhost/ConsoleOut0.rtc -f rst
+
+``ConsoleOut0.rtc``のドキュメンテーションをreStructuredTextフォーマット
+に表示します。
+
+::
+
+  $ rtdoc /localhost/ConsoleOut0.rtc -f latex > doc.tex &&
+    rubber -d doc.tex
+
+``ConsoleOut0.rtc``のドキュメンテーションを``rubber``ツールによってPDF
+に保存します。
+
+参照
+====
+
+  ``rtconf`` (1),
+  ``rubber`` (1)
+

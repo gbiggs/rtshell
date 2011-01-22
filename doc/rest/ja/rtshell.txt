@@ -2,124 +2,147 @@
 rtshell
 =======
 
-------------------------------------
-command line tools for RT-Middleware
-------------------------------------
+--------------------------------------
+RTミドルウェア用のコマンドラインツール
+--------------------------------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
-Commands
+概要
+====
+
+rtshellはRTコンポーネント、マネージャ及び全RTシステムを管理するツール
+を提供します。OpenRTM-aistとそれに合ってるインタフェースを提供するほか
+のミドルウェアを対応します。
+
+だいぶのコマンドはバーチャルファイルシステムの用な使い方を提供して、
+RTコンポーネントやマネージャをファイルとして扱うことができます。
+ダイレクトリに入ったり、コンポーネントをcatのようにで読んだり、アクティブさせ
+たり、ポートを接続させたりができます。ほかのコマンドはRTシステムを保存
+するRTSProfileファイルを使って全RTシステムを管理することができます。
+
+rtshellのコマンドはRTSystemEditorが使えないOpenRTM-aistのユーザ向きです。
+システムリソースが少ない場合、GUIがない場合（特にネットワークもない
+場合）、スクリプトを使いたい場合などに便利です。コマンドラインの使い方が
+分かることはrtshellを使う時に便利です。
+
+コマンド
 ========
 
   rtact
-    Activate components.
+    RTコンポーネントをアクティブにする。
 
   rtcat
-    View component information and meta-data.
+    RTコンポーネントのメタデータを表示する。
 
   rtcheck
-    Check the consistency of a running system against an RTSProfile.
+    起動中のRTシステムを保存されたRTSProfileと比べる。
 
   rtcomp
-    Create composite components.
+    コンポジットコンポーネントを作る。
 
   rtcon
-    Connect ports together.
+    ポートを接続する。
 
   rtconf
-    View and change configuration parameters and sets.
+    コンポーネントのコンフィグレーションを編集する。
 
   rtcryo
-    Preserve a running system as an RTSProfile.
+    起動中のRTシステムをRTSProfileファイルに保存する。
 
   rtcwd
-    Change the current working directory in the RTC Tree.
+    現在のワーキングダイレクトリを変更する。
 
   rtdeact
-    Deactivate components.
+    コンポーネントをディアクティブにする。
 
   rtdel
-    Delete registrations from a name server.
+    ネームサーバからオブジェクトを消す。
 
   rtdis
-    Disconnect ports.
+    ポートの接続を消す。
+
+  rtdoc
+    RTコンポーネントのドキュメンテーションを表示する。
 
   rtexit
-    Make an RT-Component stop running and exit.
+    RTコンポーネントを停止する。
 
   rtfind
-    Search for components, managers, etc. in the known name servers.
+    起動中のRTコンポーネントやマネージャ等を探す。
 
   rtinject
-    Inject data into an input port.
+    ポートにデータを送る。
 
   rtlog
-    Record and replay logs of data sent by ports.
+    ポートが送るデータをログに保存して再生する。
 
   rtls
-    List the current working directory in the RTC Tree.
+    ダイレクトリのオブジェクトをリストする。
 
   rtmgr
-    Use managers to create and delete RT-Components.
+    マネジャーでRTコンポーネントを管理する。
 
   rtprint
-    Display the data being written by an output port.
+    ポートが送るデータをターミナルに表示する。
 
   rtpwd
-    Print the current working directory in the RTC Tree.
+    現在のワーキングダイレクトリを表示する。
 
   rtreset
-    Reset components in the error state.
+    RTコンポーネントをリセットする。
 
   rtresurrect
-    Restore a running system from an RTSProfile.
+    RTSProfileファイルに保存されたRTシステムを復元する。
 
   rtstart
-    Start an entire RT-System using an RTSProfile.
+    RTシステムを起動する。
 
   rtstodot
-    Visualise the running RT-System using the dot file format.
+    起動中のRTシステムをグラフで表示する。
 
   rtstop
-    Stop an entire RT-System using an RTSProfile.
+    RTシステムを終了する。
 
   rtteardown
-    Remove all connections in an RT-System using an RTSProfile.
+    RTシステムを消す。
 
 
-RTC Tree
-========
+RTCツリー
+=========
 
-The commands operate on the RTC Tree. This is a file system-like tree
-built by parsing name servers to find directories, components and
-managers. It can be treated like a normal file system.
+すべてのコマンドはRTCツリー上で起動します。RTCツリーとは、ネームサーバ上
+のコンテキスト、コンポーネント、マネージャ等をファイルシステムに見立てて
+扱うことができる仕組みです。通常のファイルシステムと同じように扱うことが
+できます。
 
-Name servers are treated as directories off the root directory, ``/``.
-Below them are 'files' and sub-directories. A sub-directory represents a
-naming context below the root naming context of a name server. Files are
-components and managers.
+ネームサーバはルートディレクトリ（``/``）からのサブディレクトリとして扱
+われます。その下にはファイルとサブディレクトリが存在します。サブディレク
+トリはネームサーバ上のネーミングコンテクストに対応します。ファイルはコン
+ポーネントとマネージャーに対応します。
 
-The name servers parsed to build the tree are taken from two sources.
-The first is the path given to a command. This is appended to the
-current working directory of the tree, and the first element is treated
-as a name server.
+ツリーを構築するためのネームサーバを与える方法は2通りあります。一つはコマ
+ンドに渡したネームサーバへのパスです。これは現在のツリーの作業ディレクト
+リに追加され、最初の要素はネームサーバとして扱われます。
 
-The second source for name servers is the ``RTCTREE_NAMESERVERS``
-environment variable. This is a semi-colon separated list of name server
-addresses.
+もう一つは``RTCTREE_NAMESERVERS``環境変数です。ネームサーバアドレスをセミ
+コロンで区切り、リストを渡すこともできます。
 
 
-Shell completion
-================
+シェルコンプリーション
+======================
 
-Users of a Bash-compatible shell can use the included completion script
-to make using the commands easier. The script is installed in
-``${prefix}/share/rtshell``. Run the following command to load it::
+Bash（バッシュ）シェルの使う方はrtshellに含めているコンプリーションスク
+リプトによってrtshellのコマンドをもっと使いやすくできます。スクリプトは
+``${prefix}/share/rtshell``にインストールされます。以下のコマンドでロー
+ドしてください::
 
   $ source bash_completion
 
-This can be added to the ``~/.bashrc`` file to have it loaded in every
-new shell instance. Here are some examples of completion::
+以上のコマンドを``~/.bashrc``というファイルに保存したら自動的にロードさ
+れます。
+
+コンプリーションの例::
 
   $ rtcwd [TAB]
   $ rtcwd localhost/
@@ -135,34 +158,28 @@ new shell instance. Here are some examples of completion::
   in   out
 
 
-System requirements
-===================
+システムの要件
+==============
 
-rtshell requires **rtctree 3.0**. It must be installed for the commands
-to function.
+rtshellは**rtctree 3.0**が必要です。インストールされていない場合はコマン
+ドは起動しません。
 
-The commands that work with RTSProfile files require **rtsprofile 2.0**.
-It must be installed for these commands to function.
+RTSProfileを使うコマンドは**rtsprofile 2.0**が必要です。インストールされ
+ていない場合はこのコマンドは起動しません。
 
-rtshell uses the new string formatting operations that were introduced
-in Python 2.6. It will not function with an earlier version of Python.
-It has not been tested with Python 3 and it is likely that several
-changes will be necessary to make it function using this version of
-Python.
+rtshellは**Python 2.6**が必要です。Python 3.0はまだテストされていないの
+で動かない可能性はあります。
 
-``rtinject``, ``rtlog`` and ``rtprint`` require the Python version of
-OpenRTM-aist.
+``rtinject``、``rtlog``及び``rtprint``は**OpenRTM-python**が必要です。
 
-For Ubuntu users using a version of Ubuntu prior to 9.04, a suitable
-Python version must be installed by hand. Consider upgrading to Ubuntu
-9.04 or later (10.04 offers LTS).
+Ubuntu 9.04より古いUbuntuのバージョンの使う方は正しいPythonを手動でイン
+ストールする必要です。新しいUbuntuにアップグレードすることをお考えくださ
+い。10.04はLTSを提供します。
 
+.. include:: ../../common/ja/common_body.txt
 
-.. include:: ../../common/common_body.txt
-
-
-See also
-========
+参照
+====
 
   ``rtact`` (1),
   ``rtcat`` (1),

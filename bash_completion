@@ -735,6 +735,7 @@ complete -F _rtsbc_rtls rtcwd
 complete -F _rtsbc_rtls rtdeact
 complete -F _rtsbc_rtls rtdel
 complete -F _rtsbc_rtdis rtdis
+complete -F _rtsbc_rtls rtdoc
 complete -F _rtsbc_rtls rtexit
 complete -F _rtsbc_rtls rtfind
 complete -F _rtsbc_rtcon rtinject

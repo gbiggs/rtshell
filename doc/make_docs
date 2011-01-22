@@ -33,13 +33,17 @@ def compile_docs(src_dir, dest_dir, cmd, ext, verb=False):
         os.makedirs(dest_dir)
     for f in os.listdir(src_dir):
         src = os.path.join(src_dir, f)
-        if os.path.isfile(src):
-            dest = os.path.join(dest_dir, os.path.splitext(f)[0] + ext)
-            vprint(verb, 'Compiling {0} to {1}'.format(src, dest))
-            stdout, stderr, ret = call_process([cmd, src, dest])
-            if ret != 0:
-                raise RuntimeError('Failed to compile {0} to {1}:\n{2}'.format(
-                    src, dest, stderr))
+        if not os.path.isfile(src):
+            continue
+        dest = os.path.join(dest_dir, os.path.splitext(f)[0] + ext)
+        if not os.path.isfile(dest):
+            # check_timestamps will have printed a warning earlier
+            continue
+        vprint(verb, 'Compiling {0} to {1}'.format(src, dest))
+        stdout, stderr, ret = call_process([cmd, src, dest])
+        if ret != 0:
+            raise RuntimeError('Failed to compile {0} to {1}:\n{2}'.format(src,
+                dest, stderr))
 
 
 def compile_tex(src_dir, dest_dir, verb=False):
@@ -64,6 +68,10 @@ def lang_dir(lang='en'):
         return ''
     elif lang == 'ja':
         return 'ja'
+
+
+def common_dir():
+    return 'common'
 
 
 def rest_dir():
@@ -120,8 +128,32 @@ def generate_docs(doctype='man', lang='en', verb=False):
         raise ValueError('Unknown documentation type: {0}'.format(doctype))
 
 
+def check_timestamps_in_dir(lang, src_dir, check_dir, verb=False):
+    vprint(verb, 'Checking timestamps for directory {0}'.format(check_dir))
+    for f in os.listdir(src_dir):
+        src = os.path.join(src_dir, f)
+        if not os.path.isfile(src):
+            continue
+        check = os.path.join(check_dir, f)
+        if not os.path.isfile(check):
+            print >>sys.stderr, 'File {0} missing for language {1}.'.format(f,
+                    lang)
+            continue
+        src_time = os.path.getmtime(src)
+        check_time = os.path.getmtime(check)
+        if src_time > check_time:
+            print >>sys.stderr, ('File {0} for language {1} is out of '
+                'date.'.format(f, lang))
+
+
 def check_timestamps(lang='en', verb=False):
-    pass
+    vprint(verb, 'Checking timestamps for language {0}'.format(lang))
+    src_dir = os.path.join(rest_dir(), lang_dir('en'))
+    check_dir = os.path.join(rest_dir(), lang_dir(lang))
+    check_timestamps_in_dir(lang, src_dir, check_dir)
+    common_src_dir = os.path.join(common_dir(), lang_dir('en'))
+    common_check_dir = os.path.join(common_dir(), lang_dir(lang))
+    check_timestamps_in_dir(lang, common_src_dir, common_check_dir)
 
 
 def main(argv):

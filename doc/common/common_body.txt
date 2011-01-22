@@ -4,10 +4,10 @@ Paths
 ``rtshell`` uses *paths* to indicate objects in the RTC Tree. A path is
 the address of object. Name servers and naming contexts on name servers
 are considered directories. Managers and RT-Components are considered
-objects. As with the POSIX ``cat`` command, the path specified as an
+'files'. As with the POSIX ``cat`` command, the path specified as an
 argument to commands is appended to the current rtshell working
-directory, which is stored in the RTCSH_CWD environment variable and
-changeable using the rtcwd command.
+directory, which is stored in the ``RTCSH_CWD`` environment variable and
+changeable using the ``rtcwd`` command.
 
 The available paths depend on the known name servers at the time the
 command is executed. This is a combination of the servers listed in the
@@ -19,6 +19,10 @@ For example, ``/localhost/comp0.rtc`` refers to the component named
 ``/localhost/manager/comp0.rtc`` refers to the component ``comp0.rtc``
 in the directory ``manager`` on the ``localhost`` name server.
 ``./comp0.rtc`` refers to that component in the current directory.
+
+When specifying a port on an RT-Component, it should be placed after the
+path, separated by a colon. For example, ``/localhost/comp0.rtc:data``
+refers to the port ``data`` on the component ``comp0.rtc``.
 
 Some commands that create new ports accept extra options in the paths,
 such as a name for the automatically generated port, or a formatter. The
@@ -74,7 +78,7 @@ serves to ``localhost``, ``192.168.0.1:65346`` and ``example.com``::
 Diagnostics
 ===========
 
-Returns zero on success and non-zero on failure.
+Returns ``zero`` on success and ``non-zero`` on failure.
 
-Verbose output and error messages are printed to stderr.
+Verbose output and error messages are printed to ``stderr``.
 

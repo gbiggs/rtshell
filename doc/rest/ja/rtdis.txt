@@ -2,73 +2,71 @@
 rtdis
 =====
 
-----------------
-disconnect ports
-----------------
+----------
+接続を消す
+----------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtdis [options] <source path> [destination path]
 
-Description
-===========
+概要
+====
 
-Removes connections from between ports. A single connection can be
-removed, or all connections from a single port or all of a component's
-ports.
+ポートの間の接続を消します。一つの接続を消すこともポートやコンポーネン
+トからすべての接続を消すことは加能です。
 
-Options
-=======
+オプション
+==========
 
 -i ID, --id=ID
-  ID of the connection.
+  接続のID。
 
-.. include:: ../../common/common_opts.txt
+.. include:: ../../common/ja/common_opts.txt
 
-.. include:: ../../common/common_body.txt
+.. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtdis /localhost/ConsoleIn0.rtc:out /localhost/ConsoleOut0.rtc:in
 
-Remove all connections between the ``out`` port of ``ConsoleIn0.rtc``
-and the ``in`` port of ``ConsoleOut0.rtc``.
+``ConsoleIn0.rtc``の``out``ポートと``ConsoleOut0.rtc``の``in``ポートの
+間のすべての接続を消します。
 
 ::
 
   $ rtdis /localhost/ConsoleIn0.rtc:out
 
-Remove all connections connected to the ``out`` port of
-``ConsoleIn0.rtc``.
+``ConsoleIn0.rtc``の``out``ポートにすべての接続を消します。
 
 ::
 
   $ rtdis /localhost/ConsoleIn0.rtc
 
-Remove all connections connected to all ports of ``ConsoleIn0.rtc``.
+``ConsoleIn0.rtc``のすべてのポートからすべての接続を消します。
 
 ::
 
   $ rtdis -i con1 /localhost/ConsoleIn0.rtc:out
 
-Remove the connection connected to the ``out`` port of
-``ConsoleIn0.rtc`` that has the ID ``con1``.
+``ConsoleIn0.rtc``の``out``ポートから``con1``というIDの持つ接続のみを消
+します。
 
 ::
 
   $ rtdis -i con1 /localhost/ConsoleIn0.rtc
 
-Remove the connection connected to any port of ``ConsoleIn0.rtc`` that
-has the ID ``con1``.
+``ConsoleIn0.rtc``のどれでものポートから``con1``というIDの持つ接続のみを消
+します。
 
-See Also
-========
+参照
+====
 
   ``rtcat`` (1),
   ``rtcon`` (1)

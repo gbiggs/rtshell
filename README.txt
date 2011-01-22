@@ -108,6 +108,19 @@ contribute patches.
  $ git clone git://github.com/gbiggs/rtshell.git
 
 
+Documentation
+-------------
+
+Documentation is available in the forum of man pages (on Windows, these
+are available as HTML files). These will be installed under
+``${prefix}/share/man``.  You must add this folder to your system's
+``$MANPATH`` environment variable to be able to use them. For example,
+if you installed rtshell into /usr/local, add the following line to your
+.bashrc::
+
+  export MANPATH=/usr/local/share/man:${MANPATH}
+
+
 Running the tests
 -----------------
 

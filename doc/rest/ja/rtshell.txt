@@ -102,7 +102,7 @@ rtshellのコマンドはRTSystemEditorが使えないOpenRTM-aistのユーザ�
     起動中のRTシステムをグラフで表示する。
 
   rtstop
-    RTシステムを終了する。
+    RTシステムを停止する。
 
   rtteardown
     RTシステムを消す。

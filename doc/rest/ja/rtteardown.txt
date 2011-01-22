@@ -2,61 +2,59 @@
 rtteardown
 ==========
 
---------------------------------------
-remove all connections in an RT-System
---------------------------------------
+----------------
+RTシステムを消す
+----------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtteardown [options] [RTSProfile file]
 
-Description
-===========
+概要
+====
 
-Tears down an RT-System. Loads an RTSProfile and use it to remove the
-connections that make up the RT-System from running components.
+RTSProfileに保存されたRTシステムのすべての接続を消すによってRTシステム
+を消します。
 
-If no file is given, the RTSProfile is read from standard input.
+ファイル名を指定しない場合、RTSProfileをstdinから読みます。
 
-XML format is used by default; to use RTSProfiles specified in YAML,
-specify ``--yaml``.
-
-Options
-=======
+オプション
+==========
 
 --dry-run
-  Print what will be done but don't actually do anything.
+  復元するために何をするかを表示して終了する
 
 -x, --xml
-  Use XML input format.
+  XMLフォーマットを使う
 
 -y, --yaml
-  Use YAML input format.
+  YAMLフォーマットを使う
 
 .. include:: ../../common/ja/common_opts.txt
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtteardown sys.rtsys
 
-Destroy the RT-System specified in the file ``sys.rtsys``.
+``sys.rtsys``というファイルに保存されたRTシステムを消します。
 
 ::
 
   $ rtteardown sys.rtsys --dry-run
 
-Display the actions that will be performed to destroy the system.
+``sys.rtsys``というファイルに保存されたRTシステムを消すために何を
+するかを表示します。
 
-See Also
-========
+参照
+====
 
   ``rtcheck`` (1),
   ``rtresurrect`` (1)

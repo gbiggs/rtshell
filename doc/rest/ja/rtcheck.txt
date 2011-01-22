@@ -32,10 +32,10 @@ rtcheck [options] <RTSProfile specification file>
   全コンポーネントの予想ステート。ディフォルトは``Active``です。
 
 -x, --xml
-  XMLフォーマットを使う。
+  XMLフォーマットを使う
 
 -y, --yaml
-  YAMLフォーマットを使う。
+  YAMLフォーマットを使う
 
 .. include:: ../../common/ja/common_opts.txt
 

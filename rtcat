@@ -25,7 +25,10 @@ from rtshell import rtcat
 
 
 if __name__ == '__main__':
-    sys.exit(rtcat.main())
+    res, lines = rtcat.main()
+    for l in lines:
+        print l
+    sys.exit(res)
 
 # vim: tw=79
 

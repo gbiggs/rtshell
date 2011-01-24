@@ -25,7 +25,10 @@ from rtshell import rtls
 
 
 if __name__ == '__main__':
-    sys.exit(rtls.main())
+    res, lines = rtls.main()
+    for l in lines:
+        print l
+    sys.exit(res)
 
 
 # vim: tw=79

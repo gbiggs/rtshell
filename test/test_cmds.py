@@ -824,7 +824,7 @@ class rtconfTests(unittest.TestCase):
 
     def test_act(self):
         stdout, stderr, ret = call_process(['./rtconf',
-            '/localhost/local.host_cxt/Std0.rtc', 'act', 'set1'])
+            '/localhost/local.host_cxt/Std0.rtc', 'act', '-s', 'set1'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
@@ -834,21 +834,21 @@ class rtconfTests(unittest.TestCase):
 
     def test_act_bad_set(self):
         stdout, stderr, ret = call_process(['./rtconf',
-            '/localhost/local.host_cxt/Std0.rtc', 'act', 'noset'])
+            '/localhost/local.host_cxt/Std0.rtc', 'act', '-s', 'noset'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, 'rtconf: No such configuration set: noset')
         self.assertEqual(ret, 1)
 
     def test_act_hidden_error(self):
         stdout, stderr, ret = call_process(['./rtconf',
-            '/localhost/local.host_cxt/Std0.rtc', 'act', '__hidden__'])
+            '/localhost/local.host_cxt/Std0.rtc', 'act', '-s', '__hidden__'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, 'rtconf: No such configuration set: __hidden__')
         self.assertEqual(ret, 1)
 
     def test_act_hidden_ok(self):
         stdout, stderr, ret = call_process(['./rtconf', '-a',
-            '/localhost/local.host_cxt/Std0.rtc', 'act', '__hidden__'])
+            '/localhost/local.host_cxt/Std0.rtc', 'act', '-s', '__hidden__'])
         self.assertEqual(stdout, '')
         self.assert_('SDOPackage.InternalError' in stderr)
         self.assertEqual(ret, 1)

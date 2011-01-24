@@ -156,13 +156,13 @@ def get_conf_value(param, cmd_path, full_path, options, tree=None):
     return [comp.conf_sets[options.set_name].data[param]]
 
 
-def activate_set(set_name, cmd_path, full_path, options, tree=None):
-    if is_hidden(set_name) and not options.all:
-        raise rts_exceptions.NoConfSetError(set_name)
+def activate_set(cmd_path, full_path, options, tree=None):
+    if is_hidden(options.set_name) and not options.all:
+        raise rts_exceptions.NoConfSetError(options.set_name)
     tree, comp = get_comp(cmd_path, full_path, tree)
-    if not set_name in comp.conf_sets:
-        raise rts_exceptions.NoConfSetError(set_name)
-    comp.activate_conf_set(set_name)
+    if not options.set_name in comp.conf_sets:
+        raise rts_exceptions.NoConfSetError(options.set_name)
+    comp.activate_conf_set(options.set_name)
 
 
 def main(argv=None, tree=None):
@@ -227,10 +227,10 @@ Display and edit configuration parameters and sets.'''
                 return 1, []
             result = get_conf_value(param, cmd_path, full_path, options, tree)
         elif cmd == 'act':
-            if len(args) != 1:
+            if len(args) != 0 or options.set_name == '':
                 print >>sys.stderr, usage
                 return 1, []
-            activate_set(args[0], cmd_path, full_path, options, tree)
+            activate_set(cmd_path, full_path, options, tree)
         else:
             print >>sys.stderr, usage
             return 1, []

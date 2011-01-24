@@ -2,55 +2,53 @@
 rtcomp
 ======
 
----------------------------
-create composite components
----------------------------
+--------------------------------
+コンポジットコンポーネントを作る
+--------------------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtcomp [options] <manager>
 
-Description
-===========
+概要
+====
 
-Composes multiple components running in the same manager into a single
-composite component, exposing a selection of their ports externally.
-The type of execution context that the components will be executed in
-can be selected. Components to be included can be specified using the
-``-c`` option; all components whose ports are exposed (using ``-p``) are
-automatically included.
+多数のポートをエクスポートして同じマネージャに実行している複数のコン
+ポーネントを一つのコンポジットコンポーネントに構成します。Execution
+context も選択することが可能です。ポートがエクスポートされているコンポ
+ーネントは自動的に含めています。
 
-Options
-=======
+オプション
+==========
 
 -c COMPS, --comp=COMPS
-  Component to include in the composite component without exporting any
-  ports. Specify this option multiple times to add multiple components.
+  コンポジットコンポーネントに含むコンポーネントを指定する。このオプ
+  ションは複数回つかえる。
 
 -n NAME, --name=NAME
-  Instance name of the new component. [Default: CompositeRTC]
+  コンポジットコンポーネントのインスタンス名。[ディフォルト:
+  CompositeRTC]
 
 -o OPTIONS, --options=OPTIONS
-  Extra options to pass to the component on creation.  Must begin with
-  an "&"
+  コンポーネントを作る時の追加オプション。「&」で始めてください。
 
 -p PORTS, --port=PORTS
-  Port to export from the composite component. All components with
-  exported ports are automatically included in the composite component.
+  エクスポートされているポートを指定する。ポートがエクスポートされてい
+  るコンポーネントは自動的コンポジットコンポーネントに含まれる（``-c``
+  と同様）。
 
 -t TYPE, --type=TYPE
-  Type of composite component to create. [Default:
-  PeriodicECSharedComposite]
+  Execution contextのタイプ。[ディフォルト: PeriodicECSharedComposite]
 
 .. include:: ../../common/ja/common_opts.txt
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
@@ -58,13 +56,13 @@ Examples
   /localhost/Controller0.rtc:in -p /localhost/Motor0.rtc:out
   -n MotorUnit
 
-Create a composite component using the ``Motor0.rtc`` and
-``Controller0.rtc`` components, exposing the ``in`` port of
-``Controller0.rtc`` and the ``out`` port of ``Motor0.rtc``. The
-component's instance name will be ``MotorUnit``.
+``Controller0.rtc``の``in``というポートと``Motor0.rtc``の``out``という
+ポートをエクスポートして``Motor0.rtc``と``Controller0.rtc``によってコン
+ポジットコンポーネントを作ります。コンポジットコンポーネントのインスタ
+ンス名は``MotorUnit``になります。
 
-See Also
-========
+参照
+====
 
 ``rtmgr`` (1)
 

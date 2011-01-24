@@ -2,51 +2,49 @@
 rtdeact
 =======
 
----------------------
-deactivate components
----------------------
+--------------------------------
+コンポーネントを deactivate する
+--------------------------------
 
 .. include: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtdeact [options] <path>
 
-Description
-===========
+概要
+====
 
-Deactivates the specified RT-Component, provided it is in the ``active``
-state.
+Active のRTコンポーネントを deactivate します。
 
-Options
-=======
+オプション
+==========
 
 -e EC_INDEX, --exec_context=EC_INDEX
-    Index of the execution context to change state in. The default is 0.
+    このexecution contextの中のみで deactivate する。ディフォルトは0。
 
 .. include:: ../../common/ja/common_opts.txt
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtdeact /localhost/local.host_cxt/ConsoleOut0.rtc
 
-Deactivate ConsoleOut0.rtc in all owned and participating execution
-contexts.
+``ConsoleOut0.rtc``のすべてのECに deactivate する。
 
 ::
 
   $ rtdeact -e 2 /localhost/local.host_cxt/Motor0.rtc
 
-Deactivate Motor0.rtc in only the execution context with ID 2.
+``Motor0.rtc``を「２」というIDで示されるECのみに deactivate する。
 
-See Also
-========
+参照
+====
 
 ``rtact`` (1),
 ``rtreset`` (1),

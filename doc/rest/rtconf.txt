@@ -55,10 +55,10 @@ from the currently activate configuration set is retrieved.
 
 ::
 
-  act <set>
+  act
 
-The act command requires a configuration set as its argument. It
-activates that set.
+The act command requires no arguments, but a configuration set must be
+specified using ``--set``. It activates that set.
 
 Options
 =======
@@ -72,7 +72,7 @@ Options
 
 -s SET_NAME, --set=SET_NAME
   Choose the configuration set to work with. If not specified, the
-  default set is used.
+  current active set is used.
 
 .. include:: ../common/common_opts.txt
 
@@ -110,8 +110,8 @@ Display the configuration sets and their parameters in the
   +mode0
   +mode1
 
-Display the configuration sets and their parameters in the
-``ConfigSample0.rtc`` component, including hidden sets.
+Display the configuration sets in the ``ConfigSample0.rtc`` component,
+including hidden sets.
 
 ::
 

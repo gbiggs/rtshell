@@ -2,35 +2,27 @@
 rtpwd
 =====
 
------------------------------------
-print the current working directory
------------------------------------
+--------------------------------------
+現在のワーキングダイレクトリを表示する
+--------------------------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtpwd
 
-Description
-===========
+概要
+====
 
-Displays the current working directory in the RTC Tree.
+現在のワーキングダイレクトリを表示します。
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
 
-::
-
-  $ rtpwd
-
-Print the current working directory.
-
-See Also
-========
+参照
+====
 
   ``rtcwd`` (1),
   ``rtls`` (1)

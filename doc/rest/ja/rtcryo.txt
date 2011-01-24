@@ -2,91 +2,89 @@
 rtcryo
 ======
 
-------------------------------
-save RT-Systems to RTSProfiles
-------------------------------
+----------------------------------------
+RTシステムをRTSProfileファイルに保存する
+----------------------------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtcryo [options] [name servers]
 
-Description
-===========
+概要
+====
 
-Analyses a running RT-System and saves it to an RTSProfile. The
-connections between the components and their current configuration
-parameters are saved. Only components with connections are considered to
-be a part of the RT-System.
+実行中のRTシステムをRTSProfileに保存します。コンポーネントの間の接続と
+コンポーネントの現在のコンフィグレーションパラメータを保存します。接続
+されていないコンポーネントは保存しません。
 
-If no filename is given, the RTSProfile is written to standard output.
+ファイル名を指定しない場合、RTSProfileを``stdout``に出します。ディフォ
+ルトはXMLで保存します。
 
-XML format is used by default; to use RTSProfiles specified in YAML,
-specify ``--yaml``.
-
-Options
-=======
+オプション
+==========
 
 -a ABSTRACT, --abstract=ABSTRACT
-  Brief description of the RT-System.
+  RTシステムの概要
 
 -n SYSNAME, --system-name=SYSNAME
-  Name of the RT-System. The default is ``RTSystem``.
+  RTシステムの名。[ディフォルト: ``RTSystem``]
 
 -o OUTPUT, --output=OUTPUT
-  Output file name. If none is specified, stdout is used.
+  出力ファイル名。指定しない場合は``stdout``に出します。
 
 -v VERSION, --system-version=VERSION
-  Version of the RT-System. The default is ``0``.
+  RTシステムのバージョン。[ディフォルト: ``0``]
 
 -e VENDOR, --vendor=VENDOR
-  Vendor of the RT-System.
+  RTシステムのベンダー。
 
 -x, --xml
-  Use XML input format.
+  XMLで出力する。
 
 -y, --yaml
-  Use YAML input format.
+  YAMLで出力する。
 
 .. include:: ../../common/ja/common_opts.txt
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtcryo
 
-Save the components that are part of the RT-System from all known name
-servers, and print the RTSProfile to stdout.
+すべての分かるネームサーバのすべての接続されているコンポーネントを一つ
+のRTシステムとしてRTSProfileい保存してstdoutに出します。
 
 ::
 
   $ rtcryo -o sys.rtsys
 
-Save the components that are part of the RT-System from all known name
-servers, and save the RTSProfile to the file ``sys.rtsys``.
+すべての分かるネームサーバのすべての接続されているコンポーネントを一つ
+のRTシステムとしてRTSProfileい保存して``sys.rtsys``というファイルに保存
+します。
 
 ::
 
   $ rtcryo localhost
 
-Save the components that are part of the RT-System from only the
-``localhost`` name server to the RTSProfile.
+``localhost``というネームサーバのすべての接続されているコンポーネントを一つ
+のRTシステムとしてRTSProfileい保存してstdoutに出します。
 
 ::
 
   $ rtcryo -n 'mysystem' -v 1.0
 
-Set the name of the system in the RTSProfile to ``mysystem`` and the
-RT-System version to ``1.0``.
+RTSProfileにRTシステムの名を``mysystem``にして、バージョンを``1.0``に
+します。
 
-See Also
-========
+参照
+====
 
   ``rtcheck`` (1),
   ``rtcon`` (1),

@@ -313,7 +313,7 @@ component {1}'.format(self._set, self._path_str)
             return False, 'Component missing: {0}'.format(self._path_str)
         try:
             comp.activate_conf_set(self._set)
-        except rts_exceptions.NoSuchConfSetError:
+        except rts_exceptions.NoConfSetError:
             return False, 'Invalid configuration set: {0}'.format(self._set)
         return True, None
 
@@ -404,7 +404,7 @@ component at path {2} to "{3}"'.format(self._param, self._set,
             return False, 'Component missing: {0}'.format(self._path_str)
         try:
             comp.set_conf_set_value(self._set, self._param, self._new_value)
-        except rts_exceptions.NoSuchConfSetError:
+        except rts_exceptions.NoConfSetError:
             return False, 'Invalid configuration set: {0}'.format(self._set)
         except rts_exceptions.NoSuchConfParamError:
             return False, 'Invalid configuration parameter: {0}'.format(self._param)

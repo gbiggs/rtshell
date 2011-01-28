@@ -88,6 +88,13 @@ Pythonは表示できないデータを表示するためにフォーマッタ�
 
 ::
 
+  $ rtprint /localhost/ConsoleIn0.rtc:out#rawpy
+
+``ConsoleIn0.rtc``の``out``ポートの最初の値をrtshellの``rawpy``関数に
+送って結果を表示します。この関数でPythonの表現に変更されます。
+
+::
+
   $ rtprint /localhost/ConsoleIn0.rtc:out#printers.my_formatter
 
 ``ConsoleIn0.rtc``の``out``ポートの最初の値を``printers``モジュールの

@@ -94,6 +94,14 @@ Print the values sent by the ``ConsoleIn0.rtc`` component over its
 
 ::
 
+  $ rtprint /localhost/ConsoleIn0.rtc:out#rawpy
+
+Print the first value sent by the ``ConsoleIn0.rtc`` component over its
+``out`` port as a Python expression using the inbuilt ``rawpy``
+formatter.
+
+::
+
   $ rtprint /localhost/ConsoleIn0.rtc:out#printers.my_formatter
 
 Print the first value sent by the ``ConsoleIn0.rtc`` component over its

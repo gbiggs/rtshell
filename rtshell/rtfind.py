@@ -144,24 +144,24 @@ Find entries in the RTC tree matching given constraints.'''
         options, args = parser.parse_args()
     except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError:', e
-        return 1
+        return 1, []
 
     if len(args) == 1:
         cmd_path = args[0]
     else:
         print >>sys.stderr, usage
-        return 1
+        return 1, []
     full_path = path.cmd_path_to_full_path(cmd_path)
 
+    matches = []
     try:
-        for m in search(cmd_path, full_path, options, tree):
-            print m
+        matches = search(cmd_path, full_path, options, tree)
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
         print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
-        return 1
-    return 0
+        return 1, []
+    return 0, matches
 
 
 # vim: tw=79

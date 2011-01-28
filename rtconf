@@ -25,7 +25,10 @@ from rtshell import rtconf
 
 
 if __name__ == '__main__':
-    sys.exit(rtconf.main())
+    res, lines = rtconf.main()
+    for l in lines:
+        print l
+    sys.exit(res)
 
 # vim: tw=79
 

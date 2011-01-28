@@ -117,17 +117,14 @@ def print_conf_sets(cmd_path, full_path, options, tree=None):
             raise rts_exceptions.NoConfSetError(options.set_name)
         if not options.set_name in comp.conf_sets:
             raise rts_exceptions.NoConfSetError(options.set_name)
-        lines = format_conf_set(options.set_name,
+        return format_conf_set(options.set_name,
                 comp.conf_sets[options.set_name],
                 options.set_name == comp.active_conf_set_name,
                 use_colour, options.long)
-        for l in lines:
-            print l
     else:
-        for l in format_conf_sets(comp.conf_sets,
+        return format_conf_sets(comp.conf_sets,
                 comp.active_conf_set_name, options.all,
-                use_colour, options.long):
-            print l
+                use_colour, options.long)
 
 
 def set_conf_value(param, new_value, cmd_path, full_path, options, tree=None):
@@ -156,7 +153,7 @@ def get_conf_value(param, cmd_path, full_path, options, tree=None):
         raise rts_exceptions.NoConfSetError(options.set_name)
     if not param in comp.conf_sets[options.set_name].data:
         raise rtctree.exceptions.NoSuchConfParamError(param)
-    print comp.conf_sets[options.set_name].data[param]
+    return [comp.conf_sets[options.set_name].data[param]]
 
 
 def activate_set(cmd_path, full_path, options, tree=None):
@@ -191,11 +188,11 @@ Display and edit configuration parameters and sets.'''
         options, args = parser.parse_args()
     except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError:', e
-        return 1
+        return 1, []
 
     if not args:
         print >>sys.stderr, usage
-        return 1
+        return 1, []
     elif len(args) == 1:
         cmd_path = args[0]
         cmd = 'list'
@@ -206,10 +203,11 @@ Display and edit configuration parameters and sets.'''
         args = args[2:]
     full_path = path.cmd_path_to_full_path(cmd_path)
 
+    result = []
     try:
         if cmd == 'list':
             # Print the configuration sets
-            print_conf_sets(cmd_path, full_path, options, tree)
+            result = print_conf_sets(cmd_path, full_path, options, tree)
         elif cmd == 'set':
             # Need to get more arguments
             if len(args) == 2:
@@ -217,7 +215,7 @@ Display and edit configuration parameters and sets.'''
                 new_value = args[1]
             else:
                 print >>sys.stderr, usage
-                return 1
+                return 1, []
             set_conf_value(param, new_value, cmd_path, full_path, options,
                     tree)
         elif cmd == 'get':
@@ -226,22 +224,22 @@ Display and edit configuration parameters and sets.'''
                 param = args[0]
             else:
                 print >>sys.stderr, usage
-                return 1
-            get_conf_value(param, cmd_path, full_path, options, tree)
+                return 1, []
+            result = get_conf_value(param, cmd_path, full_path, options, tree)
         elif cmd == 'act':
             if len(args) != 0 or options.set_name == '':
                 print >>sys.stderr, usage
-                return 1
+                return 1, []
             activate_set(cmd_path, full_path, options, tree)
         else:
             print >>sys.stderr, usage
-            return 1
+            return 1, []
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
         print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
-        return 1
-    return 0
+        return 1, []
+    return 0, result
 
 
 # vim: tw=79

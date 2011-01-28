@@ -440,29 +440,29 @@ Display information about a manager or component.'''
         options, args = parser.parse_args()
     except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError:', e
-        return 1
+        return 1, []
 
     if not args:
         # If no path given then can't do anything.
         print >>sys.stderr, '{0}: Cannot cat a directory.'.format(
                 os.path.basename(sys.argv[0]))
-        return 1
+        return 1, []
     elif len(args) == 1:
         cmd_path = args[0]
     else:
         print >>sys.stderr, usage
-        return 1
+        return 1, []
     full_path = path.cmd_path_to_full_path(cmd_path)
 
+    result = []
     try:
-        for l in cat_target(cmd_path, full_path, options, tree=tree):
-            print l
+        result = cat_target(cmd_path, full_path, options, tree=tree)
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
         print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
-        return 1
-    return 0
+        return 1, []
+    return 0, result
 
 
 # vim: tw=79

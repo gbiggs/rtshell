@@ -329,7 +329,7 @@ List a name server, directory, manager or component.'''
         options, args = parser.parse_args()
     except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError:', e
-        return 1
+        return 1, []
 
     if not args:
         cmd_path = ''
@@ -337,18 +337,18 @@ List a name server, directory, manager or component.'''
         cmd_path = args[0]
     else:
         print >>sys.stderr, usage
-        return 1
+        return 1, []
     full_path = path.cmd_path_to_full_path(cmd_path)
 
+    result = []
     try:
-        for l in list_target(cmd_path, full_path, options, tree):
-            print l
+        result = list_target(cmd_path, full_path, options, tree)
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
         print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
-        return 1
-    return 0
+        return 1, []
+    return 0, result
 
 
 # vim: tw=79

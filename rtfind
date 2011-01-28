@@ -25,7 +25,10 @@ from rtshell import rtfind
 
 
 if __name__ == '__main__':
-    sys.exit(rtfind.main())
+    res, matches = rtfind.main()
+    for m in matches:
+        print m
+    sys.exit(res)
 
 
 # vim: tw=79

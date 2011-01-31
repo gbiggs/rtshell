@@ -645,9 +645,9 @@ _rtsbc_rtmgr()
                 modules="$(rtcat ${COMP_WORDS[1]} | \
                     sed -n '/Loaded modules/,/Loadable modules/p' | \
                     grep Filepath | awk '{print $2;}')"
-                for mod in "${modules}" ;
+                for mod in ${modules} ;
                 do
-                    name=$(basename ${mod})
+                    name=$(basename ${mod#.//})
                     basenames="${basenames} ${name%.*}"
                 done
             else
@@ -710,6 +710,30 @@ _rtsbc_rtmgr()
     return 0
 }
 
+_rtsbc_rtcheck(){
+    local cur prev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "${prev}" in
+        --state|-s)
+            COMPREPLY=($(compgen -W "inactive Inactive active Active error Error" -- ${cur}))
+            return 0
+            ;;
+    esac
+
+    if [[ ${cur} == -* ]] ; then
+        _rtsbc_rtopts ${cur}
+        return 0
+    fi
+
+    COMPREPLY=($(compgen -f ${cur}))
+    compopt -o filenames
+
+    return 0
+}
+
 _rtsbc_optsonly(){
     local cur prev
     COMPREPLY=()
@@ -725,7 +749,7 @@ _rtsbc_optsonly(){
 }
 
 complete -F _rtsbc_rtls rtact
-complete -F _rtsbc_optsonly -A file rtcheck
+complete -F _rtsbc_rtcheck rtcheck
 complete -F _rtsbc_rtcomp rtcomp
 complete -F _rtsbc_rtcon rtcon
 complete -F _rtsbc_rtconf rtconf

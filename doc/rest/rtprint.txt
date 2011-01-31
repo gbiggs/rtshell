@@ -50,8 +50,7 @@ Options
   Extra module search paths to add to the ``PYTHONPATH``.
 
 -r RATE, --rate=RATE
-  Specify the rate in Hertz at which to read and print. The default is
-  1Hz.
+  Specify the rate in Hertz at which to read and print.
 
 -t TIMEOUT, --timeout=TIMEOUT
   Read data for this many seconds, then stop.  This option overrides

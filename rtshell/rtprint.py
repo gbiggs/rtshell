@@ -113,7 +113,7 @@ Print the data being sent by one or more output ports.'''
             type='string', default=[],
             help='Extra module search paths to add to the PYTHONPATH.')
     parser.add_option('-r', '--rate', dest='rate', action='store',
-            type='float', default=1.0, help='Specify the rate in Hertz at '\
+            type='float', default=100.0, help='Specify the rate in Hertz at '\
             'which to read and print. [Default: %default]')
     parser.add_option('-t', '--timeout', dest='timeout', action='store',
             type='float', default=-1, help='Read data for this many seconds, '\

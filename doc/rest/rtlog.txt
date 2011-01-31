@@ -88,8 +88,7 @@ Options
   Replay mode.
 
 -r RATE, --rate=RATE
-  (Replay mode only.) Scale the playback speed of the log. The default
-  is 1.0x.
+  (Replay mode only.) Scale the playback speed of the log.
 
 -s START, --start=START
   (Replay mode only.) Time or entry index to start playback from. Must
@@ -101,8 +100,7 @@ Options
   ``--start``/``--end``.
 
 -x EXEC_RATE, --exec-rate=EXEC_RATE
-  Specify the rate in Hertz at which to run the component. The default
-  is 100Hz.
+  Specify the rate in Hertz at which to run the component.
 
 .. include:: ../common/common_opts.txt
 

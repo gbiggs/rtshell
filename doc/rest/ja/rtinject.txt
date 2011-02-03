@@ -19,34 +19,32 @@ rtinject [options] <path1:port1> [path2:port2...]
 値を一つ以上のポートに送ります。デフォルトは一回のみ送ります。複数回や
 定期的に送ることもできます。
 
-目的のポートにディフォルトの接続を作ります。
+目的のポートにデフォルトの接続を作ります。
 
 オプション
 ==========
 
 -c CONST, --const=CONST
-  Pythonフォーマットに指定された送る値。指定されていない場合、スタンダ
-  ードインから値を読む。``{time}``が発生する場合、現在の時刻に変わらせ
-  る。
+  Pythonフォーマットとして送る一定値。指定されていない場合、標準入力
+  から値を読む。 ``{time}`` が存在する場合、現在の時刻に置き換えられる。
 
 -m MODULES, --mod=MODULES
-  Import する必要な Python モジュール。値の必要なモジュールは自動的に
+  Import する必要な Python モジュール。値の必要なモジュールが自動的に
   ロードされていない場合、このオプションで指定してください。モジュール
-  とそのモジュールの``__POA``のモジュールも import します。
+  とそのモジュールの ``__POA`` のモジュールも import します。
 
 -n MAX, --number=MAX
-  値を何回送るかを指定する。``-1``に設定する場合、永遠に送ります。
-  [ディフォルト: 1]
+  値を何回送るかを指定する。 ``-1`` に設定した場合、永遠に送り続けます。
 
 -p PATHS, --path=PATHS
-  モジュールのサーチパス。Pythonの``PYTHONPATH``変数に追加する。
+  モジュールのサーチパス。Pythonの ``PYTHONPATH`` 変数に追加する。
 
 -r RATE, --rate=RATE
-  定期を指定する。単位はハーツ。
+  周期を指定する。単位はヘルツ。
 
 -t TIMEOUT, --timeout=TIMEOUT
-  時間制限を指定する。単位は秒。この時間でデータを送って止まる。この
-  オプションを使う時、``--number``を使うことは可能ではない。
+  タイムアウト時間を指定する。単位は秒。このオプションは ``--number``
+  と一緒に使用で来ません。
 
 .. include:: ../../common/ja/common_opts.txt
 
@@ -59,15 +57,15 @@ rtinject [options] <path1:port1> [path2:port2...]
 
   $ rtinject /localhost/ConsoleOut0.rtc:in
 
-stdinから最初の値を``ConsoleOut0.rtc``の``in``ポートに送ります。
+stdinからの値を ``ConsoleOut0.rtc`` の ``in`` ポートに送ります。
 
 ::
 
   $ rtinject /localhost/ConsoleOut0.rtc:in -c
     'RTC.TimedLong({time}, 42)'
 
-``42``と現在の時刻を``consoleout0.rtc``の``in``ポートに送ります。「'」を
-使ってpythonのステートメントを守ります。（windowsでは「"」を使ってくださ
+``42`` と現在の時刻を ``consoleout0.rtc`` の ``in`` ポートに送ります。「'」を
+使ってpythonのステートメントを守ります。（Windowsでは「"」を使ってくださ
 い。）
 
 ::
@@ -75,34 +73,34 @@ stdinから最初の値を``ConsoleOut0.rtc``の``in``ポートに送ります�
   $ rtinject /localhost/ConsoleOut0.rtc:in -c
     'RTC.TimedLong(RTC.Time(1, 0), 42)'
 
-``42``と1秒の時を``ConsoleOut0.rtc``の``in``ポートに送ります。
+``42`` とタイムスタンプを1秒として ``ConsoleOut0.rtc`` の ``in`` ポートに送ります。
 
 ::
 
   $ rtinject /localhost/ConsoleOut0.rtc:in -n 5
 
-stdinから最初の五つの値を``ConsoleOut0.rtc``の``in``ポートに送ります。
+stdinからの値を五回 ``ConsoleOut0.rtc`` の ``in`` ポートに送ります。
 
 ::
 
   $ rtinject /localhost/ConsoleOut0.rtc:in -n 5 -c
     'RTC.TimedLong({time}, 42)'
 
-``42``と現在の時刻を``consoleout0.rtc``の``in``ポートに５回送ります。
+``42`` と現在の時刻を ``consoleout0.rtc`` の ``in`` ポートに５回送ります。
 
 ::
 
   $ rtinject /localhost/ConsoleOut0.rtc:in -t 5 -r 10 -c
     'RTC.TimedLong({time}, 42)'
 
-``42``と現在の時刻を10Hzで``consoleout0.rtc``の``in``ポートに５秒間送
+``42`` と現在の時刻を10Hzで ``consoleout0.rtc`` の ``in`` ポートに５秒間送
 ります。
 
 ::
 
   $ rtinject /localhost/MyComp0.rtc:in -c 'MyData.MyVal(84)'
 
-``MyData.MyVal(84)``を``MyComp0.rtc``の``in``ポートに送ります。クラスは
+``MyData.MyVal(84)`` を ``MyComp0.rtc`` の ``in`` ポートに送ります。クラスは
 Pythonのサーチパス(``PYTHONPATH``)に存在するモジュールに指定されていま
 す。そのモジュールはOMG IDLファイルからジェネレートされました。
 
@@ -111,7 +109,7 @@ Pythonのサーチパス(``PYTHONPATH``)に存在するモジュールに指定�
   $ rtinject /localhost/MyComp0.rtc:in -p /usr/local/mods
     -c 'MyData.MyVal(84)'
 
-``MyData.MyVal(84)``を``MyComp0.rtc``の``in``ポートに送ります。クラスは
+``MyData.MyVal(84)`` を ``MyComp0.rtc`` の ``in`` ポートに送ります。クラスは
 Pythonのサーチパス(``PYTHONPATH``)に存在しないモジュールに指定されていま
 す。モジュールのパスは``-p``で指定されます。
 
@@ -120,9 +118,9 @@ Pythonのサーチパス(``PYTHONPATH``)に存在しないモジュールに指�
   $ rtinject /localhost/MyComp0.rtc:in -p /usr/local/mods -m mymod
     -c 'MyData.MyVal(84)'
 
-``MyData.MyVal(84)``を``MyComp0.rtc``の``in``ポートに送ります。クラスは
-Pythonのサーチパス(``PYTHONPATH``)に存在する``mymod``というモジュールに
-指定されます。
+``MyData.MyVal(84)`` を ``MyComp0.rtc`` の ``in`` ポートに送ります。クラスは
+Pythonのサーチパス(``PYTHONPATH``)に存在する ``mymod`` というモジュール
+を指定します。
 
 
 参照

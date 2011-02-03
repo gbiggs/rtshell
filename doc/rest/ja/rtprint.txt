@@ -3,7 +3,7 @@ rtprint
 =======
 
 ----------------------------------------
-ポートが送るデータをターミナルに表示する
+ポートからのデータをターミナルに表示する
 ----------------------------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
@@ -16,20 +16,21 @@ rtprint [options] <path1>:<port1> [<path2>:<port2>...]
 概要
 ====
 
-複数のアウトポートが送るデータをスタンダードアウトに出します。
+複数のアウトポートが送るデータを標準出力に表示します。
 
-ディフォルトは最初の値のみを出します。複数の値を出すことや定期的に出す
-ことは加能です。一回の実行ループに一つだけのポートはデータがあっても、
-数えるために全部のポートがデータがあると同じです。
+デフォルトは最初の値のみを表示します。複数の値を表示すことや定期的に表
+示することも可能です。一回の実行ループで一つだけのポートにデータがあっ
+た場合、一定の回数プリントする目的のためのプリントとしてカウントされま
+す。
 
-Pythonは表示できないデータを表示するためにフォーマッタ関数を使うことは
-必要です。ユーザもこの関数を提供することは加能です。フォーマッタ関数は
-一つの変数（表示するべきなデータ）をもらいます::
+Pythonは表示できないデータを表示するためにフォーマッタ関数を使うことが
+必要です。ユーザもこの関数を提供することは可能です。フォーマッタ関数は
+一つの変数（表示するべきデータ）をもらいます::
 
   def rawpy(data):
       return data.__repr__()
 
-ログツールから目的のポートまでの接続はディフォルトのプロパティで作られま
+ログツールから目的のポートまでの接続はデフォルトのプロパティで作られま
 す。
 
 
@@ -37,22 +38,22 @@ Pythonは表示できないデータを表示するためにフォーマッタ�
 ==========
 
 -m MODULES, --mod=MODULES
-  Import する必要な Python モジュール。値の必要なモジュールは自動的に
-  ロードされていない場合、このオプションで指定してください。モジュール
-  とそのモジュールの``__POA``のモジュールも import します。
+  Import する必要がある Python モジュール。値が必要としているモジュー
+  ルが自動的にロードされていない場合、このオプションで指定してください。
+  モジュールとそのモジュールの ``__POA`` のモジュールも import します。
 
 -n MAX, --number=MAX
-  読み回の制限。
+  読み込む回数の制限。
 
 -p PATHS, --path=PATHS
-  モジュールのサーチパス。Pythonの``PYTHONPATH``変数に追加する。
+  モジュールのサーチパス。Pythonの ``PYTHONPATH`` 変数に追加する。
 
 -r RATE, --rate=RATE
-  実行レート。[ディフォルト: 1Hz]
+  実行レート。
 
 -t TIMEOUT, --timeout=TIMEOUT
-  読む時間の制限。このオプションを使う場合、``--number``を使うことは
-  不可能だ。
+  読み込む時間の制限。このオプションを使う場合、 ``--number`` を使うことは
+  できません。
 
 .. include:: ../../common/ja/common_opts.txt
 
@@ -65,42 +66,35 @@ Pythonは表示できないデータを表示するためにフォーマッタ�
 
   $ rtprint /localhost/ConsoleIn0.rtc:out
 
-``ConsoleIn0.rtc``の``out``ポートから最初の値を表示します。
+``ConsoleIn0.rtc`` の ``out`` ポートから最初の値を表示します。
 
 ::
 
   $ rtprint /localhost/ConsoleIn0.rtc:out -n 5
 
-``ConsoleIn0.rtc``の``out``ポートから最初の5個の値を表示します。
+``ConsoleIn0.rtc`` の ``out`` ポートから最初の5個の値を表示します。
 
 ::
 
   $ rtprint /localhost/ConsoleIn0.rtc:out -t 5
 
-``ConsoleIn0.rtc``の``out``ポートからの値を5秒間に表示します。
+``ConsoleIn0.rtc`` の ``out`` ポートからの値を5秒間表示します。
 
 ::
 
   $ rtprint /localhost/ConsoleIn0.rtc:out -t 5 -r 10
 
-``ConsoleIn0.rtc``の``out``ポートからの値を5秒間に1秒ずつ10回表示しま
+``ConsoleIn0.rtc`` の ``out`` ポートからの値を5秒間、1秒で10回表示しま
 す。
-
-::
-
-  $ rtprint /localhost/ConsoleIn0.rtc:out#rawpy
-
-``ConsoleIn0.rtc``の``out``ポートの最初の値をrtshellの``rawpy``関数に
-送って結果を表示します。この関数でPythonの表現に変更されます。
 
 ::
 
   $ rtprint /localhost/ConsoleIn0.rtc:out#printers.my_formatter
 
-``ConsoleIn0.rtc``の``out``ポートの最初の値を``printers``モジュールの
-``my_formatter``関数に送って結果を表示します。
+``ConsoleIn0.rtc`` の ``out`` ポートの最初の値を ``printers`` モジュールの
+``my_formatter`` 関数に送って結果を表示します。
 
-``--mod``と``--path``の例はrtinject(1)に参照してください。
+``--mod`` と ``--path`` の例はrtinject(1)を参照してください。
 
 参照
 ====

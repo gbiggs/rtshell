@@ -39,13 +39,13 @@ RTSProfileが指定されていない場合、stdinから読みます。
 
   $ rtstodot sys.rtsys | dot -T xlib
 
-``sys.rtsys``というファイルに保存されたRTシステムを表示します。
+``sys.rtsys`` というファイルに保存されたRTシステムを表示します。
 
 ::
 
   $ rtstodot sys.rtsys | dot -T eps > sys.eps
 
-``sys.rtsys``というファイルに保存されたRTシステムを表示してEncapsulated
+``sys.rtsys`` というファイルに保存されたRTシステムを表示してEncapsulated
 PostScriptフォーマットに保存します。
 
 ::

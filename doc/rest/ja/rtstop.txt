@@ -19,7 +19,7 @@ rtstop [options] [RTSProfile file]
 すべてのコンポーネントを deactivate すること似よってRTSProfileに保存され
 たRTシステムを停止します。コンポーネントはRTSProfileが指定された順番に
 deactivate されます。RTSProfileに「必要」と
-指定されていなくて実行中ではないコンポーネントは無視します。
+指定されておらず実行中ではないコンポーネントは無視します。
 
 ファイル名を指定しない場合、RTSProfileをstdinから読みます。
 
@@ -27,7 +27,7 @@ deactivate されます。RTSProfileに「必要」と
 ==========
 
 --dry-run
-  復元するために何をするかを表示して終了する
+  実行する内容を表示する（実際には停止は行われない）
 
 -x, --xml
   XMLフォーマットを使う
@@ -51,14 +51,14 @@ deactivate されます。RTSProfileに「必要」と
 
   $ rtstop sys.rtsys
 
-``sys.rtsys``というファイルに保存されたRTシステムを停止します。
+``sys.rtsys`` というファイルに保存されたRTシステムを停止します。
 
 ::
 
   $ rtstop sys.rtsys --dry-run
 
-``sys.rtsys``というファイルに保存されたRTシステムを停止するために何を
-するかを表示します。
+``sys.rtsys`` というファイルに保存されたRTシステムを停止するために何を
+するかを表示します。（実際には、停止は行われません。）
 
 
 参照

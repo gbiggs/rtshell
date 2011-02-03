@@ -16,20 +16,20 @@ rtcheck [options] <RTSProfile specification file>
 概要
 ====
 
-起動中のRTシステムをRTSProfileと比べて欠けている接続やステートが違うコン
-ポーネントなどのようなエラーを報告します。
+実行中のRTシステムとRTSProfileとで矛盾がないかをチェックします。
+正しくない状態にあるコンポーネントや間違った接続などのようなエラーを報告します。
 
-ディフォルトでRTSProfileファイルをXMLとしてロードします。YAMLを使う場合
-は``--yaml``を使ってください。
+デフォルトでRTSProfileファイルをXMLとしてロードします。YAMLを使う場合
+は ``--yaml`` を使ってください。
 
 オプション
 ==========
 
 --dry-run
-  何をするかを表示するが実行しない
+  何をするかを表示し、実行しない
 
 -s STATE, --state=STATE
-  全コンポーネントの予想ステート。ディフォルトは``Active``です。
+  全コンポーネントの期待される状態。デフォルトは``Active``です。
 
 -x, --xml
   XMLフォーマットを使う
@@ -48,14 +48,14 @@ rtcheck [options] <RTSProfile specification file>
 
   $ rtcheck sys.rtsys
 
-``sys.rtsys``というRTSProfileファイルに保存されたシステムはエラーなしに
-起動中ですべてのコンポーネントは active だと確認します。
+``sys.rtsys`` というRTSProfileファイルに保存されたシステムはエラーなしに
+起動中ですべてのコンポーネントは active 状態だと確認します。
 
 ::
 
   $ rtcheck sys.rtsys -s Inactive
 
-全コンポーネントは inactive のステートにある以外、以上と同じです。
+全コンポーネントは inactive の状態にある以外は上記と同じです。
 
 ::
 

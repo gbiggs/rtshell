@@ -95,7 +95,7 @@ def get_comp(cmd_path, full_path, tree=None):
         raise rts_exceptions.NoSuchObjectError(cmd_path)
 
     if not tree:
-        tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
+        tree = rtctree.tree.RTCTree(paths=path, filter=[path])
 
     comp = tree.get_node(path)
     if not comp:

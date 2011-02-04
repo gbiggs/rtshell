@@ -251,7 +251,7 @@ def list_target(cmd_path, full_path, options, tree=None):
         path = path[:-1]
 
     if not tree:
-        tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
+        tree = rtctree.tree.RTCTree(paths=path, filter=[path])
 
     if not tree.has_path(path):
         raise rts_exceptions.NoSuchObjectError(cmd_path)

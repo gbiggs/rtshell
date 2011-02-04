@@ -56,7 +56,7 @@ def cd(cmd_path, full_path):
     if not path[-1]:
         # Remove trailing slash part
         path = path[:-1]
-    tree = rtctree.tree.create_rtctree(paths=path)
+    tree = rtctree.tree.RTCTree(paths=path)
     if not tree.has_path(path):
         raise rts_exceptions.NotADirectoryError(cmd_path)
     if not tree.is_directory(path):

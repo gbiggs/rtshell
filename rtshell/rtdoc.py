@@ -178,7 +178,7 @@ def get_docs(cmd_path, full_path, options, tree=None):
         raise rts_exceptions.NotAComponentError(cmd_path)
 
     if not tree:
-        tree = rtctree.tree.create_rtctree(paths=path)
+        tree = rtctree.tree.RTCTree(paths=path)
 
     if not tree.has_path(path):
         raise rts_exceptions.NoSuchObjectError(cmd_path)

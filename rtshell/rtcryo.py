@@ -179,7 +179,7 @@ def data_conns_to_rts_conns(connectors):
 def freeze_dry(servers, dest='-', xml=True, abstract='', vendor='', sysname='',
         version='', tree=None):
     if not tree:
-        tree = rtctree.tree.create_rtctree(servers=servers)
+        tree = rtctree.tree.RTCTree(servers=servers)
     # Run through the tree finding component names and connections to
     # preserve.
     components = find_all_used_components(tree)

@@ -37,7 +37,7 @@ def disconnect_all(cmd_path, full_path, options, tree=None):
     if not path[-1]:
         raise rts_exceptions.NoSuchObjectError(cmd_path)
     if not tree:
-        tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
+        tree = rtctree.tree.RTCTree(paths=path, filter=[path])
 
     object = tree.get_node(path)
     if not object:
@@ -86,7 +86,7 @@ def disconnect_ports(source_cmd_path, source_full_path,
         raise rts_exceptions.NoDestPortError
 
     if not tree:
-        tree = rtctree.tree.create_rtctree(paths=[source_path, dest_path],
+        tree = rtctree.tree.RTCTree(paths=[source_path, dest_path],
                 filter=[source_path, dest_path])
 
     source_comp = tree.get_node(source_path)

@@ -83,7 +83,7 @@ def search(cmd_path, full_path, options, tree=None):
         path = path[:-1]
 
     if not tree:
-        tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
+        tree = rtctree.tree.RTCTree(paths=path, filter=[path])
 
     # Find the root node of the search
     root = tree.get_node(path)

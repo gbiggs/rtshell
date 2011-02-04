@@ -44,7 +44,7 @@ def delete_object_reference(cmd_path, full_path, options, tree=None):
         raise rts_exceptions.UndeletableObjectError(cmd_path)
 
     if not tree:
-        tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
+        tree = rtctree.tree.RTCTree(paths=path, filter=[path])
 
     if options.zombies and not tree.is_zombie(path):
         raise rts_exceptions.NotZombieObjectError(cmd_path)
@@ -62,7 +62,7 @@ def delete_object_reference(cmd_path, full_path, options, tree=None):
 
 def delete_all_zombies(options, tree=None):
     if not tree:
-        tree = rtctree.tree.create_rtctree()
+        tree = rtctree.tree.RTCTree()
     if not tree:
         return 1
     def del_zombie(node, args):

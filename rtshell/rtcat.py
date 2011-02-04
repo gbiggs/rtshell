@@ -392,7 +392,7 @@ def cat_target(cmd_path, full_path, options, tree=None):
             filter = []
         else:
             filter = [path]
-        tree = rtctree.tree.create_rtctree(paths=path, filter=filter)
+        tree = rtctree.tree.RTCTree(paths=path, filter=filter)
 
     if not tree.has_path(path):
         raise rts_exceptions.NoSuchObjectError(cmd_path)

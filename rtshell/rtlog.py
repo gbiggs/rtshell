@@ -80,7 +80,7 @@ def record_log(raw_paths, options, tree=None):
     sources = port_types.parse_targets(raw_paths)
     if not tree:
         paths = [s[0] for s in sources]
-        tree = rtctree.tree.create_rtctree(paths=paths, filter=paths)
+        tree = rtctree.tree.RTCTree(paths=paths, filter=paths)
     port_specs = port_types.make_port_specs(sources, mm, tree)
     port_types.require_all_input(port_specs)
     if options.verbose:
@@ -192,7 +192,7 @@ def play_log(raw_paths, options, tree=None):
     targets = port_types.parse_targets(raw_paths)
     if not tree:
         paths = [t[0] for t in targets]
-        tree = rtctree.tree.create_rtctree(paths=paths, filter=paths)
+        tree = rtctree.tree.RTCTree(paths=paths, filter=paths)
     port_specs = port_types.make_port_specs(targets, mm, tree)
     if options.verbose:
         print >>sys.stderr, \

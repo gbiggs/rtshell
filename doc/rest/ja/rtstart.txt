@@ -16,10 +16,10 @@ rtstart [options] [RTSProfile file]
 概要
 ====
 
-すべてのコンポーネントを activate すること似よってRTSProfileに保存され
+すべてのコンポーネントを activate することによってRTSProfileに保存され
 たRTシステムを起動します。コンポーネントはRTSProfileが指定された順番に
 activate されます。RTSProfileに「必要」と
-指定されていなくて実行中ではないコンポーネントは無視します。
+指定されておらず実行中ではないコンポーネントは無視します。
 
 ファイル名を指定しない場合、RTSProfileをstdinから読みます。
 
@@ -27,7 +27,7 @@ activate されます。RTSProfileに「必要」と
 ==========
 
 --dry-run
-  復元するために何をするかを表示して終了する
+  実行する内容を表示する（実際には起動は行われない）
 
 -x, --xml
   XMLフォーマットを使う
@@ -51,14 +51,14 @@ activate されます。RTSProfileに「必要」と
 
   $ rtstart sys.rtsys
 
-``sys.rtsys``というファイルに保存されたRTシステムを起動します。
+``sys.rtsys`` というファイルに保存されたRTシステムを起動します。
 
 ::
 
   $ rtstart sys.rtsys --dry-run
 
-``sys.rtsys``というファイルに保存されたRTシステムを起動するために何を
-するかを表示します。
+``sys.rtsys`` というファイルに保存されたRTシステムを起動するために何を
+するかを表示します。（実際には起動されません。）
 
 参照
 ====

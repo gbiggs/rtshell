@@ -4,7 +4,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2011
     Yosuke Matsusaka and Geoffrey Biggs
     Intelligent Systems Research Institute,
     National Institute of Advanced Industrial Science and Technology (AIST),

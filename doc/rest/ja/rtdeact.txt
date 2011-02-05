@@ -16,13 +16,13 @@ rtdeact [options] <path>
 概要
 ====
 
-Active のRTコンポーネントを deactivate します。
+Active 状態のRTコンポーネントを deactivate します。
 
 オプション
 ==========
 
 -e EC_INDEX, --exec_context=EC_INDEX
-    このexecution contextの中のみで deactivate する。ディフォルトは0。
+    状態を変更するexecution contextのID。デフォルトは0。
 
 .. include:: ../../common/ja/common_opts.txt
 
@@ -35,13 +35,13 @@ Active のRTコンポーネントを deactivate します。
 
   $ rtdeact /localhost/local.host_cxt/ConsoleOut0.rtc
 
-``ConsoleOut0.rtc``のすべてのECに deactivate する。
+``ConsoleOut0.rtc`` のすべてのEC上で deactivate する。
 
 ::
 
   $ rtdeact -e 2 /localhost/local.host_cxt/Motor0.rtc
 
-``Motor0.rtc``を「２」というIDで示されるECのみに deactivate する。
+``Motor0.rtc`` を「２」というIDで示されるECのみで deactivate する。
 
 参照
 ====

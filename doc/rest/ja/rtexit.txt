@@ -17,7 +17,7 @@ rtexit [options] <path>
 ====
 
 実行中のRTコンポーネントを終了させます。コンポーネントは終了手続きをし
-ます。
+て終了します。
 
 オプション
 ==========
@@ -33,7 +33,7 @@ rtexit [options] <path>
 
   $ rtexit /localhost/ConsoleOut0.rtc
 
-``ConsoleOut0.rtc``コンポーネントを終了します。
+``ConsoleOut0.rtc`` コンポーネントを終了します。
 
 参照
 ====

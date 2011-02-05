@@ -18,10 +18,10 @@ rtmgr [options] <path>
 
 マネジャーの扱いによってコンポーネントと共有モジュールの管理をします。
 マネジャーにロードされた共有モジュールからコンポーネントをインスタンス
-にします。
+化します。
 
-マネジャーのコンフィグレーションは``rtconf(1)``によってしてください。
-マネジャーの情報は``rtcat(1)``によって表示してください。
+マネジャーのコンフィグレーションは ``rtconf(1)`` を使用してください。
+マネジャーの情報は ``rtcat(1)`` によって表示してください。
 
 複数のコマンドを指定する場合、「unload」、「load」、「delete」そして
 「create」の順番に実行されます。
@@ -32,17 +32,17 @@ rtmgr [options] <path>
 
 -c MOD_NAME, --create=MOD_NAME
   ロードされたモジュールからコンポーネントのインスタンスを作る。プロパ
-  ティはモジュール名に追加することが可能だ。プロパティは「?」で始まる。
+  ティはモジュール名に追加することが可能。プロパティは「?」で始まる。
 
 -d INSTANCE_NAME, --delete=INSTANCE_NAME
   コンポーネントのインスタンスを終了して消す。
 
 -i INIT_FUNC, --init-func=INIT_FUNC
-  ``--load``を使う時のコンポーネントのinitialisation関数。
+  ``--load`` を使う時のコンポーネントのinitialisation関数。
 
 -l MOD_PATH, --load=MOD_PATH
-  マネジャーにモジュールをロードする。``--init-func``によって
-  initialisation関数を指定することは必要だ。
+  マネジャーにモジュールをロードする。 ``--init-func`` によって
+  initialisation 関数を指定することが必要。
 
 -u MOD_PATH_U, --unload=MOD_PATH_U
   マネジャーからモジュールを消す。
@@ -59,32 +59,32 @@ rtmgr [options] <path>
   $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so
     -i mycomp_init
 
-マネジャーに``mycomp.so``というモジュールをロードします。
+マネジャーに ``mycomp.so`` というモジュールをロードします。
 
 ::
 
   $ rtmgr /localhost/manager.mgr -c mycomp
 
-``mycomp``というモジュールからコンポーネントのインスタンスを作ります。
+``mycomp`` というモジュールからコンポーネントのインスタンスを作ります。
 
 ::
 
   $ rtmgr /localhost/manager.mgr -d MyComp0
 
-マネジャーに実行中の``MyComp0``というコンポーネントを終了して消します。
+マネジャーに実行中の ``MyComp0`` というコンポーネントを終了して消します。
 
 ::
 
   $ rtmgr /localhost/manager.mgr -u /usr/local/lib/mycomp.so
 
-マネジャーから``mycomp.so``というモジュールを消します。
+マネジャーから ``mycomp.so`` というモジュールを消します。
 
 ::
 
   $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so
     -i mycomp_init -c mycomp
 
-マネジャーに``mycomp.so``というモジュールをロードしてそしてコンポーネン
+マネジャーに ``mycomp.so`` というモジュールをロードしてそしてコンポーネン
 トのインスタンスを作ります。
 
 

@@ -16,30 +16,30 @@ rtconf <path> [options] [command] [args]
 概要
 ====
 
-コンフィグレーションパラメータとセットを表示して編集します。
+コンフィグレーションパラメータとセットを表示、編集します。
 
-「command」は以下の一つを使ってください。
+「command」は以下のいずれかを使ってください。
 
   - list
   - set
   - get
   - act
 
-「command」は指定されていない場合、``list``コマンドを実行します。
+「command」が指定されていない場合、 ``list`` コマンドを実行します。
 
 ::
 
   list
 
-``list``コマンドはコンフィグレーションセットとパラメータを表示します。
-隠されたセット（セット名は``__``で始まる）は表示しません。
+``list`` コマンドはコンフィグレーションセットとパラメータを表示します。
+隠されたセット（セット名は ``__`` で始まる）は表示しません。
 
 ::
 
   set <parameter> <value>
 
 コンフィグレーションパラメータの値を編集します。パラメータ名と新しい値
-を指定してください。``--set``オプションは指定されていない場合、現在の
+を指定してください。 ``--set`` オプションが指定されていない場合、現在の
 アクティブセットのパラメータを編集します。
 
 ::
@@ -47,20 +47,20 @@ rtconf <path> [options] [command] [args]
   get <parameter>
 
 一つのパラメータの値を表示します。パラメータ名を指定してください。
-``--set``オプションは指定されていない場合、現在のアクティブセットの値を
+``--set`` オプションが指定されていない場合、現在のアクティブセットの値を
 表示します。
 
 ::
 
   act
 
-アクティブセットを変更します。セット名は``--set``で指定してください。
+アクティブセットを変更します。セット名は ``--set`` で指定してください。
 
 オプション
 ==========
 
 -a, --all
-  隠されたセットを無視しない。隠されたセットを編集したがる方はこのオプ
+  隠されたセットを無視しない。隠されたセットを編集したい方はこのオプ
   ションを指定してください。
 
 -l
@@ -83,7 +83,7 @@ rtconf <path> [options] [command] [args]
   +mode0
   +mode1
 
-``ConfigSample0.rtc``のセットを表示します。
+``ConfigSample0.rtc`` のセットを表示します。
 
 ::
 
@@ -93,7 +93,7 @@ rtconf <path> [options] [command] [args]
     double_param1  -0.99
   ...
 
-``ConfigSample0.rtc``のセットとパラメータを表示します。
+``ConfigSample0.rtc`` のセットとパラメータを表示します。
 
 ::
 
@@ -104,7 +104,7 @@ rtconf <path> [options] [command] [args]
   +mode0
   +mode1
 
-隠されたセットを含めて``ConfigSample0.rtc``のセットを表示します。
+隠されたセットを含めて ``ConfigSample0.rtc`` のセットを表示します。
 
 ::
 
@@ -114,45 +114,45 @@ rtconf <path> [options] [command] [args]
     double_param1
   ...
 
-``ConfigSample0.rtc``の``default``セットのパラメータを表示します。
+``ConfigSample0.rtc`` の ``default`` セットのパラメータを表示します。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc set int_param0 42
 
-現在のアクティブセットの``int_param0``パラメータの値を42に編集します。
+現在のアクティブセットの ``int_param0`` パラメータの値を42に編集します。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc -s mode0 set int_param0 42
 
-``mode0``というセットの``int_param0``を42に編集します。
+``mode0`` というセットの ``int_param0`` を42に編集します。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc get int_param0
   0
 
-現在のアクティブセットの``int_param0``パラメータの値を取得します。
+現在のアクティブセットの ``int_param0`` パラメータの値を取得します。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc -s mode0 get int_param0
   12345
 
-``mode0``というセットの``int_param0``パラメータの値を取得します。
+``mode0`` というセットの ``int_param0`` パラメータの値を取得します。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc act mode1
 
-現在のアクティブセットを``mode1``というセットにします。
+現在のアクティブセットを ``mode1`` というセットにします。
 
 ::
 
   $ rtconf /localhost/ConfigSample0.rtc -a act __widget__
 
-現在のアクティブセットを``__widget__``というセットにします。
+現在のアクティブセットを ``__widget__`` というセットにします。
 
 参照
 ====

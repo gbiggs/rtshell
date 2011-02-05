@@ -35,13 +35,13 @@ rtreset [options] <path>
 
   $ rtreset /localhost/local.host_cxt/ConsoleOut0.rtc
 
-``ConsoleOut0.rtc``のすべてのECにリセットにする。
+``ConsoleOut0.rtc`` のすべてのECにリセットにする。
 
 ::
 
   $ rtreset -e 2 /localhost/local.host_cxt/Motor0.rtc
 
-``Motor0.rtc``を「２」というIDで示されるECのみにリセットにする。
+``Motor0.rtc`` を「２」というIDで示されるECのみにリセットにする。
 
 参照
 ====

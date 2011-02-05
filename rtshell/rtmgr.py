@@ -4,7 +4,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2011
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
@@ -41,7 +41,7 @@ def get_manager(cmd_path, full_path, tree=None):
         path = path[:-1]
 
     if not tree:
-        tree = rtctree.tree.create_rtctree(paths=path, filter=[path])
+        tree = rtctree.tree.RTCTree(paths=path, filter=[path])
 
     object = tree.get_node(path)
     if not object:

@@ -4,7 +4,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2011
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
@@ -207,13 +207,13 @@ def make_init(name, cons, port_specs, event=None, rate=1.0, max=-1, **kwargs):
             'max_instance', '1',
             'language', 'Python',
             'lang_type', 'SCRIPT',
-            'exec_cxt.periodic.type', 'PeriodicExecutionContext',
-            'exec_cxt.periodic.rate', '{0}'.format(rate),
             '']
         profile = OpenRTM_aist.Properties(defaults_str=spec)
         mgr.registerFactory(profile,
                 make_factory(cons, port_specs, event=event, max=max, **kwargs),
                 OpenRTM_aist.Delete)
-        comp = mgr.createComponent(name)
+        comp = mgr.createComponent(name +
+            '?exec_cxt.periodic.type=PeriodicExecutionContext&'
+            'exec_cxt.periodic.rate={0}'.format(rate))
     return init_fun
 

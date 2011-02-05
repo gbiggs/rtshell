@@ -16,8 +16,8 @@ rtdis [options] <source path> [destination path]
 概要
 ====
 
-ポートの間の接続を消します。一つの接続を消すこともポートやコンポーネン
-トからすべての接続を消すことは加能です。
+ポートの間の接続を消します。一つのポートから全ての接続を消すこともコンポーネン
+トから全ての接続を消すことも可能です。
 
 オプション
 ==========
@@ -36,33 +36,33 @@ rtdis [options] <source path> [destination path]
 
   $ rtdis /localhost/ConsoleIn0.rtc:out /localhost/ConsoleOut0.rtc:in
 
-``ConsoleIn0.rtc``の``out``ポートと``ConsoleOut0.rtc``の``in``ポートの
-間のすべての接続を消します。
+``ConsoleIn0.rtc`` の ``out`` ポートと ``ConsoleOut0.rtc`` の ``in`` ポートの
+間の全ての接続を消します。
 
 ::
 
   $ rtdis /localhost/ConsoleIn0.rtc:out
 
-``ConsoleIn0.rtc``の``out``ポートにすべての接続を消します。
+``ConsoleIn0.rtc`` の ``out`` ポートに接続されている全ての接続を消します。
 
 ::
 
   $ rtdis /localhost/ConsoleIn0.rtc
 
-``ConsoleIn0.rtc``のすべてのポートからすべての接続を消します。
+``ConsoleIn0.rtc`` の全てのポートから全ての接続を消します。
 
 ::
 
   $ rtdis -i con1 /localhost/ConsoleIn0.rtc:out
 
-``ConsoleIn0.rtc``の``out``ポートから``con1``というIDの持つ接続のみを消
+``ConsoleIn0.rtc`` の ``out`` ポートから ``con1`` というIDを持つ接続のみを消
 します。
 
 ::
 
   $ rtdis -i con1 /localhost/ConsoleIn0.rtc
 
-``ConsoleIn0.rtc``のどれでものポートから``con1``というIDの持つ接続のみを消
+``ConsoleIn0.rtc`` のポートのうち ``con1`` というIDの接続のみを消
 します。
 
 参照

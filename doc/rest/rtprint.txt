@@ -50,8 +50,7 @@ Options
   Extra module search paths to add to the ``PYTHONPATH``.
 
 -r RATE, --rate=RATE
-  Specify the rate in Hertz at which to read and print. The default is
-  1Hz.
+  Specify the rate in Hertz at which to read and print.
 
 -t TIMEOUT, --timeout=TIMEOUT
   Read data for this many seconds, then stop.  This option overrides
@@ -91,6 +90,14 @@ Print the values sent by the ``ConsoleIn0.rtc`` component over its
 
 Print the values sent by the ``ConsoleIn0.rtc`` component over its
 ``out`` port up to ten times a second for for five seconds.
+
+::
+
+  $ rtprint /localhost/ConsoleIn0.rtc:out#rawpy
+
+Print the first value sent by the ``ConsoleIn0.rtc`` component over its
+``out`` port as a Python expression using the inbuilt ``rawpy``
+formatter.
 
 ::
 

@@ -29,7 +29,7 @@ rtcon [options] <source path> <destination path>
 
   - port.port_type
 
-OpenRTMのバージョンによってほかのプロパティも有効可能性はあります。
+OpenRTMのバージョンによっては、ほかのプロパティも有効な場合があります。
 
 オプション
 ==========
@@ -54,23 +54,23 @@ OpenRTMのバージョンによってほかのプロパティも有効可能性�
 
   $ rtcon /localhost/ConsoleIn0.rtc:out /localhost/ConsoleOut0.rtc:in
 
-ディフォルトプロパティを使って``ConsoleIn0.rtc``の``out``ポートを
-``ConsoleOut0.rtc``の``in``ポートに接続します。
+デフォルトプロパティを使って ``ConsoleIn0.rtc`` の ``out`` ポートを
+``ConsoleOut0.rtc`` の ``in`` ポートに接続します。
 
 ::
 
   $ rtcon Motor0.rtc:out Sensor0.rtc:in --property
     dataport.dataflow_type=pull
 
-``Pull``型なコネクションによって``Motor0.rtc``の``out``ポートを
-``Sensor0.rtc``の``in``ポートに接続します。
+``Pull`` 型のコネクションによって ``Motor0.rtc`` の ``out`` ポートを
+``Sensor0.rtc`` の ``in`` ポートに接続します。
 
 ::
 
   $ rtcon Motor0.rtc:out Sensor0.rtc:in -i con1 -n motor_data
 
-``Motor0.rtc``の``out``ポートを``Sensor0.rtc``の``in``ポートに接続しま
-す。コネクションの名は``motor_data``でIDは``con1``になります。
+``Motor0.rtc`` の ``out`` ポートを ``Sensor0.rtc`` の ``in`` ポートに接続しま
+す。コネクション名は ``motor_data`` でIDは ``con1`` になります。
 
 参照
 ====

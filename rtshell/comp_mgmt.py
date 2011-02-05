@@ -4,7 +4,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2011
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
@@ -57,7 +57,7 @@ def get_comp(rtc, tree=None, orb=None):
 
     '''
     if not tree:
-        tree = rtctree.tree.create_rtctree(paths=rtc, orb=orb, filter=[rtc])
+        tree = rtctree.tree.RTCTree(paths=rtc, orb=orb, filter=[rtc])
 
     if not tree.has_path(rtc):
         raise rts_exceptions.NoSuchObjectError(rtc)

@@ -1,6 +1,6 @@
 # rtshell Bash completion
 #
-# Copyright (C) 2009-2010
+# Copyright (C) 2009-2011
 #     Keisuke Suzuki and Geoffrey Biggs
 #     RT-Synthesis Research Group
 #     Intelligent Systems Research Institute,
@@ -586,6 +586,16 @@ _rtsbc_rtlog()
             COMPREPLY=($(compgen -W "simpkl text" -- ${cur}))
             return 0
             ;;
+        --mod|-m)
+            COMPREPLY=($(compgen -f ${cur}))
+            compopt -o filenames
+            return 0
+            ;;
+        --path|-p)
+            COMPREPLY=($(compgen -f ${cur}))
+            compopt -o filenames
+            return 0
+            ;;
     esac
 
     # : is treated the same as a space for separating variables
@@ -645,9 +655,9 @@ _rtsbc_rtmgr()
                 modules="$(rtcat ${COMP_WORDS[1]} | \
                     sed -n '/Loaded modules/,/Loadable modules/p' | \
                     grep Filepath | awk '{print $2;}')"
-                for mod in "${modules}" ;
+                for mod in ${modules} ;
                 do
-                    name=$(basename ${mod})
+                    name=$(basename ${mod#.//})
                     basenames="${basenames} ${name%.*}"
                 done
             else
@@ -710,6 +720,75 @@ _rtsbc_rtmgr()
     return 0
 }
 
+_rtsbc_rtcheck(){
+    local cur prev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "${prev}" in
+        --state|-s)
+            COMPREPLY=($(compgen -W "inactive Inactive active Active error Error" -- ${cur}))
+            return 0
+            ;;
+    esac
+
+    if [[ ${cur} == -* ]] ; then
+        _rtsbc_rtopts ${cur}
+        return 0
+    fi
+
+    COMPREPLY=($(compgen -f ${cur}))
+    compopt -o filenames
+
+    return 0
+}
+
+_rtsbc_rtmod()
+{
+    local cur prev preprev colonopt
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [[ ${cur} == -* ]] ; then
+            _rtsbc_rtopts ${cur}
+            return 0
+    fi
+
+    case "${prev}" in
+        --mod|-m)
+            COMPREPLY=($(compgen -f ${cur}))
+            compopt -o filenames
+            return 0
+            ;;
+        --path|-p)
+            COMPREPLY=($(compgen -f ${cur}))
+            compopt -o filenames
+            return 0
+            ;;
+    esac
+
+    # : is treated the same as a space for separating variables
+    # Port completion 1
+    if [[ ${cur} == : ]] ; then
+        colonopt=$(rtcat ${prev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }')
+        COMPREPLY=(${colonopt})
+        return 0
+    fi
+
+    # Port completion 2
+    if [[ ${prev} == : ]] ; then
+        preprev="${COMP_WORDS[COMP_CWORD-2]}"
+        colonopt=`rtcat ${preprev} 2> /dev/null | grep Port: | col | sed 's/00m//g' | awk '{ print $2 }'`
+        COMPREPLY=($(compgen -W "${colonopt}" -- ${cur}))
+        return 0
+    fi
+
+    _rtsbc_rtobj "${cur}" port
+    return 0
+}
+
 _rtsbc_optsonly(){
     local cur prev
     COMPREPLY=()
@@ -725,7 +804,7 @@ _rtsbc_optsonly(){
 }
 
 complete -F _rtsbc_rtls rtact
-complete -F _rtsbc_optsonly -A file rtcheck
+complete -F _rtsbc_rtcheck rtcheck
 complete -F _rtsbc_rtcomp rtcomp
 complete -F _rtsbc_rtcon rtcon
 complete -F _rtsbc_rtconf rtconf
@@ -738,11 +817,11 @@ complete -F _rtsbc_rtdis rtdis
 complete -F _rtsbc_rtls rtdoc
 complete -F _rtsbc_rtls rtexit
 complete -F _rtsbc_rtls rtfind
-complete -F _rtsbc_rtcon rtinject
+complete -F _rtsbc_rtmod rtinject
 complete -F _rtsbc_rtlog rtlog
 complete -F _rtsbc_rtls rtls
 complete -F _rtsbc_rtmgr rtmgr
-complete -F _rtsbc_rtcon rtprint
+complete -F _rtsbc_rtmod rtprint
 complete -F _rtsbc_rtls rtreset
 complete -F _rtsbc_optsonly -A file rtresurrect
 complete -F _rtsbc_optsonly -A file rtstart

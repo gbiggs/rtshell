@@ -4,7 +4,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2011
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
@@ -25,7 +25,10 @@ from rtshell import rtfind
 
 
 if __name__ == '__main__':
-    sys.exit(rtfind.main())
+    res, matches = rtfind.main()
+    for m in matches:
+        print m
+    sys.exit(res)
 
 
 # vim: tw=79

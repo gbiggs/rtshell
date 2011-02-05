@@ -4,7 +4,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2011
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
@@ -58,7 +58,7 @@ def read_from_ports(raw_paths, options, tree=None):
     targets = port_types.parse_targets(raw_paths)
     if not tree:
         paths = [t[0] for t in targets]
-        tree = rtctree.tree.create_rtctree(paths=paths, filter=paths)
+        tree = rtctree.tree.RTCTree(paths=paths, filter=paths)
     port_specs = port_types.make_port_specs(targets, mm, tree)
     port_types.require_all_input(port_specs)
     if options.verbose:
@@ -113,7 +113,7 @@ Print the data being sent by one or more output ports.'''
             type='string', default=[],
             help='Extra module search paths to add to the PYTHONPATH.')
     parser.add_option('-r', '--rate', dest='rate', action='store',
-            type='float', default=1.0, help='Specify the rate in Hertz at '\
+            type='float', default=100.0, help='Specify the rate in Hertz at '\
             'which to read and print. [Default: %default]')
     parser.add_option('-t', '--timeout', dest='timeout', action='store',
             type='float', default=-1, help='Read data for this many seconds, '\

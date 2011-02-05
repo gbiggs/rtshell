@@ -53,8 +53,9 @@ Options
 
 -e END, --end=END
   Time or entry index to stop recording or playback. Must be within the
-  bounds of the log. Specify -1 to record forever or replay to the end
-  of the log. Use --index to specify that this value is an index.
+  bounds of the log. Specify ``-1`` to record forever or replay to the
+  end of the log.  Use ``--index`` to specify that this value is an
+  index.
 
 -f FILENAME, --filename=FILENAME
   File name of the log file to record to/playback from. If not specified
@@ -87,7 +88,7 @@ Options
   Replay mode.
 
 -r RATE, --rate=RATE
-  Scale the playback speed of the log. The default is 1.0x.
+  (Replay mode only.) Scale the playback speed of the log.
 
 -s START, --start=START
   (Replay mode only.) Time or entry index to start playback from. Must
@@ -99,8 +100,7 @@ Options
   ``--start``/``--end``.
 
 -x EXEC_RATE, --exec-rate=EXEC_RATE
-  Specify the rate in Hertz at which to run the component. The default
-  is 100Hz.
+  Specify the rate in Hertz at which to run the component.
 
 .. include:: ../common/common_opts.txt
 
@@ -172,7 +172,7 @@ Replay data from the log file from the beginning until timestamp
     /localhost/ConsoleOut0.rtc:in.numbers
 
 Replay data from the log file from timestamp 1292489690 until timestamp
-1292489690 (i.e. 10 seconds of data).
+1292489700 (i.e. 10 seconds of data).
 
 ::
 

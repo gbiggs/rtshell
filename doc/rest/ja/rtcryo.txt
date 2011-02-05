@@ -16,11 +16,11 @@ rtcryo [options] [name servers]
 概要
 ====
 
-実行中のRTシステムをRTSProfileに保存します。コンポーネントの間の接続と
+実行中のRTシステムをRTSProfileに保存します。コンポーネント間の接続と
 コンポーネントの現在のコンフィグレーションパラメータを保存します。接続
 されていないコンポーネントは保存しません。
 
-ファイル名を指定しない場合、RTSProfileを``stdout``に出します。ディフォ
+ファイル名を指定しない場合、RTSProfileを ``stdout`` に出力します。デフォ
 ルトはXMLで保存します。
 
 オプション
@@ -30,13 +30,13 @@ rtcryo [options] [name servers]
   RTシステムの概要
 
 -n SYSNAME, --system-name=SYSNAME
-  RTシステムの名。[ディフォルト: ``RTSystem``]
+  RTシステムの名前。
 
 -o OUTPUT, --output=OUTPUT
-  出力ファイル名。指定しない場合は``stdout``に出します。
+  出力ファイル名。指定しない場合は ``stdout`` に出力します。
 
 -v VERSION, --system-version=VERSION
-  RTシステムのバージョン。[ディフォルト: ``0``]
+  RTシステムのバージョン。
 
 -e VENDOR, --vendor=VENDOR
   RTシステムのベンダー。
@@ -65,23 +65,22 @@ rtcryo [options] [name servers]
 
   $ rtcryo -o sys.rtsys
 
-すべての分かるネームサーバのすべての接続されているコンポーネントを一つ
-のRTシステムとしてRTSProfileい保存して``sys.rtsys``というファイルに保存
-します。
+全ての既知のネームサーバ上の全コンポーネントを一つのRTシステムとして
+RTSProfileを ``sys.rtsys`` というファイルに保存します。
 
 ::
 
   $ rtcryo localhost
 
-``localhost``というネームサーバのすべての接続されているコンポーネントを一つ
-のRTシステムとしてRTSProfileい保存してstdoutに出します。
+``localhost`` というネームサーバのすべての接続されているコンポーネントを一つ
+のRTシステムとしてRTSProfileに保存してstdoutに出します。
 
 ::
 
   $ rtcryo -n 'mysystem' -v 1.0
 
-RTSProfileにRTシステムの名を``mysystem``にして、バージョンを``1.0``に
-します。
+RTシステムの名前を ``mysystem`` 、バージョンを ``1.0`` としてRTSProfileを
+保存します。
 
 参照
 ====

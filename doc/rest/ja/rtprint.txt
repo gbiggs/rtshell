@@ -2,108 +2,102 @@
 rtprint
 =======
 
------------------------
-display data from ports
------------------------
+----------------------------------------
+ポートからのデータをターミナルに表示する
+----------------------------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtprint [options] <path1>:<port1> [<path2>:<port2>...]
 
-Description
-===========
+概要
+====
 
-Print the data being sent by one or more output ports to stdout.
+複数のアウトポートが送るデータを標準出力に表示します。
 
-By default, only the first value received from one or more ports is
-printed.  Options are available to print multiple values or print
-regularly for a specified length of time. In any one loop of the port
-checks, if only one port out of multiple has data available, that is
-counted as a print for the purposes of printing a fixed number of times.
+デフォルトは最初の値のみを表示します。複数の値を表示すことや定期的に表
+示することも可能です。一回の実行ループで一つだけのポートにデータがあっ
+た場合、一定の回数プリントする目的のためのプリントとしてカウントされま
+す。
 
-To print data which cannot be natively printed by Python, create a
-formatting function to print that data. The function must receive one
-argument: the data to print. For example::
+Pythonは表示できないデータを表示するためにフォーマッタ関数を使うことが
+必要です。ユーザもこの関数を提供することは可能です。フォーマッタ関数は
+一つの変数（表示するべきデータ）をもらいます::
 
   def rawpy(data):
       return data.__repr__()
 
-A connection will be made to each port using the default connection
-settings compatible with that port.
+ログツールから目的のポートまでの接続はデフォルトのプロパティで作られま
+す。
 
 
-Options
-=======
+オプション
+==========
 
 -m MODULES, --mod=MODULES
-  Extra modules to import. If automatic module loading struggles with
-  the constant's data types, try listing the modules here. The module
-  and its ``__POA`` partner will be imported.
+  Import する必要がある Python モジュール。値が必要としているモジュー
+  ルが自動的にロードされていない場合、このオプションで指定してください。
+  モジュールとそのモジュールの ``__POA`` のモジュールも import します。
 
 -n MAX, --number=MAX
-  Specify the number of times to read from any ports.
+  読み込む回数の制限。
 
 -p PATHS, --path=PATHS
-  Extra module search paths to add to the ``PYTHONPATH``.
+  モジュールのサーチパス。Pythonの ``PYTHONPATH`` 変数に追加する。
 
 -r RATE, --rate=RATE
-  Specify the rate in Hertz at which to read and print. The default is
-  1Hz.
+  実行レート。
 
 -t TIMEOUT, --timeout=TIMEOUT
-  Read data for this many seconds, then stop.  This option overrides
-  ``--number``.
+  読み込む時間の制限。このオプションを使う場合、 ``--number`` を使うことは
+  できません。
 
 .. include:: ../../common/ja/common_opts.txt
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtprint /localhost/ConsoleIn0.rtc:out
 
-Print the first value sent by the ``ConsoleIn0.rtc`` component over its
-``out`` port.
+``ConsoleIn0.rtc`` の ``out`` ポートから最初の値を表示します。
 
 ::
 
   $ rtprint /localhost/ConsoleIn0.rtc:out -n 5
 
-Print the first five values sent by the ``ConsoleIn0.rtc`` component
-over its ``out`` port.
+``ConsoleIn0.rtc`` の ``out`` ポートから最初の5個の値を表示します。
 
 ::
 
   $ rtprint /localhost/ConsoleIn0.rtc:out -t 5
 
-Print the values sent by the ``ConsoleIn0.rtc`` component over its
-``out`` port for five seconds.
+``ConsoleIn0.rtc`` の ``out`` ポートからの値を5秒間表示します。
 
 ::
 
   $ rtprint /localhost/ConsoleIn0.rtc:out -t 5 -r 10
 
-Print the values sent by the ``ConsoleIn0.rtc`` component over its
-``out`` port up to ten times a second for for five seconds.
+``ConsoleIn0.rtc`` の ``out`` ポートからの値を5秒間、1秒で10回表示しま
+す。
 
 ::
 
   $ rtprint /localhost/ConsoleIn0.rtc:out#printers.my_formatter
 
-Print the first value sent by the ``ConsoleIn0.rtc`` component over its
-``out`` port using the ``my_formatter`` formatting function from the
-``printers`` module to print the data.
+``ConsoleIn0.rtc`` の ``out`` ポートの最初の値を ``printers`` モジュールの
+``my_formatter`` 関数に送って結果を表示します。
 
-See rtinject(1) for examples using ``--mod`` and ``--path``.
+``--mod`` と ``--path`` の例はrtinject(1)を参照してください。
 
-See Also
-========
+参照
+====
 
   ``rtcat`` (1),
   ``rtinject`` (1),

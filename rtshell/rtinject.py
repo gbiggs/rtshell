@@ -4,7 +4,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2011
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
@@ -67,7 +67,7 @@ def write_to_ports(raw_paths, options, tree=None):
     targets = port_types.parse_targets(raw_paths)
     if not tree:
         paths = [t[0] for t in targets]
-        tree = rtctree.tree.create_rtctree(paths=paths, filter=paths)
+        tree = rtctree.tree.RTCTree(paths=paths, filter=paths)
     port_specs = port_types.make_port_specs(targets, mm, tree)
     port_types.require_all_output(port_specs)
     if options.verbose:

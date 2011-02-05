@@ -16,15 +16,15 @@ rtcat [options] <path>
 概要
 ====
 
-POSIXの``cat``コマンドと同じです。RTコンポーネント、ポート及びマネージャ
+POSIXの ``cat`` コマンドと同じです。RTコンポーネント、ポート及びマネージャ
 のメタデータを読んでターミナルに表示します。
 
 オプション
 ==========
 
 -l
-  詳しい情報を示します。複数回を指定するともっと詳しい情報が表示
-  されます。[ディフォルト：``False``]
+  詳しい情報を示します。複数指定するともっと詳しい情報が表示
+  されます。[デフォルト：``False``]
 
 .. include:: ../../common/ja/common_opts.txt
 
@@ -37,32 +37,32 @@ POSIXの``cat``コマンドと同じです。RTコンポーネント、ポート
 
   $ rtcat /localhost/local.host_cxt/Motor0.rtc
 
-``Motor0.rtc``の簡単な情報を示します。
+``Motor0.rtc`` の簡単な情報を示します。
 
 ::
 
   $ rtcat /localhost/local.host_cxt/Motor0.rtc -l
 
-ポートとExecution Contextを含めて``Motor0.rtc``の詳しい情報を表示
+ポートとExecution Contextを含めて ``Motor0.rtc`` の詳しい情報を表示
 します。
 
 ::
 
   $ rtcat /localhost/local.host_cxt/Motor0.rtc -ll
 
-ポートの接続を含めて``Motor0.rtc``の詳しい情報を表示します。
+ポートの接続を含めて ``Motor0.rtc`` の詳しい情報を表示します。
 
 ::
 
   $ rtcat /localhost/local.host_cxt/Motor0.rtc:in -l
 
-``Motor0.rtc``の``in``ポートのみの情報を表示します。
+``Motor0.rtc`` の ``in`` ポートのみの情報を表示します。
 
 ::
 
   $ rtcat /localhost/local.host_cxt/manager.mgr
 
-``manager.mgr``というマネージャの簡単な情報を示します。
+``manager.mgr`` というマネージャの簡単な情報を示します。
 
 参照
 ====

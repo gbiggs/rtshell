@@ -16,13 +16,13 @@ rtact [options] <path>
 概要
 ====
 
-Inactive のRTコンポーネントを activate します。
+Inactive 状態のRTコンポーネントを activate します。
 
 オプション
 ==========
 
 -e EC_INDEX, --exec_context=EC_INDEX
-    このexecution contextの中のみで activate する。ディフォルトは0。
+    状態を変更したいexecution contextのインデックス。ディフォルトは0。
 
 .. include:: ../../common/ja/common_opts.txt
 
@@ -35,13 +35,13 @@ Inactive のRTコンポーネントを activate します。
 
   $ rtact /localhost/local.host_cxt/ConsoleOut0.rtc
 
-``ConsoleOut0.rtc``のすべてのECに activate する。
+すべての owned EC と participanting EC 内の ``ConsoleOut0.rtc`` を activate する。
 
 ::
 
   $ rtact -e 2 /localhost/local.host_cxt/Motor0.rtc
 
-``Motor0.rtc``を「２」というIDで示されるECのみに activate する。
+``Motor0.rtc`` を「２」というIDで示されるECのみに対して activate する。
 
 参照
 ====

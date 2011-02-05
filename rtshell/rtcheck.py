@@ -4,7 +4,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2011
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
@@ -168,7 +168,7 @@ def check(profile=None, xml=True, state='Active', dry_run=False, tree=None):
     else:
         if not tree:
             # Load the RTC Tree, using the paths from the profile
-            tree = rtctree.tree.create_rtctree(paths=[rtctree.path.parse_path(
+            tree = rtctree.tree.RTCTree(paths=[rtctree.path.parse_path(
                 os.sep + c.path_uri)[0] for c in rtsp.components])
         for a in actions:
             a(tree)

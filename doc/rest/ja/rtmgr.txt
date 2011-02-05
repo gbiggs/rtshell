@@ -2,95 +2,94 @@
 rtmgr
 =====
 
-----------------
-utilise managers
-----------------
+--------------------------------------
+マネジャーでRTコンポーネントを管理する
+--------------------------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtmgr [options] <path>
 
-Description
-===========
+概要
+====
 
-Control a manager, adding and removing shared libraries and components.
-Components can be instantiated from shared libraries loaded into the
-manager.
+マネジャーの扱いによってコンポーネントと共有モジュールの管理をします。
+マネジャーにロードされた共有モジュールからコンポーネントをインスタンス
+化します。
 
-To set a mananger's configuration, use ``rtconf(1)``. To view a
-manager's information, use ``rtcat(1)``.
+マネジャーのコンフィグレーションは ``rtconf(1)`` を使用してください。
+マネジャーの情報は ``rtcat(1)`` によって表示してください。
 
-If multiple commands are given, they are executed in the order unload,
-load, delete, create.
+複数のコマンドを指定する場合、「unload」、「load」、「delete」そして
+「create」の順番に実行されます。
 
 
-Options
-=======
+オプション
+==========
 
 -c MOD_NAME, --create=MOD_NAME
-  Create a new component instance from the specified loaded module.
-  Properties of the new component an be specified after the module name
-  prefixed with a question mark.
+  ロードされたモジュールからコンポーネントのインスタンスを作る。プロパ
+  ティはモジュール名に追加することが可能。プロパティは「?」で始まる。
 
 -d INSTANCE_NAME, --delete=INSTANCE_NAME
-  Shut down and delete the specified component instance.
+  コンポーネントのインスタンスを終了して消す。
 
 -i INIT_FUNC, --init-func=INIT_FUNC
-  Initialisation function for use with the ``--load`` option.
+  ``--load`` を使う時のコンポーネントのinitialisation関数。
 
 -l MOD_PATH, --load=MOD_PATH
-  Load the module into the manager. An initialisation function must be
-  specified using the ``--init-func`` option.
+  マネジャーにモジュールをロードする。 ``--init-func`` によって
+  initialisation 関数を指定することが必要。
 
 -u MOD_PATH_U, --unload=MOD_PATH_U
-  Unload the module from the manager.
+  マネジャーからモジュールを消す。
 
 .. include:: ../../common/ja/common_opts.txt
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so
     -i mycomp_init
 
-Load the ``mycomp.so`` shared library into the manager.
+マネジャーに ``mycomp.so`` というモジュールをロードします。
 
 ::
 
   $ rtmgr /localhost/manager.mgr -c mycomp
 
-Instantiate a new component from the ``mycomp`` shared library.
+``mycomp`` というモジュールからコンポーネントのインスタンスを作ります。
 
 ::
 
   $ rtmgr /localhost/manager.mgr -d MyComp0
 
-Shut down and delete the component named ``MyComp0`` from the manager.
+マネジャーに実行中の ``MyComp0`` というコンポーネントを終了して消します。
 
 ::
 
   $ rtmgr /localhost/manager.mgr -u /usr/local/lib/mycomp.so
 
-Unload the ``mycomp.so`` shared library from the manager.
+マネジャーから ``mycomp.so`` というモジュールを消します。
 
 ::
 
   $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so
     -i mycomp_init -c mycomp
 
-Load the ``mycomp.so`` shared library into the manager and create a
-component from it.
+マネジャーに ``mycomp.so`` というモジュールをロードしてそしてコンポーネン
+トのインスタンスを作ります。
 
 
-See Also
-========
+参照
+====
 
   ``rtcat`` (1),
   ``rtconf`` (1),

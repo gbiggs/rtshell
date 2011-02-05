@@ -2,41 +2,38 @@
 rtstart
 =======
 
-------------------
-start an RT-System
-------------------
+--------------------
+RTシステムを起動する
+--------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtstart [options] [RTSProfile file]
 
-Description
-===========
+概要
+====
 
-Start an RT-System, activating all involved components, using an
-RTSProfile.  Components are activated in the order specified in the
-RTSProfile. Any components not marked as ``required`` in the RTSProfile
-will be ignored if they are not running.
+すべてのコンポーネントを activate することによってRTSProfileに保存され
+たRTシステムを起動します。コンポーネントはRTSProfileが指定された順番に
+activate されます。RTSProfileに「必要」と
+指定されておらず実行中ではないコンポーネントは無視します。
 
-If no file is given, the RTSProfile is read from standard input.
+ファイル名を指定しない場合、RTSProfileをstdinから読みます。
 
-XML format is used by default; to use RTSProfiles specified in YAML,
-specify ``--yaml``.
-
-Options
-=======
+オプション
+==========
 
 --dry-run
-  Print what will be done but don't actually do anything.
+  実行する内容を表示する（実際には起動は行われない）
 
 -x, --xml
-  Use XML input format.
+  XMLフォーマットを使う
 
 -y, --yaml
-  Use YAML input format.
+  YAMLフォーマットを使う
 
 .. include:: ../../common/ja/common_opts.txt
 
@@ -47,23 +44,24 @@ Options
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtstart sys.rtsys
 
-Start the RT-System specified in the file ``sys.rtsys``.
+``sys.rtsys`` というファイルに保存されたRTシステムを起動します。
 
 ::
 
   $ rtstart sys.rtsys --dry-run
 
-Display the actions that will be performed to start the system.
+``sys.rtsys`` というファイルに保存されたRTシステムを起動するために何を
+するかを表示します。（実際には起動されません。）
 
-See Also
-========
+参照
+====
 
   ``rtcheck`` (1),
   ``rtresurrect`` (1),

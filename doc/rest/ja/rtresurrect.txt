@@ -2,64 +2,62 @@
 rtresurrect
 ===========
 
---------------------------------------------
-resurrect RT-Systems from stored RTSProfiles
---------------------------------------------
+--------------------------------------------------
+RTSProfileファイルに保存されたRTシステムを復元する
+--------------------------------------------------
 
 .. include:: ../../common/ja/docinfo_block.txt
 
-Synopsis
-========
+書式
+====
 
 rtresurrect [options] [RTSProfile file]
 
-Description
-===========
+概要
+====
 
-Load an RTSProfile and use it with already-running components to restore
-an RT-System. The connections between the components and the
-configuration parameter values are restored. Any components not marked
-as ``required`` in the RTSProfile will be ignored if they are not
-running.
+RTSProfileファイルをロードして実行中のコンポーネントを使ってRTシステム
+を復元します。コンポーネントの間の接続とコンポーネントのコンフィグレー
+ションパラメータはRTSProfileのものがを反映されます。
+RTSProfileに「必要」と指定されておらず実行中ではないコンポーネントは
+無視します。
 
-If no file is given, the RTSProfile is read from standard input.
+ファイル名を指定しない場合、RTSProfileをstdinから読みます。
 
-XML format is used by default; to use RTSProfiles specified in YAML,
-specify ``--yaml``.
-
-Options
-=======
+オプション
+==========
 
 --dry-run
-  Print what will be done but don't actually do anything.
+  復元するために何をするかを表示して終了する（実際には復元しない）
 
 -x, --xml
-  Use XML input format.
+  XMLフォーマットを使う
 
 -y, --yaml
-  Use YAML input format.
+  YAMLフォーマットを使う
 
 .. include:: ../../common/ja/common_opts.txt
 
 .. include:: ../../common/ja/common_body.txt
 
-Examples
-========
+例
+==
 
 ::
 
   $ rtresurrect sys.rtsys
 
-Recreate the RT-System specified in the file ``sys.rtsys``.
+``sys.rtsys`` というファイルに保存されたRTシステムを復元します。
 
 ::
 
   $ rtresurrect sys.rtsys --dry-run
 
-Display the actions that will be performed to recreate the system.
+``sys.rtsys`` というファイルに保存されたRTシステムを復元するために何を
+するかを表示します。（実際には復元されません。）
 
-See Also
-========
+参照
+====
 
   ``rtcheck`` (1),
   ``rtcon`` (1),

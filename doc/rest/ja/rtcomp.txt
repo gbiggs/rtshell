@@ -16,20 +16,20 @@ rtcomp [options] <manager>
 概要
 ====
 
-多数のポートをエクスポートして同じマネージャに実行している複数のコン
-ポーネントを一つのコンポジットコンポーネントに構成します。Execution
-context も選択することが可能です。ポートがエクスポートされているコンポ
-ーネントは自動的に含めています。
+実行している複数のコンポーネントを、同じマネージャ上に一つのコンポジッ
+トコンポーネントとして構成し、選択されたポートを外部にエクスポートしま
+す。Execution context も選択することが可能です。
+ポートがエクスポートされているコンポーネントは自動的に含めています。
 
 オプション
 ==========
 
 -c COMPS, --comp=COMPS
   コンポジットコンポーネントに含むコンポーネントを指定する。このオプ
-  ションは複数回つかえる。
+  ションは複数つかえる。
 
 -n NAME, --name=NAME
-  コンポジットコンポーネントのインスタンス名。[ディフォルト:
+  コンポジットコンポーネントのインスタンス名。[デフォルト:
   CompositeRTC]
 
 -o OPTIONS, --options=OPTIONS
@@ -37,11 +37,11 @@ context も選択することが可能です。ポートがエクスポートさ
 
 -p PORTS, --port=PORTS
   エクスポートされているポートを指定する。ポートがエクスポートされてい
-  るコンポーネントは自動的コンポジットコンポーネントに含まれる（``-c``
+  るコンポーネントは自動的コンポジットコンポーネントに含まれる（ ``-c``
   と同様）。
 
 -t TYPE, --type=TYPE
-  Execution contextのタイプ。[ディフォルト: PeriodicECSharedComposite]
+  Execution contextのタイプ。[デフォルト: PeriodicECSharedComposite]
 
 .. include:: ../../common/ja/common_opts.txt
 
@@ -56,10 +56,10 @@ context も選択することが可能です。ポートがエクスポートさ
   /localhost/Controller0.rtc:in -p /localhost/Motor0.rtc:out
   -n MotorUnit
 
-``Controller0.rtc``の``in``というポートと``Motor0.rtc``の``out``という
-ポートをエクスポートして``Motor0.rtc``と``Controller0.rtc``によってコン
+``Controller0.rtc`` の ``in`` というポートと ``Motor0.rtc`` の ``out`` という
+ポートをエクスポートして ``Motor0.rtc`` と ``Controller0.rtc`` によってコン
 ポジットコンポーネントを作ります。コンポジットコンポーネントのインスタ
-ンス名は``MotorUnit``になります。
+ンス名は ``MotorUnit`` になります。
 
 参照
 ====

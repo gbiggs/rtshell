@@ -4,7 +4,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2011
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
@@ -49,7 +49,7 @@ def connect_ports(source_cmd_path, source_full_path,
         raise rts_exceptions.NoSuchObjectError(dest_cmd_path)
 
     if not tree:
-        tree = rtctree.tree.create_rtctree(paths=[source_path, dest_path],
+        tree = rtctree.tree.RTCTree(paths=[source_path, dest_path],
                 filter=[source_path, dest_path])
 
     if not tree.has_path(source_path):

@@ -4,7 +4,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2011
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
@@ -118,7 +118,7 @@ def make_composite(mgr_path, mgr_full_path, comps, ports, options, tree=None):
     if not tree:
         mgr_parse_path, port = rtctree.path.parse_path(mgr_full_path)
         paths = [y for x, y in comp_paths]
-        tree = rtctree.tree.create_rtctree(paths=paths,
+        tree = rtctree.tree.RTCTree(paths=paths,
                 filter=paths + [mgr_parse_path])
     # Find all components
     comp_objs = get_comp_objs(comp_paths, tree)

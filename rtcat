@@ -4,7 +4,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2011
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
@@ -25,7 +25,10 @@ from rtshell import rtcat
 
 
 if __name__ == '__main__':
-    sys.exit(rtcat.main())
+    res, lines = rtcat.main()
+    for l in lines:
+        print l
+    sys.exit(res)
 
 # vim: tw=79
 

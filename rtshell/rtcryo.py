@@ -76,7 +76,7 @@ def find_unique_connectors(tree, components):
                         component_id=make_comp_id(comp),
                         instance_name=comp.instance_name, port_name=name)
                 source_port.properties['COMPONENT_PATH_ID'] = \
-                        comp.full_path[1:]
+                        comp.full_path_str[1:]
                 # Get the list of ports this connection goes to
                 dest_ports = [name for name, p in conn.ports \
                                    if not comp.get_port_by_ref(p.object)]
@@ -89,7 +89,7 @@ def find_unique_connectors(tree, components):
                         component_id=make_comp_id(dest_comp),
                         instance_name=dest_comp.instance_name, port_name=name)
                 dest_port.properties['COMPONENT_PATH_ID'] = \
-                        dest_comp.full_path[1:]
+                        dest_comp.full_path_str[1:]
                 rts_conn = rtsprofile.port_connectors.DataPortConnector(
                         connector_id=conn.id, name=conn.name,
                         data_type=conn.properties['dataport.data_type'],
@@ -110,7 +110,7 @@ def find_unique_connectors(tree, components):
                         component_id=make_comp_id(comp),
                         instance_name=comp.instance_name, port_name=name)
                 source_port.properties['COMPONENT_PATH_ID'] = \
-                        comp.full_path[1:]
+                        comp.full_path_str[1:]
                 # Get the list of ports this connection goes to
                 dest_ports = [name for name, p in conn.ports \
                                    if not comp.get_port_by_ref(p.object)]
@@ -123,7 +123,7 @@ def find_unique_connectors(tree, components):
                         component_id=make_comp_id(dest_comp),
                         instance_name=dest_comp.instance_name, port_name=name)
                 dest_port.properties['COMPONENT_PATH_ID'] = \
-                        dest_comp.full_path[1:]
+                        dest_comp.full_path_str[1:]
                 rts_conn = rtsprofile.port_connectors.ServicePortConnector(
                         connector_id=conn.id, name=conn.name,
                         source_service_port=source_port,
@@ -138,7 +138,7 @@ def tree_comps_to_rts_comps(components):
         active_conf_set = comp.active_conf_set_name if comp.active_conf_set \
                                                     else ''
         new_rtsc = rtsprofile.component.Component(id=make_comp_id(comp),
-                path_uri=comp.full_path[1:],
+                path_uri=comp.full_path_str[1:],
                 active_configuration_set=active_conf_set,
                 instance_name=comp.instance_name,
                 composite_type=rtsprofile.composite_type.NONE,

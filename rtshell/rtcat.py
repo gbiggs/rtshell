@@ -131,7 +131,7 @@ def find_composite_comp(tree, member, inst_name):
     def get_fp(mgr, args):
         for c in mgr.components:
             if c.instance_name == inst_name:
-                return c.full_path
+                return c.full_path_str
         return None
     def is_correct_mgr(node):
         has_member = False

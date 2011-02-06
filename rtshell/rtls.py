@@ -283,12 +283,12 @@ def list_target(cmd_path, full_path, options, tree=None):
         # If recursing, need to list this directory and all its children
         if options.recurse:
             recurse_root = tree.get_node(path)
-            recurse_root_path = recurse_root.full_path
+            recurse_root_path = recurse_root.full_path_str
             def get_name(node, args):
-                if node.full_path.startswith(recurse_root_path):
-                    result = node.full_path[len(recurse_root_path):]
+                if node.full_path_str.startswith(recurse_root_path):
+                    result = node.full_path_str[len(recurse_root_path):]
                 else:
-                    result = node.full_path
+                    result = node.full_path_str
                 return result.lstrip('/')
             dir_names = ['.'] + recurse_root.iterate(get_name,
                     args=options.long, filter=['is_directory'])[1:]

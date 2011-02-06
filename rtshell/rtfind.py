@@ -35,14 +35,14 @@ import rtshell
 
 def search(cmd_path, full_path, options, tree=None):
     def get_result(node, args):
-        if node.full_path.startswith(cmd_path):
-            result = node.full_path[len(cmd_path):]
+        if node.full_path_str.startswith(cmd_path):
+            result = node.full_path_str[len(cmd_path):]
             if not result:
                 # This will happen if the search root is a component
                 return node.name
-            return node.full_path
+            return node.full_path_str
         else:
-            return node.full_path
+            return node.full_path_str
 
 
     def matches_search(node):
@@ -68,7 +68,7 @@ def search(cmd_path, full_path, options, tree=None):
             return True
         # Check for name matches
         for name_re in name_res:
-            if name_re.search(node.full_path):
+            if name_re.search(node.full_path_str):
                 return True
         return False
 

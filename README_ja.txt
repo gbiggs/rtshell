@@ -17,7 +17,7 @@ activate/deactivate/resetしたり、ポートの接続を行うことができ�
 
 このソフトウエアはNEDO (独立行政法人 新エネルギー・産業技術総合開発機構)
 の次世代ロボット知能化技術開発プロジェクトの支援により、独立行政法人産業
-技術総合研究所によって開発されています。管理番号H22PRO-1214.
+技術総合研究所によって開発されています。管理番号H23PRO-1214.
 
 This software is licensed under the Eclipse Public License -v 1.0 (EPL).
 See LICENSE.txt.
@@ -132,12 +132,11 @@ Changelog
 3.0
 ---
 
-- Merged rtcshell and rtsshell into a single toolkit.
+- rtcshellとrtsshellをマージしました。
 
-- Added complete documentation for every command (man pages, HTML, PDF).
+- コマンドのドキュメントを作成しました。
 
-- New command: rtdoc (Print component documentation - thanks to Yosuke
-  Matsusaka).
+- 新しいコマンド：rtdoc(コンポーネントのドキュメントを表示するー松坂様より)
 
 - 新しいコマンド：rtexit（コンポーネントの終了）
 

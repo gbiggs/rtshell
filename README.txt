@@ -28,7 +28,7 @@ command-line is a benefit when using these commands of rtshell.
 
 This software is developed at the National Institute of Advanced
 Industrial Science and Technology. Approval number
-H22PRO-1135/H22PRO-1136. The development was financially supported by
+H23PRO-1214. The development was financially supported by
 the New Energy and Industrial Technology Development Organisation
 Project for Strategic Development of Advanced Robotics Elemental
 Technologies.  This software is licensed under the Eclipse Public

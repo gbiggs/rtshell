@@ -41,16 +41,17 @@ def get_files(dir, ext=None):
     else:
         return files
 
-cwd = os.path.join(os.getcwd(), 'doc')
-s = raw_input('Generate documentation? ')
-if s.lower() == 'y' or s.lower() == 'YES':
-    print 'Generating documentation'
-    p = subprocess.Popen(['./make_docs', 'man', 'html', 'pdf', '-v'],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-    stdout, stderr = p.communicate()
-    if p.returncode != 0:
-        print 'Failed to generate documentation. Check docutils are installed.'
-        print stderr
+if sys.platform != 'win32':
+    cwd = os.path.join(os.getcwd(), 'doc')
+    s = raw_input('Generate documentation? ')
+    if s.lower() == 'y' or s.lower() == 'YES':
+        print 'Generating documentation'
+        p = subprocess.Popen(['./make_docs', 'man', 'html', 'pdf', '-v'],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+        stdout, stderr = p.communicate()
+        if p.returncode != 0:
+            print 'Failed to generate documentation. Check docutils are installed.'
+            print stderr
 try:
     man_files_en = get_files(os.path.join(os.getcwd(), 'doc/man/man1'))
     html_files_en = get_files(os.path.join(os.getcwd(), 'doc/html'))
@@ -119,7 +120,8 @@ if sys.platform == 'win32':
                    'rtstop.bat',
                    'rtteardown.bat']
     scripts = base_scripts + batch_files
-    data_files = []
+    data_files = [('Doc/rtshell', html_files_en + pdf_files_en),
+            ('Doc/rtshell/ja', html_files_ja + pdf_files_ja)]
 else:
     scripts = base_scripts
     data_files = [('share/rtshell', ['bash_completion', 'shell_support.in']),
@@ -136,28 +138,53 @@ class InstallRename(install_scripts):
             # Rename the installed scripts to add .py on the end for Windows
             print 'Renaming scripts'
             for s in base_scripts:
-                self.move_file(os.path.join(self.install_dir, s),
-                               os.path.join(self.install_dir, s + '.py'))
+                dest = os.path.join(self.install_dir, s + '.py')
+                if os.path.exists(dest):
+                    os.remove(dest)
+                self.move_file(os.path.join(self.install_dir, s), dest)
+            # Make links for the docs
+            #print 'Creating Start Menu links'
+            #rtshell_dir = os.path.join(self._get_start_menu(), 'rtshell')
+            #if not os.path.exists(rtshell_dir):
+                #os.mkdir(rtshell_dir)
+            #docs_en_path = os.path.join(rtshell_dir,
+                    #'Documentation (English).url')
+            #docs_ja_path = os.path.join(rtshell_dir,
+                    #'Documentation (Japanese).lnk')
+
+    def _get_start_menu(self):
+        if sys.platform != 'win32':
+            return ''
+        import ctypes
+        import ctypes.wintypes
+        SHGetFolderPath = ctypes.windll.shell32.SHGetFolderPathW
+        SHGetFolderPath.argtypes = [ctypes.wintypes.HWND, ctypes.c_int,
+                ctypes.wintypes.HANDLE, ctypes.wintypes.DWORD,
+                ctypes.wintypes.LPCWSTR]
+        path = ctypes.wintypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+        SHGetFolderPath(0, 2, 0, 0, path)
+        return path.value
 
 
 class InstallConfigure(install_data):
     def run(self):
         install_data.run(self)
-        cmd = 'echo $SHELL | grep -q bash && source {dir}/bash_completion\n'
-        dest = os.path.join(self.install_dir, 'share/rtshell', 'shell_support')
-        if os.path.isfile(dest):
-            os.remove(dest)
-        self.move_file(os.path.join(self.install_dir, 'share/rtshell',
-                'shell_support.in'), dest)
-        with open(dest, 'a') as f:
-            f.writelines((cmd.format(dir=os.path.join(self.install_dir,
-                'share/rtshell')), '\n'))
+        if sys.platform != 'win32':
+            cmd = 'echo $SHELL | grep -q bash && source {dir}/bash_completion\n'
+            dest = os.path.join(self.install_dir, 'share/rtshell', 'shell_support')
+            if os.path.isfile(dest):
+                os.remove(dest)
+            self.move_file(os.path.join(self.install_dir, 'share/rtshell',
+                    'shell_support.in'), dest)
+            with open(dest, 'a') as f:
+                f.writelines((cmd.format(dir=os.path.join(self.install_dir,
+                    'share/rtshell')), '\n'))
 
 
 setup(name='rtshell',
       version='3.0.0',
       description='Shell commands for managing RT Components and RT Systems.',
-      author='Geoffrey Biggs',
+      author='Geoffrey Biggs and contributors',
       author_email='git@killbots.net',
       url='http://github.com/gbiggs/rtshell',
       license='EPL',

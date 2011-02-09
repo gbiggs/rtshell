@@ -17,7 +17,7 @@ activate/deactivate/resetしたり、ポートの接続を行うことができ�
 
 このソフトウエアはNEDO (独立行政法人 新エネルギー・産業技術総合開発機構)
 の次世代ロボット知能化技術開発プロジェクトの支援により、独立行政法人産業
-技術総合研究所によって開発されています。管理番号H22PRO-1214.
+技術総合研究所によって開発されています。管理番号H23PRO-1214.
 
 This software is licensed under the Eclipse Public License -v 1.0 (EPL).
 See LICENSE.txt.
@@ -132,38 +132,37 @@ Changelog
 3.0
 ---
 
-- Merged rtcshell and rtsshell into a single toolkit.
+- rtcshellとrtsshellをマージしました。
 
-- Added complete documentation for every command (man pages, HTML, PDF).
+- コマンドのドキュメントを作成しました。
 
-- New command: rtdoc (Print component documentation - thanks to Yosuke
-  Matsusaka).
+- 新しいコマンド：rtdoc(コンポーネントのドキュメントを表示するー松坂様より)
 
-- 新しいコマンド：rtexit（コンポーネントの終了）
+- 新しいコマンド：rtexit（コンポーネントを終了する）
 
-- 新しいコマンド：rtlog（ログを記録して再生する）
+- 新しいコマンド：rtlog（ログの記録と再生を行う）
 
-- 新しいコマンド：rtcheck（起動中のRTシステムを保存されたRTSProfileと比べる）
+- 新しいコマンド：rtcheck（起動中のRTシステムと、保存されたRTSProfileとを比較する）
 
 - 新しいコマンド：rtcomp（コンポジットコンポーネントを作る）
 
-- 新しいコマンド：rtstodot（起動中のRTシステムをグラフで表示する）
+- 新しいコマンド：rtstodot（起動中のRTシステムをグラフで表示するー松坂様より）
 
 - 新しいコマンド：rtvis（起動中のRTシステムをグラフで表示する）
 
-- rtconfのBashコンプリーションをセット名、パラメータ名及び値を対応します。
+- rtconfのセット名、パラメータ名及び値の変更の際にbash補間機能を使えるように対応しました。
 
 - シェルサポートファイルをマージしました。
 
 - rtconfのコマンドラインを作り直しました。
 
-- ゾンビを対応します。
+- ゾンビオブジェクトに対応しました。
 
-- rtlsでゾンビを表示します。
+- rtlsでゾンビを表示するようにしました。
 
-- rtdelで全てのゾンビを消します。
+- rtdelで全てのゾンビを消せるようにしました。
 
-- パスフィルターによってrtctreeの構造を早めました。
+- rtctreeでの木構造を早く作成するために、パスフィルターをサポートしました。
 
 - rtcat：一個のポートの情報だけを表示するオプションを追加しました。
 
@@ -171,28 +170,27 @@ Changelog
 
 - rtcat：コンポジットコンポーネントの情報を表示します。
 
-- rtcryo：RtsProfileをスタンダードアウトに出します。
+- rtcryo：RtsProfileを標準出力に出します。
 
-- rtdis：IDが合ってるコネクションだけを消すオプションを追加しました。
+- rtdis：IDによってコネクションを削除するオプションを追加しました。
 
-- rtinject/rtprint：ユーザのデータ型を対応しました。
+- rtinject/rtprint：ユーザ定義のデータ型に対応しました。
 
 - rtprint：データを一回もらって終了するオプションを追加しました。
 
-- rtprint：ユーザが提供するデータフォーマッタを対応しました。
+- rtprint：ユーザ定義のデータフォーマッタを対応しました。
 
-- rtprint：Pythonのソースように表示するオプションを追加しました。
+- rtprint：Pythonの生データを表示するオプションを追加しました。
 
-- rtinject：スタンダードインからPythonの表現を使います。
+- rtinject：標準入力からPythonの生データを使えるようにしました。
 
-- rtresurrect：存在するコネクションを再作成しないようにしました。
+- rtresurrect：既に存在する接続を再作成しないようにしました。
 
-- rtteardown：コネクタIDは合わない場合エラーを出して終了します。
+- rtteardown：コネクタIDが合わない場合エラーを出して終了します。
 
-- rtresurrect/rtstart/rtstop/rtteardown：スタンダードインで入力を受け
-  とります。
+- rtresurrect/rtstart/rtstop/rtteardown：標準入力で入力を受けとります。
 
-- rtsshellからのコマンドをモジュール的にしました。
+- rtsshellからのコマンドをライブラリとして使用できるようにしました。
 
 - テストを追加しました。
 

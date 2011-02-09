@@ -92,7 +92,10 @@ def search(cmd_path, full_path, options, tree=None):
     if root.is_component and trailing_slash:
         raise rts_exceptions.NotADirectoryError(cmd_path)
 
-    max_depth = options.max_depth + len(path) - 1 # The root is 1-long
+    if options.max_depth:
+        max_depth = options.max_depth + len(path) - 1 # The root is 1-long
+    else:
+        max_depth = 0
 
     name_res = []
     for name in options.name:

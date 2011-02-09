@@ -1915,7 +1915,7 @@ class rtinjectTests(unittest.TestCase):
 
     def test_max(self):
         stdout, stderr, ret = call_process(['./rtinject', '-c',
-            'RTC.TimedLong({time}, 42)', '-n', '3',
+            'RTC.TimedLong({time}, 42)', '-n', '3', '-r', '1000',
             '/localhost/local.host_cxt/Std0.rtc:in'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
@@ -1932,20 +1932,18 @@ class rtinjectTests(unittest.TestCase):
         self.assertEqual(ret, 0)
         time.sleep(3)
         comp_out = self._get_comp_output('std')
-        self.assert_('42' in comp_out)
-        count = len(comp_out.split('\n'))
-        self.assert_(count > 1000 and count < 2000)
+        self.assertEqual(comp_out, '42\n')
 
-    def _test_rate(self):
+    def test_rate(self):
         stdout, stderr, ret = call_process(['./rtinject', '-c',
-            'RTC.TimedLong({time}, 42)', '-t', '2', '-r', '1',
+            'RTC.TimedLong({time}, 42)', '-t', '1.5', '-r', '2',
             '/localhost/local.host_cxt/Std0.rtc:in'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         time.sleep(3)
-        comp_stdout = self._std.stdout.read()
-        self.assertEqual(comp_stdout, '42\n42\n')
+        comp_out = self._get_comp_output('std')
+        self.assertEqual(comp_out, '42\n42\n')
 
     def test_mod(self):
         stdout, stderr, ret = call_process(['./rtinject', '-c',
@@ -2647,7 +2645,7 @@ class rtprintTests(unittest.TestCase):
     def test_print(self):
         p = start_process(['./rtprint',
             '/localhost/local.host_cxt/Output0.rtc:out'])
-        time.sleep(1)
+        time.sleep(3)
         p.terminate()
         stdout, stderr = p.communicate()
         self.assert_(re.match(r'\[0\.0+\]\s\d+\n', stdout) is not None)

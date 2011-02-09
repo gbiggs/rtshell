@@ -136,7 +136,7 @@ class GenComp(OpenRTM_aist.DataFlowComponentBase):
             self._ports = {}
             for p in self._port_specs:
                 args, varargs, varkw, defaults = \
-                inspect.getargspec(p.type.__init__)
+                    inspect.getargspec(p.type.__init__)
                 if defaults:
                     init_args = tuple([None \
                             for ii in range(len(args) - len(defaults) - 1)])

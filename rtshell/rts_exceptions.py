@@ -487,5 +487,16 @@ class NoLogFileNameError(RtShellError):
         return 'No log file specified.'
 
 
+class BadMgrAddressError(RtShellError):
+    '''A bad corbaloc address was given.'''
+    def __str__(self):
+        return 'Invalid corbaloc URL.'
+
+
+class FailedToNarrowError(RtShellError):
+    '''Failed to narrow a CORBA object reference.'''
+    def __str__(self):
+        return 'Failed to narrow CORBA object reference.'''
+
 # vim: tw=79
 

@@ -19,16 +19,92 @@ Implementation of the command for controlling managers.
 '''
 
 
+import CosNaming
+import omniORB
 import optparse
 import os
 import os.path
-import rtctree.tree
+import OpenRTM_aist
+import RTC
+import rtctree
+import rtctree.exceptions
 import rtctree.path
+import rtctree.tree
+import RTM
 import sys
+import traceback
 
 import rtshell
 import rts_exceptions
 import path
+
+
+class DirectManager(object):
+    def __init__(self, address):
+        self._connect(self._fix_address(address))
+
+    def _connect(self, address):
+        if rtctree.ORB_ARGS_ENV_VAR in os.environ:
+            orb_args = os.environ[ORB_ARGS_ENV_VAR].split(';')
+        else:
+            orb_args = []
+        self._orb = omniORB.CORBA.ORB_init(orb_args)
+        try:
+            self._obj = self._orb.string_to_object(address)
+        except omniORB.CORBA.ORB.InvalidName:
+            raise rts_exceptions.BadMgrAddressError
+        try:
+            self._mgr = self._obj._narrow(RTM.Manager)
+        except omniORB.CORBA.TRANSIENT, e:
+            if e.args[0] == omniORB.TRANSIENT_ConnectFailed:
+                raise rts_exceptions.BadMgrAddressError
+            else:
+                raise
+        if omniORB.CORBA.is_nil(self._mgr):
+            raise rts_exceptions.FailedToNarrowError
+
+    def _fix_address(self, address):
+        parts = address.split(':')
+        if len(parts) == 3:
+            # No port
+            host, sep, id_ = parts[2].partition('/')
+            if not id_:
+                # No ID
+                id_ = 'manager'
+            parts[2] = '{0}:2810/{1}'.format(host, id_)
+        elif len(parts) == 4:
+            # Have a port
+            port, sep, id_ = parts[3].partition('/')
+            if not id_:
+                # No ID
+                id_ = 'manager'
+                parts[3] = '{0}/{1}'.format(port, id_)
+        else:
+            raise rts_exceptions.BadMgrAddressError
+        return ':'.join(parts)
+
+    def load_module(self, path, init_func):
+        try:
+            if self._mgr.load_module(path, init_func) != RTC.RTC_OK:
+                raise rtctree.exceptions.FailedToLoadModuleError(path)
+        except omniORB.CORBA.UNKNOWN, e:
+            if e.args[0] == UNKNOWN_UserException:
+                raise rtctree.exceptions.FailedToLoadModuleError(path,
+                        'CORBA User Exception')
+            else:
+                raise
+
+    def unload_module(self, path):
+        if self._mgr.unload_module(path) != RTC.RTC_OK:
+            raise rtctree.exceptions.FailedToUnloadModuleError(path)
+
+    def create_component(self, module_name):
+        if not self._mgr.create_component(module_name):
+            raise rtctree.exceptions.FailedToCreateComponentError(module_name)
+
+    def delete_component(self, instance_name):
+        if not self._mgr.delete_component(instance_name) != RTC.RTC_OK:
+            raise rtctree.exceptions.FailedToDeleteComponentError(instance_name)
 
 
 def get_manager(cmd_path, full_path, tree=None):
@@ -52,90 +128,88 @@ def get_manager(cmd_path, full_path, tree=None):
         raise rts_exceptions.NotAManagerError(cmd_path)
     return tree, object
 
-def load_module(cmd_path, full_path, module_path, init_func, tree=None):
-    tree, mgr = get_manager(cmd_path, full_path, tree)
+def load_module(mgr, module_info):
+    module_path, init_func = module_info
     mgr.load_module(module_path, init_func)
 
 
-def unload_module(cmd_path, full_path, module_path, tree=None):
-    tree, mgr = get_manager(cmd_path, full_path, tree)
+def unload_module(mgr, module_path):
     mgr.unload_module(module_path)
 
 
-def create_component(cmd_path, full_path, module_name, tree=None):
-    tree, mgr = get_manager(cmd_path, full_path, tree)
+def create_component(mgr, module_name):
     mgr.create_component(module_name)
 
 
-def delete_component(cmd_path, full_path, instance_name, tree=None):
-    tree, mgr = get_manager(cmd_path, full_path, tree)
+def delete_component(mgr, instance_name):
     mgr.delete_component(instance_name)
 
 
 def main(argv=None, tree=None):
+    def cmd_cb(option, opt, val, parser):
+        if not hasattr(parser.values, 'cmds'):
+            setattr(parser.values, 'cmds', [])
+        if opt == '-l' or opt == '--load':
+            # Check the module path is correct before executing any commands
+            items = val.split(':')
+            if len(items) != 2:
+                raise optparse.OptionValueError('No initialisation function '
+                    'specified.')
+            parser.values.cmds.append((load_module, items))
+        elif opt == '-c' or opt == '--create':
+            parser.values.cmds.append((create_component, val))
+        elif opt == '-d' or opt == '--delete':
+            parser.values.cmds.append((delete_component, val))
+        elif opt == '-u' or opt == '--unload':
+            parser.values.cmds.append((unload_module, val))
+
     usage = '''Usage: %prog [options] <path>
 Create and remove components with a manager.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
-    parser.add_option('-c', '--create', dest='mod_name', action='store',
-            type='string', default='', help='Create a new component instance '\
-            'from the specified loaded module. Properties of the new '\
-            'component an be specified after the module name prefixed with a '\
-            'question mark. e.g. ConsoleIn?instance_name=bleg')
-    parser.add_option('-d', '--delete', dest='instance_name', action='store',
-            type='string', default='', help='Shut down and delete the '\
-            'specified component instance.')
-    parser.add_option('-i', '--init-func', dest='init_func', action='store',
-            type='string', default='', help='Initialisation function for use '\
-            'with the --load option.')
-    parser.add_option('-l', '--load', dest='mod_path', action='store',
-            type='string', default='', help='Load the module into the '\
-            'manager. An initialisation function must be specified using '\
-            'the --init-func option.')
-    parser.add_option('-u', '--unload', dest='mod_path_u', action='store',
-            type='string', default='', help='Unload the module from the '\
-            'manager.')
+    parser.add_option('-c', '--create', action='callback', callback=cmd_cb,
+            type='string', help='Create a new component instance from the '
+            'specified loaded module. Properties of the new component an be '
+            'specified after the module name prefixed with a question mark. '
+            'e.g. ConsoleIn?instance_name=bleg&another_param=value')
+    parser.add_option('-d', '--delete', action='callback', callback=cmd_cb,
+            type='string', help='Shut down and delete the specified component '
+            'instance.')
+    parser.add_option('-l', '--load', action='callback', callback=cmd_cb,
+            type='string', help='Load the module into the manager. An '
+            'initialisation function must be specified after the module path '
+            'separated by a ":".')
+    parser.add_option('-u', '--unload', action='callback', callback=cmd_cb,
+            type='string', help='Unload the module from the manager.')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
             help='Output verbose information. [Default: %default]')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
-    try:
-        options, args = parser.parse_args()
-    except optparse.OptionError, e:
-        print >>sys.stderr, 'OptionError:', e
-        return 1
+    options, args = parser.parse_args()
 
     if len(args) != 1:
-        print >>sys.stderr, '{0}: No manager specified.'.format(sys.argv[0])
-        return 1
-    full_path = path.cmd_path_to_full_path(args[0])
-
-    if (not options.mod_path_u and not options.mod_path and not
-            options.instance_name and not options.mod_name):
-        print >>sys.stderr, '{0}: No actions specified.'.format(sys.argv[0])
-        print >>sys.stderr, usage
+        print >>sys.stderr, '{0}: No manager specified.'.format(
+                os.path.basename(sys.argv[0]))
         return 1
 
     try:
-        if options.mod_path_u:
-            # Unload a module
-            unload_module(args[0], full_path, options.mod_path_u, tree)
-        if options.mod_path:
-            # Load a module
-            if not options.init_func:
-                print >>sys.stderr, '{0}: No initialisation function '\
-                        'specified.'.format(os.path.basename(sys.argv[0]))
-                return 1
-            load_module(args[0], full_path, options.mod_path,
-                    options.init_func, tree)
-        if options.instance_name:
-            # Delete a component
-            delete_component(args[0], full_path, options.instance_name, tree)
-        if options.mod_name:
-            # Create a component
-            create_component(args[0], full_path, options.mod_name, tree)
+        if args[0].startswith('corbaloc::'):
+            # Direct connection to manager
+            mgr = DirectManager(args[0])
+        else:
+            # Access via the tree
+            full_path = path.cmd_path_to_full_path(args[0])
+            tree, mgr = get_manager(args[0], full_path, tree)
+
+        if not hasattr(options, 'cmds'):
+            print >>sys.stderr, '{0}: No commands specified.'.format(
+                    os.path.basename(sys.argv[0]))
+            return 1
+
+        for c in options.cmds:
+            c[0](mgr, c[1])
     except Exception, e:
         if options.verbose:
             traceback.print_exc()

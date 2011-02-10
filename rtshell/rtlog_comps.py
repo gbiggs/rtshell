@@ -65,7 +65,7 @@ class Recorder(gen_comp.GenComp):
         self._l = self._logger_type(filename=self._fn, mode='w', meta=meta, verbose=self._verb)
         return RTC.RTC_OK
 
-    def onDeactivated(self, ec_id):
+    def onFinalize(self):
         # Finalise and close log
         self._l.close()
         return RTC.RTC_OK

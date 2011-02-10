@@ -32,26 +32,28 @@ import rts_exceptions
 import rtshell
 
 
-def alter_component_state(action, cmd_path, full_path, options, tree=None):
-    path, port = rtctree.path.parse_path(full_path)
-    if port:
-        raise rts_exceptions.NotAComponentError(cmd_path)
-
-    trailing_slash = False
-    if not path[-1]:
-        raise rts_exceptions.NotAComponentError(cmd_path)
+def alter_component_states(action, paths, options, tree=None):
+    cmd_paths, fps = zip(*paths)
+    pathports = [rtctree.path.parse_path(fp) for fp in fps]
+    for ii, p in enumerate(pathports):
+        if p[1]:
+            raise rts_exceptions.NotAComponentError(cmd_paths[ii])
+        if not p[0][-1]:
+            raise rts_exceptions.NotAComponentError(cmd_paths[ii])
+    paths, ports = zip(*pathports)
 
     if not tree:
-        tree = rtctree.tree.RTCTree(paths=path, filter=[path])
+        tree = rtctree.tree.RTCTree(paths=paths, filter=paths)
 
-    if not tree.has_path(path):
-        raise rts_exceptions.NoSuchObjectError(cmd_path)
-    object = tree.get_node(path)
-    if object.is_zombie:
-        raise rts_exceptions.ZombieObjectError(cmd_path)
-    if not object.is_component:
-        raise rts_exceptions.NotAComponentError(cmd_path)
-    action(object, options.ec_index)
+    for ii, p in enumerate(paths):
+        if not tree.has_path(p):
+            raise rts_exceptions.NoSuchObjectError(cmd_paths[ii])
+        object_ = tree.get_node(p)
+        if object_.is_zombie:
+            raise rts_exceptions.ZombieObjectError(cmd_paths[ii])
+        if not object_.is_component:
+            raise rts_exceptions.NotAComponentError(cmd_paths[ii])
+        action(object_, options.ec_index)
 
 
 def base_main(description, action, argv=None, tree=None):
@@ -76,18 +78,13 @@ def base_main(description, action, argv=None, tree=None):
 
     if not args:
         # If no path given then can't do anything.
-        print >>sys.stderr, '{0}: No component specified.'.format(
+        print >>sys.stderr, '{0}: No components specified.'.format(
                 os.path.basename(sys.argv[0]))
         return 1
-    elif len(args) == 1:
-        cmd_path = args[0]
-    else:
-        print >>sys.stderr, usage
-        return 1
-    full_path = path.cmd_path_to_full_path(cmd_path)
+    paths = [(p, path.cmd_path_to_full_path(p)) for p in args]
 
     try:
-        alter_component_state(action, cmd_path, full_path, options, tree)
+        alter_component_states(action, paths, options, tree)
     except Exception, e:
         if options.verbose:
             traceback.print_exc()

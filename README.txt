@@ -161,6 +161,7 @@ Changelog
 4.0
 ---
 
+- rtact/rtdeact/rtreset: Allow changing multiple components at once.
 - rtlog: Added end pointer to simpkl log format to speed up searches.
 - rtmgr: Support corbaloc:: direct connection to managers.
 - rtmgr: Allow multiple occurrences of any commands.

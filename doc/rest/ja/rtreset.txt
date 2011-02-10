@@ -11,7 +11,7 @@ rtreset
 書式
 ====
 
-rtreset [options] <path>
+rtreset [options] <path> [<path> ...]
 
 概要
 ====
@@ -36,6 +36,12 @@ rtreset [options] <path>
   $ rtreset /localhost/local.host_cxt/ConsoleOut0.rtc
 
 ``ConsoleOut0.rtc`` のすべてのECにリセットにする。
+
+::
+
+  $ rtreset ConsoleOut0.rtc ConsoleIn0.rtc
+
+``ConsoleOut0.rtc`` と ``ConsoleIn0.rtc のすべてのECにリセットにする。
 
 ::
 

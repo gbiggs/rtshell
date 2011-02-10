@@ -11,7 +11,7 @@ rtact
 書式
 ====
 
-rtact [options] <path>
+rtact [options] <path> [<path> ...]
 
 概要
 ====
@@ -36,6 +36,13 @@ Inactive 状態のRTコンポーネントを activate します。
   $ rtact /localhost/local.host_cxt/ConsoleOut0.rtc
 
 すべての owned EC と participanting EC 内の ``ConsoleOut0.rtc`` を activate する。
+
+::
+
+  $ rtact ConsoleOut0.rtc ConsoleIn0.rtc
+
+すべての owned EC と participanting EC 内の ``ConsoleOut0.rtc``
+と `` ConsoleIn0.rtc`` を activate する。
 
 ::
 

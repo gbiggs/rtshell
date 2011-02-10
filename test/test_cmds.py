@@ -236,12 +236,15 @@ class rtactTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
         self._std = launch_comp('std_comp')
+        self._output = launch_comp('output_comp')
         make_zombie()
         self._mgr = launch_manager()
         wait_for_comp('Std0.rtc')
+        wait_for_comp('Output0.rtc')
 
     def tearDown(self):
         stop_comp(self._std)
+        stop_comp(self._output)
         clean_zombies()
         stop_manager(self._mgr)
         stop_ns(self._ns)
@@ -285,9 +288,37 @@ class rtactTests(unittest.TestCase):
     def test_no_arg(self):
         stdout, stderr, ret = call_process('./rtact')
         self.assertEqual(stdout, '')
-        self.assertEqual(stderr, 'rtact: No component specified.')
+        self.assertEqual(stderr, 'rtact: No components specified.')
         self.assertEqual(ret, 1)
 
+    def test_multiple(self):
+        stdout, stderr, ret = call_process(['./rtact',
+            '/localhost/local.host_cxt/Std0.rtc',
+            '/localhost/local.host_cxt/Output0.rtc'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = call_process(['./rtcat',
+            '/localhost/local.host_cxt/Std0.rtc'])
+        self.assertEqual(stdout.split()[1], 'Active')
+        stdout, stderr, ret = call_process(['./rtcat',
+            '/localhost/local.host_cxt/Output0.rtc'])
+        self.assertEqual(stdout.split()[1], 'Active')
+
+    def test_multiple_one_port(self):
+        stdout, stderr, ret = call_process(['./rtact',
+            '/localhost/local.host_cxt/Std0.rtc',
+            '/localhost/local.host_cxt/Output0.rtc:in'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, 'rtact: Not a component: '
+            '/localhost/local.host_cxt/Output0.rtc:in')
+        self.assertEqual(ret, 1)
+        stdout, stderr, ret = call_process(['./rtcat',
+            '/localhost/local.host_cxt/Std0.rtc'])
+        self.assertEqual(stdout.split()[1], 'Inactive')
+        stdout, stderr, ret = call_process(['./rtcat',
+            '/localhost/local.host_cxt/Output0.rtc'])
+        self.assertEqual(stdout.split()[1], 'Inactive')
 
 def rtact_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtactTests)
@@ -1123,13 +1154,16 @@ class rtdeactTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
         self._std = launch_comp('std_comp')
+        self._output = launch_comp('output_comp')
         make_zombie()
         self._mgr = launch_manager()
         call_process(['./rtact', '/localhost/local.host_cxt/Std0.rtc'])
         wait_for_comp('Std0.rtc', state='Active')
+        wait_for_comp('Output0.rtc', state='Active')
 
     def tearDown(self):
         stop_comp(self._std)
+        stop_comp(self._output)
         clean_zombies()
         stop_manager(self._mgr)
         stop_ns(self._ns)
@@ -1174,8 +1208,22 @@ class rtdeactTests(unittest.TestCase):
     def test_no_arg(self):
         stdout, stderr, ret = call_process('./rtdeact')
         self.assertEqual(stdout, '')
-        self.assertEqual(stderr, 'rtdeact: No component specified.')
+        self.assertEqual(stderr, 'rtdeact: No components specified.')
         self.assertEqual(ret, 1)
+
+    def test_multiple(self):
+        stdout, stderr, ret = call_process(['./rtdeact',
+            '/localhost/local.host_cxt/Std0.rtc',
+            '/localhost/local.host_cxt/Output0.rtc'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        stdout, stderr, ret = call_process(['./rtcat',
+            '/localhost/local.host_cxt/Std0.rtc'])
+        self.assertEqual(stdout.split()[1], 'Inactive')
+        stdout, stderr, ret = call_process(['./rtcat',
+            '/localhost/local.host_cxt/Output0.rtc'])
+        self.assertEqual(stdout.split()[1], 'Inactive')
 
 
 def rtdeact_suite():
@@ -2881,7 +2929,7 @@ class rtresetTests(unittest.TestCase):
     def test_no_arg(self):
         stdout, stderr, ret = call_process('./rtreset')
         self.assertEqual(stdout, '')
-        self.assertEqual(stderr, 'rtreset: No component specified.')
+        self.assertEqual(stderr, 'rtreset: No components specified.')
         self.assertEqual(ret, 1)
 
 

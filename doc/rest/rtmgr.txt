@@ -23,8 +23,8 @@ manager.
 To set a mananger's configuration, use ``rtconf(1)``. To view a
 manager's information, use ``rtcat(1)``.
 
-If multiple commands are given, they are executed in the order unload,
-load, delete, create.
+If multiple commands are given, they are executed in the order they are
+specified on the command line.
 
 
 Options
@@ -38,12 +38,9 @@ Options
 -d INSTANCE_NAME, --delete=INSTANCE_NAME
   Shut down and delete the specified component instance.
 
--i INIT_FUNC, --init-func=INIT_FUNC
-  Initialisation function for use with the ``--load`` option.
-
 -l MOD_PATH, --load=MOD_PATH
   Load the module into the manager. An initialisation function must be
-  specified using the ``--init-func`` option.
+  specified after the module path separated by a ":".
 
 -u MOD_PATH_U, --unload=MOD_PATH_U
   Unload the module from the manager.
@@ -57,8 +54,7 @@ Examples
 
 ::
 
-  $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so
-    -i mycomp_init
+  $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so:mycomp_init
 
 Load the ``mycomp.so`` shared library into the manager.
 
@@ -82,8 +78,8 @@ Unload the ``mycomp.so`` shared library from the manager.
 
 ::
 
-  $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so
-    -i mycomp_init -c mycomp
+  $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so:mycomp_init
+    -c mycomp
 
 Load the ``mycomp.so`` shared library into the manager and create a
 component from it.

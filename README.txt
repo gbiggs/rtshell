@@ -158,71 +158,49 @@ This will run only the tests for the rtact command.
 Changelog
 =========
 
+4.0
+---
+
+- rtlog: Added end pointer to simpkl log format to speed up searches.
+- rtmgr: Support corbaloc:: direct connection to managers.
+- rtmgr: Allow multiple occurrences of any commands.
+- rtmgr: Execute commands in the order specified.
+
 3.0
 ---
 
 - Merged rtcshell and rtsshell into a single toolkit.
-
 - Added complete documentation for every command (man pages, HTML, PDF).
-
 - New command: rtdoc (Print component documentation - thanks to Yosuke
   Matsusaka).
-
 - New command: rtexit (Make a component exit).
-
 - New command: rtlog (Log and replay data streams).
-
 - New command: rtcheck (Check a system matches an RtsProfile file).
-
 - New command: rtcomp (Create composite components).
-
 - New command: rtstodot (Visualise RT Systems - thanks to Yosuke Matsusaka).
-
 - New command: rtvis
-
 - rtconf bash completion now completes set names, parameter names and values.
-
 - Merged rtcwd and bash_completion bash files into a single file.
-
 - Overhauled rtconf command line, added option to get a parameter value
   directly.
-
 - Handle zombies properly.
-
 - Display zombies in rtls.
-
 - Delete zombies in rtdel (including all zombies found).
-
 - Support path filters in rtctree to speed up tree creation.
-
 - rtcat: Option to print a single port's information.
-
 - rtcat: Changes --ll to -ll.
-
 - rtcat: Display information about composite components.
-
 - rtcryo: Print RtsProfile to standard output by default.
-
 - rtdis: Disconnect-by-ID allows removing only one connection.
-
 - rtinject/rtprint: Added support for user data types.
-
 - rtprint: Option to exit after receiving one round of data.
-
 - rtprint: Added support for user-defined formatters.
-
 - rtprint: Added ability to print raw Python code.
-
 - rtinject: Accept raw Python input from stdin.
-
 - rtresurrect: Don't recreate existing connections.
-
 - rtteardown: Fail if the connector ID doesn't match.
-
 - rtresurrect/rtstart/rtstop/rtteardown: Accept input from standard input.
-
 - Refactored former rtsshell commands into rtshell-style libraries.
-
 - Added tests.
 
 
@@ -230,34 +208,22 @@ rtcshell-2.0
 ------------
 
 - Fixes for Windows
-
 - Fixed problems handling paths referencing parent directories
-
 - New command: rtdel
-
 - New command: rtinject
-
 - New command: rtprint
-
 - rtcat: Print the number of unknown connections
-
 - Major refactoring: all commands can now be imported and called from Python
   scripts easily
-
 - New Bash completion script (thanks to Keisuke Suzuki)
-
 - Support csh in rtcwd
-
 - rtcat: Print new information available from rtctree for execution contexts
-
 - rtls: Change recurse option from -r to -R to match ls
-
 - rtls: Handle unknown objects; display them like dead files
 
 rtsshell-2.0
 ------------
 
 - Added bash-completion script.
-
 - Added planning capability.
 

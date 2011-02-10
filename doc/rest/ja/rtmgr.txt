@@ -23,8 +23,7 @@ rtmgr [options] <path>
 マネジャーのコンフィグレーションは ``rtconf(1)`` を使用してください。
 マネジャーの情報は ``rtcat(1)`` によって表示してください。
 
-複数のコマンドを指定する場合、「unload」、「load」、「delete」そして
-「create」の順番に実行されます。
+複数のコマンドを指定する場合、コマンドラインと同じ順番に実行されます。
 
 
 オプション
@@ -37,12 +36,9 @@ rtmgr [options] <path>
 -d INSTANCE_NAME, --delete=INSTANCE_NAME
   コンポーネントのインスタンスを終了して消す。
 
--i INIT_FUNC, --init-func=INIT_FUNC
-  ``--load`` を使う時のコンポーネントのinitialisation関数。
-
 -l MOD_PATH, --load=MOD_PATH
-  マネジャーにモジュールをロードする。 ``--init-func`` によって
-  initialisation 関数を指定することが必要。
+  マネジャーにモジュールをロードする。Initialisation関数を ``:`` で
+  分かれて指定することが必要。
 
 -u MOD_PATH_U, --unload=MOD_PATH_U
   マネジャーからモジュールを消す。
@@ -56,8 +52,7 @@ rtmgr [options] <path>
 
 ::
 
-  $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so
-    -i mycomp_init
+  $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so:mycomp_init
 
 マネジャーに ``mycomp.so`` というモジュールをロードします。
 
@@ -81,8 +76,8 @@ rtmgr [options] <path>
 
 ::
 
-  $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so
-    -i mycomp_init -c mycomp
+  $ rtmgr /localhost/manager.mgr -l /usr/local/lib/mycomp.so:mycomp_init
+    -c mycomp
 
 マネジャーに ``mycomp.so`` というモジュールをロードしてそしてコンポーネン
 トのインスタンスを作ります。

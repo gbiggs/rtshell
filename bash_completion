@@ -86,7 +86,7 @@ _rtsbc_rtopts()
                     ;;
         *rtls)      opts="--version -h --help -v --verbose -l -r --recurse"
                     ;;
-        *rtmgr)     opts="--version -h --help -v --verbose -c --create= -d --delete= -i --init-func= -l --load= -u --unload="
+        *rtmgr)     opts="--version -h --help -v --verbose -c --create= -d --delete= -l --load= -u --unload="
                     ;;
         *rtprint)   opts="--version -h --help -v --verbose -m --mod= -n --number= -r --rate= -t --timeout="
                     ;;
@@ -618,21 +618,17 @@ _rtsbc_rtlog()
     return 0
 }
 
-_rtsbc_mgr_get_module_path()
+_rtsbc_mgr_comp_load_cmd()
 {
-    # $@ = COMP_WORDS
-    local words
-    words=($@)
-    for ii in $(seq 0 ${#words[*]}) ;
-    do
-        if [[ ${words[ii]} == '-l' || ${words[ii]} == '--load' ]]
-        then
-            module_path=${words[ii + 1]}
-            return 0
-        fi
-    done
-
-    return 1
+    # $1 = Current word
+    path_done=$(echo ${1} | grep :)
+    if [[ -z "${path_done}" ]]
+    then
+        # No path yet; complete the file name
+        COMPREPLY=($(compgen -f ${cur}))
+        compopt -o filenames
+    fi
+    return 0
 }
 
 _rtsbc_rtmgr()
@@ -681,21 +677,9 @@ _rtsbc_rtmgr()
             COMPREPLY=($(compgen -W "${inst_names}" -- ${cur}))
             return 0
             ;;
-        --init-func|-i)
-            # Find functions
-            _rtsbc_mgr_get_module_path ${COMP_WORDS[*]}
-            if [[ -n "${module_path}" ]]
-            then
-                funcs="$(nm -C ${module_path} | grep ' T ' | grep -v '::' | \
-                    awk '{print $3;}')"
-                COMPREPLY=($(compgen -W "${funcs}" -- ${cur}))
-            fi
-            return 0
-            ;;
         --load|-l)
             # File name
-            COMPREPLY=($(compgen -f ${cur}))
-            compopt -o filenames
+            _rtsbc_mgr_comp_load_cmd ${cur}
             return 0
             ;;
         --unload|-u)
@@ -711,12 +695,34 @@ _rtsbc_rtmgr()
             COMPREPLY=($(compgen -W "${modules}" -- ${cur}))
             return 0
             ;;
-        *)
-            _rtsbc_rtobj ${cur}
-            return 0
-            ;;
     esac
 
+    # If the word before last was -l or --load then complete a module function
+    if [[ "${cur}" == ":" ]] && (( ${#COMP_WORDS[@]} > 2))
+    then
+        if [[ "${COMP_WORDS[COMP_CWORD-2]}" == "-l" ]] || \
+            [[ "${COMP_WORDS[COMP_CWORD-2]}" == "--load" ]]
+        then
+            funcs="$(nm -C ${prev} | grep ' T ' | grep -v '::' | \
+                awk '{print $3;}')"
+            COMPREPLY=($(compgen -W "${funcs}"))
+            return 0
+        fi
+    elif (( ${#COMP_WORDS[@]} > 3))
+    then
+        case "${COMP_WORDS[COMP_CWORD-3]}" in
+            --load|-l)
+                mod_path="${COMP_WORDS[COMP_CWORD-2]}"
+                funcs="$(nm -C ${mod_path} | grep ' T ' | grep -v '::' | \
+                    awk '{print $3;}')"
+                COMPREPLY=($(compgen -W "${funcs}" -- "${cur}"))
+                return 0
+                ;;
+        esac
+    fi
+
+    # Anything else is probably a tree object
+    _rtsbc_rtobj ${cur}
     return 0
 }
 

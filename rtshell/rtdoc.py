@@ -116,7 +116,7 @@ def do_section(result, comp, doc_set, sec):
     elif doc_set and doc_set.has_param(sec):
         title = get_section_title(sec)
         body = doc_set.data[sec]
-        result += section(title)
+        result += section(title, 1)
         result.append(doc_set.data[sec])
         result.append('')
 

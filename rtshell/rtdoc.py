@@ -69,7 +69,7 @@ def get_ports_docs(comp):
 
 def get_config_docs(comp):
     result = []
-    result.append('.. csv-table:: Configration parameters')
+    result.append('.. csv-table:: Configuration parameters')
     result.append('   :header: "Name", "Description"')
     result.append('   :widths: 12, 38')
     result.append('   ')
@@ -123,7 +123,7 @@ def do_section(result, comp, doc_set, sec):
 
 def get_comp_docs(comp, tree):
     result = []
-    result += section(comp.name, 0)
+    result += section(comp.type_name, 0)
     result.append(comp.description)
     result.append('')
 

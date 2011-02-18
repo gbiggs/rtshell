@@ -162,6 +162,8 @@ Changelog
 ---
 
 - rtact/rtdeact/rtreset: Allow changing multiple components at once.
+- rtcon: Support making connections involving three or more ports.
+- rtdis: Support removing connections involving three or more ports.
 - rtlog: Added end pointer to simpkl log format to speed up searches.
 - rtmgr: Support corbaloc:: direct connection to managers.
 - rtmgr: Allow multiple occurrences of any commands.

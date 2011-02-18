@@ -33,50 +33,38 @@ import rts_exceptions
 import rtshell
 
 
-def connect_ports(source_cmd_path, source_full_path,
-                  dest_cmd_path, dest_full_path,
-                  options, tree=None):
-    source_path, source_port = rtctree.path.parse_path(source_full_path)
-    if not source_port:
-        raise rts_exceptions.NoSourcePortError
-    if not source_path[-1]:
-        raise rts_exceptions.NoSuchObjectError(source_cmd_path)
-
-    dest_path, dest_port = rtctree.path.parse_path(dest_full_path)
-    if not dest_port:
-        raise rts_exceptions.NoDestPortError
-    if not dest_path[-1]:
-        raise rts_exceptions.NoSuchObjectError(dest_cmd_path)
+def connect_ports(paths, options, tree=None):
+    cmd_paths, fps = zip(*paths)
+    pathports = [rtctree.path.parse_path(fp) for fp in fps]
+    for ii, p in enumerate(pathports):
+        if not p[1]:
+            raise rts_exceptions.NotAPortError(cmd_paths[ii])
+        if not p[0][-1]:
+            raise rts_exceptions.NotAPortError(cmd_paths[ii])
+    paths, ports = zip(*pathports)
 
     if not tree:
-        tree = rtctree.tree.RTCTree(paths=[source_path, dest_path],
-                filter=[source_path, dest_path])
+        tree = rtctree.tree.RTCTree(paths=paths, filter=paths)
 
-    if not tree.has_path(source_path):
-        raise rts_exceptions.NoSuchObjectError(source_cmd_path)
-    if not tree.has_path(dest_path):
-        raise rts_exceptions.NoSuchObjectError(dest_cmd_path)
-
-    source_comp = tree.get_node(source_path)
-    if not source_comp:
-        raise rts_exceptions.NoSuchObjectError(source_cmd_path)
-    if not source_comp.is_component:
-        raise rts_exceptions.NotAComponentError(source_cmd_path)
-    source_port_obj = source_comp.get_port_by_name(source_port)
-    if not source_port_obj:
-        raise rts_exceptions.PortNotFoundError(source_path, source_port)
-    dest_comp = tree.get_node(dest_path)
-    if not dest_comp:
-        raise rts_exceptions.NoSuchObjectError(dest_cmd_path)
-    if not dest_comp.is_component:
-        raise rts_exceptions.NotAComponentError(dest_cmd_path)
-    dest_port_obj = dest_comp.get_port_by_name(dest_port)
-    if not dest_port_obj:
-        raise rts_exceptions.PortNotFoundError(dest_path, dest_port)
+    port_objs = []
+    for ii, p in enumerate(pathports):
+        obj = tree.get_node(p[0])
+        if not obj:
+            raise rts_exceptions.NoSuchObjectError(cmd_paths[ii])
+        if obj.is_zombie:
+            raise rts_exceptions.ZombieObjectError(cmd_paths[ii])
+        if not obj.is_component:
+            raise rts_exceptions.NotAComponentError(cmd_paths[ii])
+        port_obj = obj.get_port_by_name(p[1])
+        if not port_obj:
+            raise rts_exceptions.PortNotFoundError(p[0], p[1])
+        port_objs.append(port_obj)
+    if len(port_objs) < 2:
+        raise rts_exceptions.NoDestPortError
 
     conn_name = options.name if options.name else None
-    source_port_obj.connect(dest_port_obj, name=conn_name, id=options.id,
-                            props=options.properties)
+    port_objs[0].connect(port_objs[1:], name=conn_name, id=options.id,
+            props=options.properties)
 
 
 def main(argv=None, tree=None):
@@ -92,8 +80,8 @@ def main(argv=None, tree=None):
                     sys.argv[0], option_value)
         getattr(parser.values, option.dest)[key] = value
 
-    usage = '''Usage: %prog [options] <source path> <destination path>
-Connect two ports.'''
+    usage = '''Usage: %prog [options] <path 1> <path 2> [<path 3> ...]
+Connect two or more ports.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-i', '--id', dest='id', action='store', type='string',
@@ -119,18 +107,15 @@ Connect two ports.'''
     if not getattr(options, 'properties'):
         setattr(options, 'properties', {})
 
-    if len(args) != 2:
-        print >>sys.stderr, usage
+    if not args:
+        # If no paths given then can't do anything.
+        print >>sys.stderr, '{0}: No ports specified.'.format(
+                os.path.basename(sys.argv[0]))
         return 1
-    else:
-        source_path = args[0]
-        dest_path = args[1]
-    source_full_path = path.cmd_path_to_full_path(source_path)
-    dest_full_path = path.cmd_path_to_full_path(dest_path)
+    paths = [(p, path.cmd_path_to_full_path(p)) for p in args]
 
     try:
-        connect_ports(source_path, source_full_path, dest_path, dest_full_path,
-                options, tree=tree)
+        connect_ports(paths, options, tree=tree)
     except Exception, e:
         if options.verbose:
             traceback.print_exc()

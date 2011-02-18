@@ -11,7 +11,7 @@ disconnect ports
 Synopsis
 ========
 
-rtdis [options] <source path> [destination path]
+rtdis [options] <path 1> <path 2> [<path 3> ...]
 
 Description
 ===========
@@ -37,7 +37,7 @@ Examples
 
   $ rtdis /localhost/ConsoleIn0.rtc:out /localhost/ConsoleOut0.rtc:in
 
-Remove all connections between the ``out`` port of ``ConsoleIn0.rtc``
+Remove all connections involving the ``out`` port of ``ConsoleIn0.rtc``
 and the ``in`` port of ``ConsoleOut0.rtc``.
 
 ::

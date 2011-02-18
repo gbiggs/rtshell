@@ -74,55 +74,48 @@ def disconnect_all(cmd_path, full_path, options, tree=None):
             object.disconnect_all()
 
 
-def disconnect_ports(source_cmd_path, source_full_path,
-                  dest_cmd_path, dest_full_path,
-                  options, tree=None):
-    source_path, source_port = rtctree.path.parse_path(source_full_path)
-    if not source_port:
-        raise rts_exceptions.NoSourcePortError
-
-    dest_path, dest_port = rtctree.path.parse_path(dest_full_path)
-    if not dest_port:
-        raise rts_exceptions.NoDestPortError
+def disconnect_ports(paths, options, tree=None):
+    cmd_paths, fps = zip(*paths)
+    pathports = [rtctree.path.parse_path(fp) for fp in fps]
+    for ii, p in enumerate(pathports):
+        if not p[1]:
+            raise rts_exceptions.NotAPortError(cmd_paths[ii])
+        if not p[0][-1]:
+            raise rts_exceptions.NotAPortError(cmd_paths[ii])
+    paths, ports = zip(*pathports)
 
     if not tree:
-        tree = rtctree.tree.RTCTree(paths=[source_path, dest_path],
-                filter=[source_path, dest_path])
+        tree = rtctree.tree.RTCTree(paths=paths, filter=paths)
 
-    source_comp = tree.get_node(source_path)
-    if not source_comp:
-        raise rts_exceptions.NoSuchObjectError(source_cmd_path)
-    if not source_comp.is_component:
-        raise rts_exceptions.NotAComponentError(source_cmd_path)
-    source_port_obj = source_comp.get_port_by_name(source_port)
-    if not source_port_obj:
-        raise rts_exceptions.PortNotFoundError(source_path, source_port)
-    dest_comp = tree.get_node(dest_path)
-    if not dest_comp:
-        raise rts_exceptions.NoSuchObjectError(dest_cmd_path)
-    if not dest_comp.is_component:
-        raise rts_exceptions.NotAComponentError(dest_cmd_path)
-    dest_port_obj = dest_comp.get_port_by_name(dest_port)
-    if not dest_port_obj:
-        raise rts_exceptions.PortNotFoundError(dest_path, dest_port)
+    port_objs = []
+    for ii, p in enumerate(pathports):
+        obj = tree.get_node(p[0])
+        if not obj:
+            raise rts_exceptions.NoSuchObjectError(cmd_paths[ii])
+        if obj.is_zombie:
+            raise rts_exceptions.ZombieObjectError(cmd_paths[ii])
+        if not obj.is_component:
+            raise rts_exceptions.NotAComponentError(cmd_paths[ii])
+        port_obj = obj.get_port_by_name(p[1])
+        if not port_obj:
+            raise rts_exceptions.PortNotFoundError(p[0], p[1])
+        port_objs.append(port_obj)
+    if len(port_objs) < 2:
+        raise rts_exceptions.NoDestPortError
 
     if options.id:
-        s_conn = source_port_obj.get_connection_by_id(options.id)
-        d_conn = dest_port_obj.get_connection_by_id(options.id)
-        if not s_conn:
-            raise rts_exceptions.ConnectionIDNotFoundError(options.id,
-                    source_cmd_path)
-        elif not d_conn:
-            raise rts_exceptions.ConnectionIDNotFoundError(options.id,
-                    dest_cmd_path)
-        conn = s_conn
+        all_conns = port_objs[0].get_connections_by_dests(port_objs[1:])
+        conns = []
+        for c in all_conns:
+            if c.id == options.id:
+                conns.append(c)
     else:
-        conn = source_port_obj.get_connection_by_dest(dest_port_obj)
-        if not conn:
-            raise rts_exceptions.ConnectionNotFoundError(source_cmd_path,
-                    dest_cmd_path)
+        conns = port_objs[0].get_connections_by_dests(port_objs[1:])
 
-    conn.disconnect()
+    if not conns:
+        raise rts_exceptions.MultiConnectionNotFoundError
+    for c in conns:
+        c.disconnect()
 
 
 def main(argv=None, tree=None):
@@ -150,15 +143,10 @@ Remove connections.'''
             cmd_path = args[0]
             disconnect_all(cmd_path, path.cmd_path_to_full_path(cmd_path),
                                   options, tree)
-        elif len(args) == 2:
-            # Disconnect a pair of ports
-            source_path = args[0]
-            dest_path = args[1]
-            source_full_path = path.cmd_path_to_full_path(source_path)
-            dest_full_path = path.cmd_path_to_full_path(dest_path)
-            disconnect_ports(source_path, source_full_path,
-                                 dest_path, dest_full_path,
-                                 options, tree)
+        elif len(args) > 1:
+            # Disconnect a set of ports
+            paths = [(p, path.cmd_path_to_full_path(p)) for p in args]
+            disconnect_ports(paths, options, tree)
         else:
             print >>sys.stderr, usage
             return 1

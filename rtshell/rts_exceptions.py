@@ -137,6 +137,22 @@ class NotAComponentError(RtShellError):
             return 'Not a component: {0}'.format(self._path)
 
 
+class NotAPortError(RtShellError):
+    '''A given path is not a port.'''
+    def __init__(self, path):
+        self._path = path
+
+    def __str__(self):
+        if type(self._path) == tuple:
+            return 'Not a port: {0}'.format(
+                    rtctree.path.format_path(self._path))
+        elif type(self._path) == list:
+            return 'Not a port: {0}'.format(
+                    rtctree.path.format_path((self._path, None)))
+        else:
+            return 'Not a port: {0}'.format(self._path)
+
+
 class ParentNotADirectoryError(RtShellError):
     '''A given path's parent is not a directory.'''
     def __init__(self, path):
@@ -307,7 +323,7 @@ class PortNotFoundError(RtShellError):
 
 
 class ConnectionNotFoundError(RtShellError):
-    '''The port was not found on the component.'''
+    '''A connection between two ports was not found.'''
     def __init__(self, path1, path2):
         self._path1 = path1
         self._path2 = path2
@@ -326,6 +342,12 @@ class ConnectionNotFoundError(RtShellError):
         else:
             path2_str = self._path2
         return 'No connection from {0} to {1}'.format(path1_str, path2_str)
+
+
+class MultiConnectionNotFoundError(RtShellError):
+    '''A connection between ports was not found.'''
+    def __str__(self):
+        return 'No connection found involving the specified ports.'''
 
 
 class ConnectionIDNotFoundError(RtShellError):

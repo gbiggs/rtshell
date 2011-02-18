@@ -11,7 +11,7 @@ rtdis
 書式
 ====
 
-rtdis [options] <source path> [destination path]
+rtdis [options] <path 1> <path 2> [<path 3> ...]
 
 概要
 ====

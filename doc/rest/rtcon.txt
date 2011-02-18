@@ -11,12 +11,12 @@ connect ports
 Synopsis
 ========
 
-rtcon [options] <source path> <destination path>
+rtcon [options] <path 1> <path 2> [<path 3> ...]
 
 Description
 ===========
 
-Connects two data or service ports together.
+Connects two or more data or service ports together.
 
 For data ports, the valid properties include::
 
@@ -73,6 +73,15 @@ Connect the ``out`` port of ``Motor0.rtc`` to the ``in`` port of
 Connect the ``out`` port of ``Motor0.rtc`` to the ``in`` port of
 ``Sensor0.rtc``, giving the connection the name ``motor_data`` and the
 ID ``con1``.
+
+::
+
+  $ rtcon ConsoleIn0.rtc:out ConsoleOut0.rtc:in ConsoleOut1.rtc:in
+
+Connect the ``out`` port of ``ConsoleIn0.rtc`` to the ``in`` port of
+``ConsoleOut0.rtc`` and the ``in`` port of ``ConsoleOut1.rtc`` using the
+default connection properties.
+
 
 See Also
 ========

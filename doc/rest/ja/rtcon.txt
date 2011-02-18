@@ -11,12 +11,12 @@ rtcon
 書式
 ====
 
-rtcon [options] <source path> <destination path>
+rtcon [options] <path 1> <path 2> [<path 3> ...]
 
 概要
 ====
 
-二つのデータポートやサービスポートを接続します。
+二つ以上のデータポートやサービスポートを接続します。
 
 データポートの場合に有効なプロパティは::
 
@@ -71,6 +71,14 @@ OpenRTMのバージョンによっては、ほかのプロパティも有効な�
 
 ``Motor0.rtc`` の ``out`` ポートを ``Sensor0.rtc`` の ``in`` ポートに接続しま
 す。コネクション名は ``motor_data`` でIDは ``con1`` になります。
+
+::
+
+  $ rtcon ConsoleIn0.rtc:out ConsoleOut0.rtc:in ConsoleOut1.rtc:in
+
+デフォルトプロパティを使って ``ConsoleIn0.rtc`` の ``out`` ポートを
+``ConsoleOut0.rtc`` の ``in`` ポートと ``ConsoleOut1.rtc`` の ``in``
+ポートに接続します。
 
 参照
 ====

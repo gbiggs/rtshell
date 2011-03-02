@@ -1,7 +1,7 @@
 :Author: Geoffrey Biggs and contributors
-:Date: 2010-12-19
+:Date: 2010-03-02
 :Copyright: EPL-1.0
-:Version: 3.0
+:Version: 4.0
 :Manual section: 1
 :Manual group: User commands
 

@@ -182,7 +182,7 @@ class InstallConfigure(install_data):
 
 
 setup(name='rtshell',
-      version='3.0.0',
+      version='4.0.0',
       description='Shell commands for managing RT Components and RT Systems.',
       author='Geoffrey Biggs and contributors',
       author_email='git@killbots.net',

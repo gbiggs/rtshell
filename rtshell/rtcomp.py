@@ -130,7 +130,8 @@ def make_composite(mgr_path, mgr_full_path, comps, ports, options, tree=None):
     # Find the manager (making sure there's only one)
     mgr = get_mgr(mgr_path, mgr_full_path, comp_objs, tree)
     # Call the manager to create the composite component
-    mgr.create_component('{0}?&instance_name={1}&conf.default.members={2}&conf.default.exported_ports={3}{4}'.format(options.type,
+    mgr.create_component('{0}?&instance_name={1}&conf.default.members={2}&'
+        'conf.default.exported_ports={3}{4}'.format(options.type,
         options.name, comp_opts, port_opts, options.options))
 
 

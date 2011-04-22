@@ -19,16 +19,16 @@ Implementation of the command to print data sent by ports to the console.
 '''
 
 
-import OpenRTM_aist
 import optparse
 import os.path
-import RTC
 import rtctree.tree
 import rtctree.utils
 import sys
 import threading
 import time
 import traceback
+import OpenRTM_aist
+import RTC
 
 import comp_mgmt
 import modmgr

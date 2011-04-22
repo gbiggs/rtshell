@@ -19,17 +19,17 @@ Implementation of the logging command.
 '''
 
 
-import OpenRTM_aist
 import optparse
 import os
 import os.path
-import RTC
 import rtctree.tree
 import rtctree.utils
 import sys
 import threading
 import time
 import traceback
+import OpenRTM_aist
+import RTC
 
 import comp_mgmt
 import modmgr

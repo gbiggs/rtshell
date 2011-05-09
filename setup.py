@@ -92,7 +92,8 @@ base_scripts = ['rtact',
                 'rtstart',
                 'rtstodot',
                 'rtstop',
-                'rtteardown']
+                'rtteardown',
+                'rtvlog']
 if sys.platform == 'win32':
     batch_files = ['rtact.bat',
                    'rtcat.bat',
@@ -118,7 +119,8 @@ if sys.platform == 'win32':
                    'rtresurrect.bat',
                    'rtstart.bat',
                    'rtstop.bat',
-                   'rtteardown.bat']
+                   'rtteardown.bat',
+                   'rtvlog.bat']
     scripts = base_scripts + batch_files
     data_files = [('Doc/rtshell', html_files_en + pdf_files_en),
             ('Doc/rtshell/ja', html_files_ja + pdf_files_ja)]

@@ -1,0 +1,67 @@
+======
+rtexit
+======
+
+--------------------------------
+RTコンポーネントのログを表示する
+--------------------------------
+
+.. include:: ../../common/docinfo_block.txt
+
+書式
+====
+
+rtvlog [options] <path 1> [path 2 ...]
+
+概要
+====
+
+個別のRTコンポーネントのログを取得して表示します。RTコンポーネントにはSDOのLoggerイン
+ターフェースを対応することが必要です。ログはターミナルに出力します。
+
+オプション
+=======
+
+-f FILTER, --filter=FILTER
+  ログメッセージを送信するロガーオブジェクトのフィルターをします。複数
+  回は可能です。
+
+-l LEVEL, --level=LEVEL
+  受信するログメッセージのレベルを設定します。指定されたレベルと同等あ
+  るいはそれより重要な情報が受信されます。ERROR, WARN, INFO, NORMAL,
+  DEBUG, TRACE, VERBOSE またはPARANOID のうち一つを指定することが可能
+  です。
+
+.. include:: ../../common/ja/common_opts.txt
+
+.. include:: ../../common/ja/common_body.txt
+
+例
+==
+
+::
+
+  $ rtvlog /localhost/ConsoleOut0.rtc
+
+``ConsoleOut0.rtc`` コンポーネントが送信するログメッセージを表示します。
+
+::
+
+  $ rtvlog ConsoleOut0.rtc ConsoleIn0.rtc
+
+``ConsoleOut0.rtc`` コンポーネントと ``ConsoleIn0.rtc`` コンポーネントが
+送信するログメッセージを表示します。
+
+::
+
+  $ rtvlog ConsoleOut0.rtc -f DATAPORT -l DEBUG
+
+``DEBUG`` 以下の``ConsoleOut0.rtc`` コンポーネントのデータポートが送信
+するログメッセージを表示します。
+
+
+参照
+====
+
+  ``rtshell`` (1)
+

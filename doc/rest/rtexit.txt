@@ -39,5 +39,5 @@ Tell the ``ConsoleOut0.rtc`` component to exit.
 See Also
 ========
 
-  ``rt`` (1)
+  ``rtdel`` (1)
 

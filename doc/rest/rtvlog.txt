@@ -1,0 +1,67 @@
+======
+rtexit
+======
+
+----------------------------
+view RT-Component log output
+----------------------------
+
+.. include:: ../common/docinfo_block.txt
+
+Synopsis
+========
+
+rtvlog [options] <path 1> [path 2 ...]
+
+Description
+===========
+
+View the log output of one or more RT-Components. The RT-Components must
+include the SDO Logger interface support, either directly or via the
+manager they are running in. The log output will be printed to the
+terminal.
+
+Options
+=======
+
+-f FILTER, --filter=FILTER
+  Filter the sources that can produce log events. For example, the
+  events from only a data port can be viewed. Multiple filters can be
+  specified.
+
+-l LEVEL, --level=LEVEL
+  Specify the maximum level of events to receive. Valid levels are
+  ERROR, WARN, INFO, NORMAL, DEBUG, TRACE, VERBOSE, and PARANOID.
+
+.. include:: ../common/common_opts.txt
+
+.. include:: ../common/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtvlog /localhost/ConsoleOut0.rtc
+
+View the log events being produced by the ``ConsoleOut0.rtc`` component.
+
+::
+
+  $ rtvlog ConsoleOut0.rtc ConsoleIn0.rtc
+
+View the log events being produced by both the ``ConsoleOut0.rtc`` and
+``ConsoleIn0.rtc`` components.
+
+::
+
+  $ rtvlog ConsoleOut0.rtc -f DATAPORT -l DEBUG
+
+View all events up to the level DEBUG from the data ports of the
+``ConsoleOut0.rtc`` component.
+
+See Also
+========
+
+  ``rtshell`` (1)
+

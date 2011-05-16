@@ -29,6 +29,9 @@ Options
 -f FORMAT, --format=FORMAT
   Output format (one of ``rst``, ``html`` or ``latex``).
 
+-g, --graph
+  Draw the component graph.
+
 .. include:: ../common/common_opts.txt
 
 RT-Component documentation

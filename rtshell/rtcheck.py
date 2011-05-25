@@ -69,23 +69,23 @@ def get_data_conn_props(conn):
 def check_comps(rtsprofile, req_cb):
     checks = []
     for comp in [c for c in rtsprofile.components if c.is_required]:
-        checks.append(rtshell.actions.CheckForRequiredCompAct(os.sep +
+        checks.append(rtshell.actions.CheckForRequiredCompAct('/' +
             comp.path_uri, comp.id, comp.instance_name, callbacks=[req_cb]))
     for comp in [c for c in rtsprofile.components if not c.is_required]:
-        checks.append(rtshell.actions.CheckForRequiredCompAct(os.sep +
+        checks.append(rtshell.actions.CheckForRequiredCompAct('/' +
             comp.path_uri, comp.id, comp.instance_name))
     return checks
 
 
 def check_connection(c, rtsprofile, props, cbs):
     s_comp = rtsprofile.find_comp_by_target(c.source_data_port)
-    s_path = os.sep + s_comp.path_uri
+    s_path = '/' + s_comp.path_uri
     s_port = c.source_data_port.port_name
     prefix = s_comp.instance_name + '.'
     if s_port.startswith(prefix):
         s_port = s_port[len(prefix):]
     d_comp = rtsprofile.find_comp_by_target(c.target_data_port)
-    d_path = os.sep + d_comp.path_uri
+    d_path = '/' + d_comp.path_uri
     d_port = c.target_data_port.port_name
     prefix = d_comp.instance_name + '.'
     if d_port.startswith(prefix):
@@ -118,11 +118,11 @@ def check_configs(rtsprofile, req_cb):
     # Check the correct set is active
     for c in rtsprofile.components:
         if c.active_configuration_set:
-            checks.append(rtshell.actions.CheckActiveConfigSetAct(os.sep +
+            checks.append(rtshell.actions.CheckActiveConfigSetAct('/' +
                 c.path_uri, c.active_configuration_set, callbacks=[req_cb]))
         for cs in c.configuration_sets:
             for p in cs.configuration_data:
-                checks.append(rtshell.actions.CheckConfigParamAct(os.sep +
+                checks.append(rtshell.actions.CheckConfigParamAct('/' +
                     c.path_uri, cs.id, p.name, p.data, callbacks=[req_cb]))
     return checks
 
@@ -131,12 +131,12 @@ def check_states(rtsprofile, expected, req_cb):
     checks = []
     for comp in [c for c in rtsprofile.components if c.is_required]:
         for ec in comp.execution_contexts:
-            checks.append(rtshell.actions.CheckCompStateAct(os.sep +
+            checks.append(rtshell.actions.CheckCompStateAct('/' +
                 comp.path_uri, comp.id, comp.instance_name, ec.id, expected,
                 callbacks=[req_cb]))
     for comp in [c for c in rtsprofile.components if not c.is_required]:
         for ec in comp.execution_contexts:
-            checks.append(rtshell.actions.CheckCompStateAct(os.sep +
+            checks.append(rtshell.actions.CheckCompStateAct('/' +
                 comp.path_uri, comp.id, comp.instance_name, ec.id, expected))
     return checks
 
@@ -169,7 +169,7 @@ def check(profile=None, xml=True, state='Active', dry_run=False, tree=None):
         if not tree:
             # Load the RTC Tree, using the paths from the profile
             tree = rtctree.tree.RTCTree(paths=[rtctree.path.parse_path(
-                os.sep + c.path_uri)[0] for c in rtsp.components])
+                '/' + c.path_uri)[0] for c in rtsp.components])
         for a in actions:
             a(tree)
     if cb.failed:

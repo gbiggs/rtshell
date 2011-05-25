@@ -41,7 +41,7 @@ def check_required_component_actions(rtsprofile):
     # First perform a sanity check of the system.
     # All required components must be present
     for comp in [c for c in rtsprofile.components if c.is_required]:
-        checks.append(actions.CheckForRequiredCompAct(os.sep + comp.path_uri,
+        checks.append(actions.CheckForRequiredCompAct('/' + comp.path_uri,
             comp.id, comp.instance_name,
             callbacks=[actions.RequiredActionCB()]))
     return checks
@@ -53,13 +53,13 @@ def activate_actions(rtsprofile):
     activates = []
     for comp in [c for c in rtsprofile.components if c.is_required]:
         for ec in comp.execution_contexts:
-            activates.append(actions.ActivateCompAct(os.sep + comp.path_uri,
+            activates.append(actions.ActivateCompAct('/' + comp.path_uri,
                 comp.id, comp.instance_name, ec.id,
                 callbacks=[actions.RequiredActionCB()]))
 
     for comp in [c for c in rtsprofile.components if not c.is_required]:
         for ec in comp.execution_contexts:
-            activates.append(actions.ActivateCompAct(os.sep + comp.path_uri,
+            activates.append(actions.ActivateCompAct('/' + comp.path_uri,
                 comp.id, comp.instance_name, ec.id))
 
     return checks, activates
@@ -95,7 +95,7 @@ def start(profile=None, xml=True, dry_run=False, tree=None):
         if not tree:
             # Load the RTC Tree, using the paths from the profile
             tree = rtctree.tree.RTCTree(paths=[rtctree.path.parse_path(
-                os.sep + c.path_uri)[0] for c in rtsp.components])
+                '/' + c.path_uri)[0] for c in rtsp.components])
         try:
             for a in checks:
                 a(tree)

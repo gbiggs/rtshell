@@ -41,7 +41,7 @@ def deactivate_actions(rtsprofile):
     for comp in rtsprofile.components:
         for ec in comp.execution_contexts:
             deactivates.append(actions.DeactivateCompAct(
-                os.sep + comp.path_uri, comp.id, comp.instance_name, ec.id))
+                '/' + comp.path_uri, comp.id, comp.instance_name, ec.id))
     return deactivates
 
 
@@ -73,7 +73,7 @@ def stop(profile=None, xml=True, dry_run=False, tree=None):
         if not tree:
             # Load the RTC Tree, using the paths from the profile
             tree = rtctree.tree.RTCTree(paths=[rtctree.path.parse_path(
-                os.sep + c.path_uri)[0] for c in rtsp.components])
+                '/' + c.path_uri)[0] for c in rtsp.components])
         try:
             p.execute(tree)
         except rts_exceptions.RequiredActionFailedError, e:

@@ -59,8 +59,6 @@ def connect_ports(paths, options, tree=None):
         if not port_obj:
             raise rts_exceptions.PortNotFoundError(p[0], p[1])
         port_objs.append(port_obj)
-    if len(port_objs) < 2:
-        raise rts_exceptions.NoDestPortError
 
     conn_name = options.name if options.name else None
     port_objs[0].connect(port_objs[1:], name=conn_name, id=options.id,

@@ -19,6 +19,10 @@ Implementation of the command for controlling managers.
 '''
 
 
+import rtctree
+import rtctree.exceptions
+import rtctree.path
+import rtctree.tree
 import CosNaming
 import omniORB
 import optparse
@@ -26,10 +30,6 @@ import os
 import os.path
 import OpenRTM_aist
 import RTC
-import rtctree
-import rtctree.exceptions
-import rtctree.path
-import rtctree.tree
 import RTM
 import sys
 import traceback

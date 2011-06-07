@@ -37,13 +37,13 @@ def disconnect_actions(rtsprofile):
     disconnects = []
     for conn in rtsprofile.data_port_connectors:
         source_comp = rtsprofile.find_comp_by_target(conn.source_data_port)
-        source_path = os.sep + source_comp.path_uri
+        source_path = '/' + source_comp.path_uri
         source_port = conn.source_data_port.port_name
         prefix = source_comp.instance_name + '.'
         if source_port.startswith(prefix):
             source_port = source_port[len(prefix):]
         dest_comp = rtsprofile.find_comp_by_target(conn.target_data_port)
-        dest_path = os.sep + dest_comp.path_uri
+        dest_path = '/' + dest_comp.path_uri
         dest_port =conn.target_data_port.port_name
         prefix = dest_comp.instance_name + '.'
         if dest_port.startswith(prefix):
@@ -53,13 +53,13 @@ def disconnect_actions(rtsprofile):
 
     for conn in rtsprofile.service_port_connectors:
         source_comp = rtsprofile.find_comp_by_target(conn.source_service_port)
-        source_path = os.sep + source_comp.path_uri
+        source_path = '/' + source_comp.path_uri
         source_port = conn.source_service_port.port_name
         prefix = source_comp.instance_name + '.'
         if source_port.startswith(prefix):
             source_port = source_port[len(prefix):]
         dest_comp = rtsprofile.find_comp_by_target(conn.target_service_port)
-        dest_path = os.sep + dest_comp.path_uri
+        dest_path = '/' + dest_comp.path_uri
         dest_port = conn.target_service_port.port_name
         prefix = dest_comp.instance_name + '.'
         if dest_port.startswith(prefix):
@@ -95,7 +95,7 @@ def teardown(profile=None, xml=True, dry_run=False, tree=None):
         if not tree:
             # Load the RTC Tree, using the paths from the profile
             tree = rtctree.tree.RTCTree(paths=[rtctree.path.parse_path(
-                os.sep + c.path_uri)[0] for c in rtsp.components])
+                '/' + c.path_uri)[0] for c in rtsp.components])
         for a in actions:
             a(tree)
 

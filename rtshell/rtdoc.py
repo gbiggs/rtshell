@@ -69,7 +69,7 @@ def get_ports_docs(comp):
 
 def get_config_docs(comp):
     result = []
-    result.append('.. csv-table:: Configration parameters')
+    result.append('.. csv-table:: Configuration parameters')
     result.append('   :header: "Name", "Description"')
     result.append('   :widths: 12, 38')
     result.append('   ')
@@ -83,6 +83,27 @@ def get_config_docs(comp):
         else:
             description = ''
         result.append('   "{0}", "{1}"'.format(n, escape(description)))
+    return result
+
+
+from rtstodot import port_name as dot_port_name
+from rtstodot import escape as dot_escape
+
+def make_comp_graph(comp):
+    result = []
+    result.append('.. digraph:: comp')
+    result.append('')
+    result.append('   rankdir=LR;')
+    result.append('   {0} [shape=Mrecord, label="{1}"];'.format(dot_escape(comp.type_name), comp.type_name))
+    for p in comp.ports:
+        if p.porttype == 'DataInPort':
+            pname = dot_port_name(p.name)
+            result.append('   {0} [shape=plaintext, label="{1}"];'.format(dot_escape(pname), pname))
+            result.append('   {0} -> {1};'.format(dot_escape(pname), dot_escape(comp.type_name)))
+        elif p.porttype == 'DataOutPort':
+            pname = dot_port_name(p.name)
+            result.append('   {0} [shape=plaintext, label="{1}"];'.format(dot_escape(pname), pname))
+            result.append('   {0} -> {1};'.format(dot_escape(comp.type_name), dot_escape(pname)))
     return result
 
 
@@ -103,11 +124,14 @@ def get_section_title(sec):
         return sec
 
 
-def do_section(result, comp, doc_set, sec):
+def do_section(result, comp, doc_set, sec, options):
     if sec == 'ports' and comp.ports:
         result += section('Ports', 1)
         result += get_ports_docs(comp)
         result.append('')
+        if options.graph == True:
+            result += make_comp_graph(comp)
+            result.append('')
     elif (sec == 'config' and
             'default' in comp.conf_sets and comp.conf_sets['default'].data):
         result += section('Configuration parameters', 1)
@@ -116,14 +140,14 @@ def do_section(result, comp, doc_set, sec):
     elif doc_set and doc_set.has_param(sec):
         title = get_section_title(sec)
         body = doc_set.data[sec]
-        result += section(title)
+        result += section(title, 1)
         result.append(doc_set.data[sec])
         result.append('')
 
 
-def get_comp_docs(comp, tree):
+def get_comp_docs(comp, tree, options):
     result = []
-    result += section(comp.name, 0)
+    result += section(comp.type_name, 0)
     result.append(comp.description)
     result.append('')
 
@@ -160,11 +184,11 @@ def get_comp_docs(comp, tree):
                 print >>sys.stderr, ('{0}: Unknown section in order: '
                     '{1}'.format(os.path.basename(sys.argv[0]), s))
             continue
-        do_section(result, comp, doc_set, s)
+        do_section(result, comp, doc_set, s, options)
 
     # Add any sections that were not in the ordering last
     for s in [s for s in sections if s not in order]:
-        do_section(result, comp, doc_set, s)
+        do_section(result, comp, doc_set, s, options)
 
     return result
 
@@ -185,7 +209,7 @@ def get_docs(cmd_path, full_path, options, tree=None):
     object = tree.get_node(path)
 
     if object.is_component:
-        return get_comp_docs(object, tree)
+        return get_comp_docs(object, tree, options)
     elif object.is_zombie:
         raise rts_exceptions.ZombieObjectError(cmd_path)
     else:
@@ -201,6 +225,9 @@ Display component documentation.'''
             choices=('rst', 'html', 'latex'), default='html',
             help='Output format (one of "rst", "html" or "latex"). '
             '[Default: %default]')
+    parser.add_option('-g', '--graph', dest='graph', action='store_true',
+            default=False,
+            help='Draw component graph. [Default: %default]')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
             help='Output verbose information. [Default: %default]')

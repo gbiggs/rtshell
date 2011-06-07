@@ -552,7 +552,7 @@ ID {4} and properties {5}'.format(self._source_path_str, self._source_port,
         if not conn:
             if d_port.get_connection_by_id(self._id) is None:
                 # No existing connection
-                s_port.connect(d_port, name=self._name, id=self._id,
+                s_port.connect([d_port], name=self._name, id=self._id,
                                         props=self._properties)
                 return True, None
             else:

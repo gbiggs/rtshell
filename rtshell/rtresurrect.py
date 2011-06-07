@@ -38,7 +38,7 @@ def check_required_component_actions(rtsprofile):
     # First perform a sanity check of the system.
     # All required components must be present
     for comp in [c for c in rtsprofile.components if c.is_required]:
-        checks.append(actions.CheckForRequiredCompAct(os.sep + comp.path_uri,
+        checks.append(actions.CheckForRequiredCompAct('/' + comp.path_uri,
             comp.id, comp.instance_name,
             callbacks=[actions.RequiredActionCB()]))
     return checks
@@ -58,13 +58,13 @@ def data_connection_actions(rtsprofile):
     make_connections = []
     for conn in rtsprofile.required_data_connections():
         source_comp = rtsprofile.find_comp_by_target(conn.source_data_port)
-        source_path = os.sep + source_comp.path_uri
+        source_path = '/' + source_comp.path_uri
         source_port = conn.source_data_port.port_name
         prefix = source_comp.instance_name + '.'
         if source_port.startswith(prefix):
             source_port = source_port[len(prefix):]
         dest_comp = rtsprofile.find_comp_by_target(conn.target_data_port)
-        dest_path = os.sep + dest_comp.path_uri
+        dest_path = '/' + dest_comp.path_uri
         dest_port = conn.target_data_port.port_name
         prefix = dest_comp.instance_name + '.'
         if dest_port.startswith(prefix):
@@ -82,13 +82,13 @@ def data_connection_actions(rtsprofile):
     # Add the other connections to the list
     for conn in rtsprofile.optional_data_connections():
         source_comp = rtsprofile.find_comp_by_target(conn.source_data_port)
-        source_path = os.sep + source_comp.path_uri
+        source_path = '/' + source_comp.path_uri
         source_port = conn.source_data_port.port_name
         prefix = source_comp.instance_name + '.'
         if source_port.startswith(prefix):
             source_port = source_port[len(prefix):]
         dest_comp = rtsprofile.find_comp_by_target(conn.target_data_port)
-        dest_path = os.sep + dest_comp.path_uri
+        dest_path = '/' + dest_comp.path_uri
         dest_port = conn.target_data_port.port_name
         prefix = dest_comp.instance_name + '.'
         if dest_port.startswith(prefix):
@@ -108,13 +108,13 @@ def service_connection_actions(rtsprofile):
     make_connections = []
     for conn in rtsprofile.required_service_connections():
         source_comp = rtsprofile.find_comp_by_target(conn.source_service_port)
-        source_path = os.sep + source_comp.path_uri
+        source_path = '/' + source_comp.path_uri
         source_port = conn.source_service_port.port_name
         prefix = source_comp.instance_name + '.'
         if source_port.startswith(prefix):
             source_port = source_port[len(prefix):]
         dest_comp = rtsprofile.find_comp_by_target(conn.target_service_port)
-        dest_path = os.sep + dest_comp.path_uri
+        dest_path = '/' + dest_comp.path_uri
         dest_port =conn.target_service_port.port_name 
         prefix = dest_comp.instance_name + '.'
         if dest_port.startswith(prefix):
@@ -131,13 +131,13 @@ def service_connection_actions(rtsprofile):
     # Add the other connections to the list
     for conn in rtsprofile.optional_service_connections():
         source_comp = rtsprofile.find_comp_by_target(conn.source_service_port)
-        source_path = os.sep + source_comp.path_uri
+        source_path = '/' + source_comp.path_uri
         source_port = conn.source_service_port.port_name
         prefix = source_comp.instance_name + '.'
         if source_port.startswith(prefix):
             source_port = source_port[len(prefix):]
         dest_comp = rtsprofile.find_comp_by_target(conn.target_service_port)
-        dest_path = os.sep + dest_comp.path_uri
+        dest_path = '/' + dest_comp.path_uri
         dest_port =conn.target_service_port.port_name 
         prefix = dest_comp.instance_name + '.'
         if dest_port.startswith(prefix):
@@ -155,14 +155,14 @@ def config_set_actions(rtsprofile):
     for comp in rtsprofile.components:
         if comp.active_configuration_set:
             set_active.append(actions.SetActiveConfigSetAct(
-                os.sep + comp.path_uri, comp.active_configuration_set))
+                '/' + comp.path_uri, comp.active_configuration_set))
 
     set_values = []
     for comp in rtsprofile.components:
         for cs in comp.configuration_sets:
             for p in cs.configuration_data:
                 set_values.append(actions.SetConfigParamValueAct(
-                    os.sep + comp.path_uri, cs.id, p.name, p.data))
+                    '/' + comp.path_uri, cs.id, p.name, p.data))
 
     return set_values + set_active
 
@@ -203,7 +203,7 @@ def resurrect(profile=None, xml=True, dry_run=False, tree=None):
         if not tree:
             # Load the RTC Tree, using the paths from the profile
             tree = rtctree.tree.RTCTree(paths=[rtctree.path.parse_path(
-                os.sep + c.path_uri)[0] for c in rtsp.components])
+                '/' + c.path_uri)[0] for c in rtsp.components])
         for a in actions:
             a(tree)
 

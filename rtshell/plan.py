@@ -475,7 +475,7 @@ class MonitorCondition(DelayedCondition):
 def _make_check_comp_state_cb(rtsprofile, target_comp):
     def cb(rtctree=None, *args, **kwargs):
         comp = rtsprofile.find_comp_by_target(target_comp)
-        path = os.sep + comp.path_uri
+        path = '/' + comp.path_uri
         comp = rtctree.get_node(rtctree.path.parse_path(path)[0])
         return comp.refresh_state_in_ec(comp.get_ec_index(target_comp.id))
     return cb

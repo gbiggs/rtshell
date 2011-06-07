@@ -107,6 +107,9 @@ class ModuleMgr(object):
         '''
         self._auto_import(name)
         for m in self._mods.values():
+            if m.name == 'RTC':
+                # Search RTC last to allow user types to override RTC types
+                continue
             types = [member for member in inspect.getmembers(m.mod,
                     inspect.isclass) if member[0] == name]
             if len(types) == 0:
@@ -120,9 +123,21 @@ class ModuleMgr(object):
                             if other_m.name == m.name + '__POA']:
                         raise rts_exceptions.MissingPOAError(m.name)
                 if self._verb:
-                    print >>sys.stderr, 'Found class {0} in module {1}'.format(
+                    print >>sys.stderr, 'Found type {0} in module {1}'.format(
                             name, m.name)
                 return types[0][1]
+        # If got to here, the type was not found in any other module, so search
+        # the RTC module
+        m = self._mods['RTC']
+        types = [member for member in inspect.getmembers(m.mod,
+                inspect.isclass) if member[0] == name]
+        if len(types) != 0:
+            if len(types) != 1:
+                raise rts_exceptions.AmbiguousTypeError(type_name)
+            if self._verb:
+                print >>sys.stderr, 'Found type {0} in module {1}'.format(
+                        name, m.name)
+            return types[0][1]
         raise rts_exceptions.TypeNotFoundError(name)
 
     def load_mod(self, mod):

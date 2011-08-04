@@ -31,6 +31,7 @@ def compile_docs(src_dir, dest_dir, cmd, ext, verb=False):
                 '{0}'.format(dest_dir))
     else:
         os.makedirs(dest_dir)
+    suffix = '.py'
     for f in os.listdir(src_dir):
         src = os.path.join(src_dir, f)
         if not os.path.isfile(src):
@@ -40,7 +41,16 @@ def compile_docs(src_dir, dest_dir, cmd, ext, verb=False):
             # check_timestamps will have printed a warning earlier
             continue
         vprint(verb, 'Compiling {0} to {1}'.format(src, dest))
-        stdout, stderr, ret = call_process([cmd, src, dest])
+        try:
+            stdout, stderr, ret = call_process([cmd + suffix, src, dest])
+        except OSError, e:
+            if e.errno == 13:
+                # The .py version of the command was not found; try without it
+                suffix = ''
+                # Repeat the previous command
+                stdout, stderr, ret = call_process([cmd + suffix, src, dest])
+            else:
+                raise
         if ret != 0:
             raise RuntimeError('Failed to compile {0} to {1}:\n{2}'.format(src,
                 dest, stderr))
@@ -98,14 +108,14 @@ def generate_man(lang='en', verb=False):
     src = os.path.join(rest_dir(), lang_dir(lang))
     dest = os.path.join(man_dir(), lang_dir(lang), 'man1')
     vprint(verb, 'Generating man pages for language {0}'.format(lang))
-    compile_docs(src, dest, 'rst2man.py', '.1', verb=verb)
+    compile_docs(src, dest, 'rst2man', '.1', verb=verb)
 
 
 def generate_html(lang='en', verb=False):
     src = os.path.join(rest_dir(), lang_dir(lang))
     dest = os.path.join(html_dir(), lang_dir(lang))
     vprint(verb, 'Generating HTML pages for language {0}'.format(lang))
-    compile_docs(src, dest, 'rst2html.py', '.html', verb=verb)
+    compile_docs(src, dest, 'rst2html', '.html', verb=verb)
 
 
 def generate_pdf(lang='en', verb=False):
@@ -113,7 +123,7 @@ def generate_pdf(lang='en', verb=False):
     tex = os.path.join(tex_dir(), lang_dir(lang))
     dest = os.path.join(pdf_dir(), lang_dir(lang))
     vprint(verb, 'Generating PDF documents for language {0}'.format(lang))
-    compile_docs(src, tex, 'rst2latex.py', '.tex', verb=verb)
+    compile_docs(src, tex, 'rst2latex', '.tex', verb=verb)
     compile_tex(tex, dest, verb=verb)
 
 
@@ -173,6 +183,8 @@ def main(argv):
     except optparse.OptionError, e:
         print >>sys.stderr, 'OptionError:', e
         return 1
+    if not args:
+        args = ['man', 'html', 'pdf']
 
     if not options.en and not options.ja:
         langs = ['en', 'ja']

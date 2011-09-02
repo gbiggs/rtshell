@@ -135,8 +135,14 @@ def make_port_specs(ports, modmgr, tree):
             else:
                 name = 'output{0}'.format(index)
             index += 1
-        port_cons = modmgr.find_class(
-                port_obj.properties['dataport.data_type'])
+        data_type = port_obj.properties['dataport.data_type']
+        # Strip the IDL header and version if present
+        if data_type.startswith('IDL:'):
+            data_type = data_type[4:]
+        colon = data_type.rfind(':')
+        if colon != -1:
+            data_type = data_type[:colon]
+        port_cons = modmgr.find_class(data_type)
         if form:
             # Look up the formatter in one of the user-provided modules
             formatter = fmt.import_formatter(form, modmgr)

@@ -105,7 +105,11 @@ class ModuleMgr(object):
         @param name The name of the class to search for.
 
         '''
+        # Replace / in the name with . to create a Python path
+        name = name.replace('/', '.')
         self._auto_import(name)
+        # Strip the name down to the class
+        name = _find_object_name(name)
         for m in self._mods.values():
             if m.name == 'RTC':
                 # Search RTC last to allow user types to override RTC types
@@ -224,4 +228,9 @@ def _replace_time(expr):
 def _find_module_names(expr):
     '''Finds all potential module names in an expression.'''
     return re.findall(r'(?P<mod>[a-zA-Z][\w.]*)+\.[a-zA-Z]', expr)
+
+
+def _find_object_name(expr):
+    '''Finds the object at the end of a module...module.object line.'''
+    return expr[expr.rfind('.') + 1:]
 

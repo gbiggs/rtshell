@@ -28,6 +28,7 @@ import omniORB
 import optparse
 import os
 import os.path
+import re
 import OpenRTM_aist
 import RTC
 import RTM
@@ -151,11 +152,11 @@ def main(argv=None, tree=None):
             setattr(parser.values, 'cmds', [])
         if opt == '-l' or opt == '--load':
             # Check the module path is correct before executing any commands
-            items = val.split(':')
-            if len(items) != 2:
+            items = re.split(':([^/]+)', val)
+            if len(items) != 3:
                 raise optparse.OptionValueError('No initialisation function '
                     'specified.')
-            parser.values.cmds.append((load_module, items))
+            parser.values.cmds.append((load_module, items[0:2]))
         elif opt == '-c' or opt == '--create':
             parser.values.cmds.append((create_component, val))
         elif opt == '-d' or opt == '--delete':

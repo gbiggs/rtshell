@@ -153,6 +153,22 @@ class NotAComponentError(RtShellError):
             return 'Not a component: {0}'.format(self._path)
 
 
+class NotACompositeComponentError(RtShellError):
+    '''A given path is not a composite component.'''
+    def __init__(self, path):
+        self._path = path
+
+    def __str__(self):
+        if type(self._path) == tuple:
+            return 'Not a composite component: {0}'.format(
+                    rtctree.path.format_path(self._path))
+        elif type(self._path) == list:
+            return 'Not a composite component: {0}'.format(
+                    rtctree.path.format_path((self._path, None)))
+        else:
+            return 'Not a composite component: {0}'.format(self._path)
+
+
 class NotAPortError(RtShellError):
     '''A given path is not a port.'''
     def __init__(self, path):

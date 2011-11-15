@@ -142,13 +142,13 @@ def create_composition(mgr, name, options, comp_type):
 
 def add_to_composition(comp, paths, tree):
     objs = get_comp_objs(paths, tree)
-    for k in objs:
-        pass
+    comp.add_members([o for o, p in objs.values()])
+
 
 
 def rem_from_composition(comp, paths, tree):
-    paths = parse_member_paths(paths)
-    objs = paths
+    objs = get_comp_objs(paths, tree)
+    comp.remove_members([o for o, p in objs.values()])
 
 
 def comp_is_empty(comp):
@@ -174,6 +174,7 @@ def manage_composition(tgt_raw_path, tgt_full_path, options, tree=None):
         # Create composition
         if not tgt_suffix:
             tgt_suffix = 'CompositeRTC'
+            tgt_raw_path += ':' + tgt_suffix
         comp = create_composition(tgt_obj, tgt_suffix, options.options,
                 options.type)
     elif tgt_obj.is_component:
@@ -183,13 +184,16 @@ def manage_composition(tgt_raw_path, tgt_full_path, options, tree=None):
         comp = tgt_obj
     else:
         raise rts_exceptions.NotAComponentOrManagerError(tgt_raw_path)
-    print dir(comp.object)
+    if not comp.is_composite:
+        raise rts_exceptions.NotACompositeComponentError(tgt_raw_path)
     if add_paths:
         add_to_composition(comp, add_paths, tree)
     if rem_paths:
         rem_from_composition(comp, rem_paths, tree)
     if comp_is_empty(comp):
         destroy_composition(comp)
+    for m in comp.object.get_owned_organizations()[0].get_members():
+        print m.get_component_profile().properties
 
 
 def main(argv=None, tree=None):

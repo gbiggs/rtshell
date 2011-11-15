@@ -121,6 +121,22 @@ class NoSuchObjectError(RtShellError):
             return 'No such object: {0}'.format(self._path)
 
 
+class NotAComponentOrManagerError(RtShellError):
+    '''A given path is not a component nor a manager.'''
+    def __init__(self, path):
+        self._path = path
+
+    def __str__(self):
+        if type(self._path) == tuple:
+            return 'Not a component or manager: {0}'.format(
+                    rtctree.path.format_path(self._path))
+        elif type(self._path) == list:
+            return 'Not a component or manager: {0}'.format(
+                    rtctree.path.format_path((self._path, None)))
+        else:
+            return 'Not a component or manager: {0}'.format(self._path)
+
+
 class NotAComponentError(RtShellError):
     '''A given path is not a component.'''
     def __init__(self, path):

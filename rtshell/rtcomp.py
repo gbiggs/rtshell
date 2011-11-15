@@ -25,6 +25,8 @@ import rtctree.exceptions
 import rtctree.path
 import rtctree.tree
 import rtctree.utils
+import SDOPackage
+import SDOPackage__POA
 import sys
 import traceback
 
@@ -34,37 +36,32 @@ import rts_exceptions
 import rtshell
 
 
-def get_paths(comps, ports):
-    comp_paths = []
-    port_paths = []
-    for c in comps:
-        fp = path.cmd_path_to_full_path(c)
-        c_path, c_port = rtctree.path.parse_path(fp)
-        if c_port:
-            raise rts_exceptions.NotAComponentError(c)
-        comp_paths.append((fp, c_path))
-    for p in ports:
+def parse_member_paths(source_paths):
+    paths = []
+    for p in source_paths:
+        ports = []
+        split = p.split(':')
+        if len(split) == 2:
+            p = split[0]
+            ports = split[1].split(',')
+        elif len(split) > 2:
+            raise rtctree.exceptions.BadPathError(p)
         fp = path.cmd_path_to_full_path(p)
-        p_path, p_port = rtctree.path.parse_path(fp)
-        if not p_port:
-            raise rts_exceptions.NotAPortError((p_path, p_port))
-        cp = fp[:fp.rfind(':')]
-        if (cp, p_path) not in comp_paths:
-            comp_paths.append((cp, p_path))
-        port_paths.append((cp, p_path, p_port))
-    return comp_paths, port_paths
+        c_path, ignored = rtctree.path.parse_path(fp)
+        paths.append((p, c_path, ports))
+    return paths
 
 
 def get_comp_objs(paths, tree):
-    cs = {}
-    for fp, pp in paths:
-        c = tree.get_node(pp)
-        if not c:
-            raise rts_exceptions.NoSuchObjectError(pp)
-        if not c.is_component:
-            raise rts_exceptions.NotAComponentError(pp)
-        cs[fp] = c
-    return cs
+    objs = {}
+    for fp, cp, ports in paths:
+        obj = tree.get_node(cp)
+        if not obj:
+            raise rts_exceptions.NoSuchObjectError(fp)
+        if not obj.is_component:
+            raise rts_exceptions.NotAComponentError(fp)
+        objs[fp] = (obj, ports)
+    return objs
 
 
 def get_port_objs(paths, comps, tree):
@@ -135,25 +132,82 @@ def make_composite(mgr_path, mgr_full_path, comps, ports, options, tree=None):
         options.name, comp_opts, port_opts, options.options))
 
 
+def create_composition(mgr, name, options, comp_type):
+    if not options.startswith('&'):
+        options = '&' + options
+    mgr.create_component('{0}?&instance_name={1}{2}'.format(comp_type, name,
+        options))
+    return mgr.get_node([mgr.name, name + '.rtc'])
+
+
+def add_to_composition(comp, paths, tree):
+    objs = get_comp_objs(paths, tree)
+    for k in objs:
+        pass
+
+
+def rem_from_composition(comp, paths, tree):
+    paths = parse_member_paths(paths)
+    objs = paths
+
+
+def comp_is_empty(comp):
+    return False
+
+
+def manage_composition(tgt_raw_path, tgt_full_path, options, tree=None):
+    # Parse paths of components to add/remove
+    add_paths = parse_member_paths(options.add)
+    rem_paths = parse_member_paths(options.remove)
+
+    # The target, either a manager or a component
+    tgt_path, tgt_suffix = rtctree.path.parse_path(tgt_full_path)
+
+    # Make a tree
+    if not tree:
+        paths = [tgt_path] + [y for x, y, z in add_paths + rem_paths]
+        tree = rtctree.tree.RTCTree(paths=paths, filter=paths)
+    tgt_obj = tree.get_node(tgt_path)
+    if not tgt_obj:
+        raise rts_exceptions.NoSuchObjectError(tgt_raw_path)
+    if tgt_obj.is_manager:
+        # Create composition
+        if not tgt_suffix:
+            tgt_suffix = 'CompositeRTC'
+        comp = create_composition(tgt_obj, tgt_suffix, options.options,
+                options.type)
+    elif tgt_obj.is_component:
+        # Edit composition - there should be no suffix
+        if tgt_suffix:
+            raise rts_exceptions.NotAComponentError(tgt_raw_path)
+        comp = tgt_obj
+    else:
+        raise rts_exceptions.NotAComponentOrManagerError(tgt_raw_path)
+    print dir(comp.object)
+    if add_paths:
+        add_to_composition(comp, add_paths, tree)
+    if rem_paths:
+        rem_from_composition(comp, rem_paths, tree)
+    if comp_is_empty(comp):
+        destroy_composition(comp)
+
+
 def main(argv=None, tree=None):
-    usage = '''Usage: %prog [options] <Manager>
-Compose multiple components into a single component.'''
+    usage = '''Usage: %prog [options] <manager:name|composite component path>
+Manage composite components.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
-    parser.add_option('-c', '--comp', dest='comps', action='append',
-            type='string', default=[], help='Component to include in the '\
-            'composite component without exporting any ports. Specify this '\
-            'option multiple times to add multiple components.')
-    parser.add_option('-n', '--name', dest='name', action='store',
-            type='string', default='CompositeRTC',
-            help='Instance name of the new component. [Default: %default]')
+    parser.add_option('-a', '--add', dest='add', action='append',
+            type='string', default=[], help='A component to include in the '
+            'composition. Specify a comma-separated list of ports to export '
+            'after the component name, separated by a colon.')
     parser.add_option('-o', '--options', dest='options', action='store',
             type='string', default='', help='Extra options to pass to the '\
             'component on creation. Must begin with an "&"')
-    parser.add_option('-p', '--port', dest='ports', action='append',
-            type='string', default=[], help='Port to export from the '\
-            'composite component. All components with exported ports are '\
-            'automatically included in the composite component.')
+    parser.add_option('-r', '--remove', dest='remove', action='append',
+            type='string', default=[], help='A component to remove from the '
+            'composition. All exported ports belonging to the component will '
+            'be removed.')
     parser.add_option('-t', '--type', dest='type', action='store',
             type='string', default='PeriodicECSharedComposite',
             help='Type of composite component to create. [Default: %default]')
@@ -170,13 +224,13 @@ Compose multiple components into a single component.'''
         return 1
 
     if len(args) != 1:
-        print >>sys.stderr, '{0}: No manager specified.'.format(sys.argv[0])
+        print >>sys.stderr, '{0}: No manager or existing composite component '\
+            'specified.'.format(sys.argv[0])
         return 1
     full_path = path.cmd_path_to_full_path(args[0])
 
     try:
-        make_composite(args[0], full_path, options.comps,
-                options.ports, options, tree=tree)
+        manage_composition(args[0], full_path, options, tree=tree)
     except Exception, e:
         if options.verbose:
             traceback.print_exc()

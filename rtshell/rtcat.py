@@ -376,7 +376,7 @@ missing. Possible version conflict between rtshell and OpenRTM-aist.'.format(\
 
 
 def cat_target(cmd_path, full_path, options, tree=None):
-    use_colour = sys.stdout.isatty()
+    use_colour = rtctree.utils.colour_supported(sys.stdout)
 
     path, port = rtctree.path.parse_path(full_path)
     if not path[-1]:
@@ -406,15 +406,15 @@ def cat_target(cmd_path, full_path, options, tree=None):
         if not p:
             raise rts_exceptions.PortNotFoundError(path, port)
         return format_port(p, object, start_indent=0,
-                use_colour=sys.stdout.isatty(), long=options.long)
+                use_colour=use_colour, long=options.long)
     else:
         if object.is_component:
             if trailing_slash:
                 raise rts_exceptions.NoSuchObjectError(cmd_path)
-            return format_component(object, tree, use_colour=sys.stdout.isatty(),
+            return format_component(object, tree, use_colour=use_colour,
                     long=options.long)
         elif object.is_manager:
-            return format_manager(object, use_colour=sys.stdout.isatty(),
+            return format_manager(object, use_colour=use_colour,
                     long=options.long)
         elif object.is_zombie:
             raise rts_exceptions.ZombieObjectError(cmd_path)

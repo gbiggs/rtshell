@@ -240,6 +240,8 @@ def list_directory(dir_node, long=False):
 
 
 def list_target(cmd_path, full_path, options, tree=None):
+    use_colour = rtctree.utils.colour_supported(sys.stdout)
+
     path, port = rtctree.path.parse_path(full_path)
     if port:
         raise rts_exceptions.CannotDoToPortError('list')
@@ -263,22 +265,21 @@ def list_target(cmd_path, full_path, options, tree=None):
             # directory.
             raise rts_exceptions.NoSuchObjectError(cmd_path)
         if options.long:
-            return get_node_long_lines([tree.get_node(path)],
-                                        sys.stdout.isatty())
+            return get_node_long_lines([tree.get_node(path)], use_colour)
         else:
             if tree.is_component(path):
                 return [path[-1]]
             elif tree.is_zombie(path):
                 return [(rtctree.utils.build_attr_string(['faint', 'white'],
-                        supported=sys.stdout.isatty()) + '*' + path[-1] +
+                        supported=use_colour) + '*' + path[-1] +
                         rtctree.utils.build_attr_string(['reset'],
-                        supported=sys.stdout.isatty()))]
+                        supported=use_colour))]
             else:
                 # Assume unknown
                 return [(rtctree.utils.build_attr_string(['faint', 'white'],
-                        supported=sys.stdout.isatty()) + path[-1] +
+                        supported=use_colour) + path[-1] +
                         rtctree.utils.build_attr_string(['reset'],
-                        supported=sys.stdout.isatty()))]
+                        supported=use_colour))]
     elif tree.is_directory(path):
         # If recursing, need to list this directory and all its children
         if options.recurse:

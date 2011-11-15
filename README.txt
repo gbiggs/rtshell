@@ -161,6 +161,7 @@ Changelog
 4.0
 ---
 
+- Fixed disabling output of colour codes on Windows
 - Adapt to OpenRTM's new data type specification method.
 - Changed all os.sep occurrences to '/' for consistency with URLs.
 - New command: rtvlog (Display RT Component log events).

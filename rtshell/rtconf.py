@@ -109,7 +109,7 @@ def get_comp(cmd_path, full_path, tree=None):
 
 
 def print_conf_sets(cmd_path, full_path, options, tree=None):
-    use_colour = sys.stdout.isatty()
+    use_colour = rtctree.utils.colour_supported(sys.stdout)
     tree, comp = get_comp(cmd_path, full_path, tree)
 
     if options.set_name:

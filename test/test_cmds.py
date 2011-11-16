@@ -22,6 +22,8 @@ Tests for the commands.
 import os
 import os.path
 import re
+import rtctree
+import rtctree.tree
 import rtsprofile.rts_profile
 import subprocess
 import sys
@@ -30,7 +32,7 @@ import time
 import unittest
 
 
-COMP_LIB_PATH='/usr/local/share/OpenRTM-aist/examples/rtcs'
+COMP_LIB_PATH='/usr/local/share/openrtm-1.1/example/rtcs'
 
 
 class RTCLaunchFailedError(Exception):
@@ -462,52 +464,158 @@ def rtcheck_suite():
 class rtcompTests(unittest.TestCase):
     def setUp(self):
         self._ns = start_ns()
+        self._std = launch_comp('std_comp')
+        self._mp = launch_comp('mp1_comp')
         self._mgr = launch_manager()
-        self._load_mgr()
+        wait_for_comp('Std0.rtc')
+        wait_for_comp('MP0.rtc')
 
     def tearDown(self):
+        stop_comp(self._std)
+        stop_comp(self._mp)
         stop_manager(self._mgr)
         stop_ns(self._ns)
 
-    def _load_mgr(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Controller.so'), '-i',
-            'ControllerInit', '-c', 'Controller'])
-        self.assertEqual(ret, 0)
-        stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Sensor.so'), '-i',
-            'SensorInit', '-c', 'Sensor'])
-        self.assertEqual(ret, 0)
-        stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so'), '-i',
-            'MotorInit', '-c', 'Motor'])
-        self.assertEqual(ret, 0)
-
-    def test_success(self):
+    def test_create(self):
         stdout, stderr, ret = call_process(['./rtcomp',
-            '/localhost/local.host_cxt/manager.mgr', '-c',
-            '/localhost/local.host_cxt/Controller0.rtc', '-p',
-            '/localhost/local.host_cxt/Sensor0.rtc:in', '-p',
-            '/localhost/local.host_cxt/Motor0.rtc:out'])
+            '/localhost/local.host_cxt/manager.mgr',])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         self._assert_comp_exists('CompositeRTC.rtc')
+        self._assert_comp_is_composite('CompositeRTC.rtc')
 
-    def test_set_name(self):
+    def test_create_with_name(self):
         stdout, stderr, ret = call_process(['./rtcomp',
-            '/localhost/local.host_cxt/manager.mgr', '-c',
-            '/localhost/local.host_cxt/Controller0.rtc', '-p',
-            '/localhost/local.host_cxt/Sensor0.rtc:in', '-p',
-            '/localhost/local.host_cxt/Motor0.rtc:out', '-n',
-            'Blurgle'])
+            '/localhost/local.host_cxt/manager.mgr:MrComponent',])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
-        self._assert_comp_exists('Blurgle.rtc')
+        self._assert_comp_exists('MrComponent.rtc')
+        self._assert_comp_is_composite('MrComponent.rtc')
+
+    def test_create_with_members(self):
+        stdout, stderr, ret = call_process(['./rtcomp',
+            '/localhost/local.host_cxt/manager.mgr:MrComponent',
+            '-a', '/localhost/local.host_cxt/MP0.rtc'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._assert_comp_exists('MrComponent.rtc')
+        self._assert_comp_has_member('MrComponent.rtc', 'MP0')
+
+    def test_create_with_members_and_one_port(self):
+        stdout, stderr, ret = call_process(['./rtcomp',
+            '/localhost/local.host_cxt/manager.mgr:MrComponent',
+            '-a', '/localhost/local.host_cxt/MP0.rtc:in'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._assert_comp_exists('MrComponent.rtc')
+        self._assert_comp_has_member('MrComponent.rtc', 'MP0')
+        self._assert_comp_exports_port('MrComponent.rtc', 'MP0.in')
+
+    def test_create_with_members_and_ports(self):
+        stdout, stderr, ret = call_process(['./rtcomp',
+            '/localhost/local.host_cxt/manager.mgr:MrComponent',
+            '-a', '/localhost/local.host_cxt/MP0.rtc:in,out'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._assert_comp_exists('MrComponent.rtc')
+        self._assert_comp_has_member('MrComponent.rtc', 'MP0')
+        self._assert_comp_exports_port('MrComponent.rtc', 'MP0.in')
+        self._assert_comp_exports_port('MrComponent.rtc', 'MP0.out')
+
+    def test_add_more_members(self):
+        call_process(['./rtcomp',
+            '/localhost/local.host_cxt/manager.mgr:MrComponent',
+            '-a', '/localhost/local.host_cxt/MP0.rtc:in,out'])
+        stdout, stderr, ret = call_process(['./rtcomp',
+            '/localhost/local.host_cxt/MrComponent.rtc',
+            '-a', '/localhost/local.host_cxt/Std0.rtc'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._assert_comp_exists('MrComponent.rtc')
+        self._assert_comp_has_member('MrComponent.rtc', 'MP0')
+        self._assert_comp_has_member('MrComponent.rtc', 'Std0')
+
+    def test_add_more_ports(self):
+        call_process(['./rtcomp',
+            '/localhost/local.host_cxt/manager.mgr:MrComponent',
+            '-a', '/localhost/local.host_cxt/MP0.rtc:in'])
+        stdout, stderr, ret = call_process(['./rtcomp',
+            '/localhost/local.host_cxt/MrComponent.rtc',
+            '-a', '/localhost/local.host_cxt/MP0.rtc:out'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._assert_comp_exists('MrComponent.rtc')
+        self._assert_comp_has_member('MrComponent.rtc', 'MP0')
+        self._assert_comp_exports_port('MrComponent.rtc', 'MP0.in')
+        self._assert_comp_exports_port('MrComponent.rtc', 'MP0.out')
+
+    def test_remove_ports(self):
+        call_process(['./rtcomp',
+            '/localhost/local.host_cxt/manager.mgr:MrComponent',
+            '-a', '/localhost/local.host_cxt/MP0.rtc:in,out'])
+        stdout, stderr, ret = call_process(['./rtcomp',
+            '/localhost/local.host_cxt/MrComponent.rtc',
+            '-r', '/localhost/local.host_cxt/MP0.rtc:out'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._assert_comp_exists('MrComponent.rtc')
+        self._assert_comp_has_member('MrComponent.rtc', 'MP0')
+        self._assert_comp_exports_port('MrComponent.rtc', 'MP0.in')
+        self._assert_comp_not_exports_port('MrComponent.rtc', 'MP0.out')
+
+    def test_remove_all_ports(self):
+        call_process(['./rtcomp',
+            '/localhost/local.host_cxt/manager.mgr:MrComponent',
+            '-a', '/localhost/local.host_cxt/MP0.rtc:in,out'])
+        stdout, stderr, ret = call_process(['./rtcomp',
+            '/localhost/local.host_cxt/MrComponent.rtc',
+            '-r', '/localhost/local.host_cxt/MP0.rtc:in,out'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._assert_comp_exists('MrComponent.rtc')
+        self._assert_comp_has_member('MrComponent.rtc', 'MP0')
+        self._assert_comp_not_exports_port('MrComponent.rtc', 'MP0.in')
+        self._assert_comp_not_exports_port('MrComponent.rtc', 'MP0.out')
+
+    def test_remove_members(self):
+        call_process(['./rtcomp',
+            '/localhost/local.host_cxt/manager.mgr:MrComponent',
+            '-a', '/localhost/local.host_cxt/MP0.rtc:in,out',
+            '-a', '/localhost/local.host_cxt/Std0.rtc'])
+        stdout, stderr, ret = call_process(['./rtcomp',
+            '/localhost/local.host_cxt/MrComponent.rtc',
+            '-r', '/localhost/local.host_cxt/Std0.rtc'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._assert_comp_exists('MrComponent.rtc')
+        self._assert_comp_has_member('MrComponent.rtc', 'MP0')
+        self._assert_comp_not_has_member('MrComponent.rtc', 'Std0')
+
+    def test_remove_all_members(self):
+        call_process(['./rtcomp',
+            '/localhost/local.host_cxt/manager.mgr:MrComponent',
+            '-a', '/localhost/local.host_cxt/MP0.rtc:in,out',
+            '-a', '/localhost/local.host_cxt/Std0.rtc'])
+        stdout, stderr, ret = call_process(['./rtcomp',
+            '/localhost/local.host_cxt/MrComponent.rtc',
+            '-r', '/localhost/local.host_cxt/MP0.rtc',
+            '-r', '/localhost/local.host_cxt/Std0.rtc'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+        self._assert_comp_exists('MrComponent.rtc')
+        self._assert_comp_not_has_member('MrComponent.rtc', 'MP0')
+        self._assert_comp_not_has_member('MrComponent.rtc', 'Std0')
 
     def _assert_comp_exists(self, name):
         wait_for_comp(name)
@@ -516,6 +624,53 @@ class rtcompTests(unittest.TestCase):
         self.assertEqual(stdout, name)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
+
+    def _assert_comp_is_composite(self, comp):
+        p = ['/', 'localhost', 'local.host_cxt', comp]
+        t = rtctree.tree.RTCTree(paths=p)
+        c = t.get_node(p)
+        self.assertNotEqual(c, None)
+        self.assert_(c.is_composite)
+
+    def _assert_comp_has_member(self, comp, member):
+        p = ['/', 'localhost', 'local.host_cxt', comp]
+        t = rtctree.tree.RTCTree(paths=p)
+        c = t.get_node(p)
+        self.assertNotEqual(c, None)
+        has_member = False
+        for m in c.members[c.organisations[0].org_id]:
+            if m.get_component_profile().instance_name == member:
+                has_member = True
+                break
+        self.assert_(has_member)
+
+    def _assert_comp_not_has_member(self, comp, member):
+        p = ['/', 'localhost', 'local.host_cxt', comp]
+        t = rtctree.tree.RTCTree(paths=p)
+        c = t.get_node(p)
+        self.assertNotEqual(c, None)
+        has_member = False
+        for m in c.members[c.organisations[0].org_id]:
+            if m.get_component_profile().instance_name == member:
+                has_member = True
+                break
+        self.assert_(not has_member)
+
+    def _assert_comp_exports_port(self, comp, port):
+        p = ['/', 'localhost', 'local.host_cxt', comp]
+        t = rtctree.tree.RTCTree(paths=p)
+        c = t.get_node(p)
+        self.assertNotEqual(c, None)
+        ports = c.conf_sets['default'].data['exported_ports'].split(',')
+        self.assert_(port in ports)
+
+    def _assert_comp_not_exports_port(self, comp, port):
+        p = ['/', 'localhost', 'local.host_cxt', comp]
+        t = rtctree.tree.RTCTree(paths=p)
+        c = t.get_node(p)
+        self.assertNotEqual(c, None)
+        ports = c.conf_sets['default'].data['exported_ports'].split(',')
+        self.assert_(port not in ports)
 
 
 def rtcomp_suite():
@@ -3324,4 +3479,5 @@ if __name__ == '__main__':
         COMP_LIB_PATH = sys.argv[1]
         sys.argv = [sys.argv[0]] + sys.argv[2:]
     unittest.main()
+    #unittest.TextTestRunner().run(suite())
 

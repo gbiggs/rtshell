@@ -17,21 +17,23 @@ rtcomp [options] <manager[:name]|composite component path>
 ====
 
 実行している複数のコンポーネントを一つのコンポジットコンポーネントとして
-構成し、選択されたポートを外部にエクスポートします。Execution context
-も選択することが可能です。新しいコンポジットコンポーネントを作るか既存の
-コンポジットコンポーネントを編集することができます。既存のコンポジットコ
-ンポーネントに新しいメンバーを追加することまたはメンマーを消すことができ
-ます。エクスポートされているポートの変更ができます。
+構成し、選択されたポートを外部に公開します。Execution contextも選択する
+ことが可能です。また、新しいコンポジットコンポーネントを作成したり、既存
+のコンポジットコンポーネントを編集することが可能です。
+さらに、既存のコンポジットコンポーネントに新しいメンバーを追加、またはメ
+ンバーを削除することができます。
+公開されているポートの変更も可能です。
 
-必要なオプションは既存のコンポジットコンポーネのパスまたはマネージャのパ
-スです。マネージャーを指定する場合、新しいコンポジットコンポーネントを作
-ります。名前を指定する場合はマネージャのパスにコロンと名前を追加すること
-指定できます。名前が指定されていない場合はデフォルトが選択されます。
-`例`_ に参照してください。
+オプションには既存のコンポジットコンポーネントのパスまたはマネージャのパ
+スが必要です。マネージャを指定した場合、新しいコンポジットコンポーネント
+を作成します。コンポジットコンポーネントの名前を指定する場合はマネージャ
+のパスにコロンと名前を追加することで指定可能です。名前が指定されていない
+場合はデフォルトが選択されます。
+`例`_ を参照してください。
 
-追加する（-a）または消す（-r）コンポーネントを指定する場合はエクスポート
-または隠すポート名はコンポーネントのパスにカンマで区切ったリストとして指
-定してください。 `例`_ に参照してください。
+コンポーネントを追加（-a）または削除（-r）する場合、公開または非公開する
+ポートはコンポーネントのパスにカンマで区切ったリストとして指定してくださ
+い。 `例`_ を参照してください。
 
 オプション
 ==========
@@ -39,15 +41,15 @@ rtcomp [options] <manager[:name]|composite component path>
 -a ADD, --add=ADD
   コンポジットコンポーネントに含むコンポーネントとポートを指定する。
   ポート名はカンマで区切ったリストとしてパスに追加する。
-  このオプションは複数つかえる。
+  このオプションは複数指定可能。
 
 -o OPTIONS, --options=OPTIONS
-  コンポーネントを作る時の追加オプション。
+  コンポーネント作成時の追加オプション。
 
 -r REMOVE, --remove=REMOVE
-  コンポジットコンポーネントから消すコンポーネントやポートを指定する。
+  コンポジットコンポーネントから削除するコンポーネントやポートを指定する。
   ポート名はカンマで区切ったリストとしてパスに追加する。
-  このオプションは複数つかえる。
+  このオプションは複数指定可能。
 
 -t TYPE, --type=TYPE
   Execution contextのタイプ。[デフォルト: PeriodicECSharedComposite]
@@ -65,50 +67,50 @@ rtcomp [options] <manager[:name]|composite component path>
   /localhost/Motor0.rtc:out -a /localhost/Controller0.rtc:in,out
 
 ``Controller0.rtc`` の ``in`` というポートと ``Motor0.rtc`` の ``out`` という
-ポートをエクスポートして ``Motor0.rtc`` と ``Controller0.rtc`` によってコン
-ポジットコンポーネントを作ります。コンポジットコンポーネントのインスタ
-ンス名は ``MotorUnit`` になります。
+ポートを公開して ``Motor0.rtc`` と ``Controller0.rtc`` によってコンポジットコ
+ンポーネントを作成します。コンポジットコンポーネントのインスタンス名は
+``MotorUnit`` になります。
 
 ::
 
   $ rtcomp /localhost/MotorUnit.rtc -a /localhost/Sensor0.rtc:out
 
-既存の ``MotorUnit.rtc`` コンポジットコンポジットを編集して、
-``Sensor0.rtc`` の ``out`` ポートをエクスポートして ``Sensor0.rtc`` を
+既存の ``MotorUnit.rtc`` コンポジットコンポーネントを編集し、
+``Sensor0.rtc`` の ``out`` ポートを公開して ``Sensor0.rtc`` を
 コンポジットコンポーネントに追加します。
 
 ::
 
   $ rtcomp /localhost/MotorUnit.rtc -a /localhost/Sensor0.rtc:in
 
-すでに ``Sensor0.rtc`` がメンバーとして登録された既存の ``MotorUnit.rtc``
-コンポジットコンポジットを編集して、 ``Sensor0.rtc`` の ``in`` ポートを
-エクスポートします。
+すでに ``Sensor0.rtc`` がメンバーとして登録されている既存の ``MotorUnit.rtc``
+コンポジットコンポーネントを編集し、 ``Sensor0.rtc`` の ``in`` ポートを公開
+します。
 
 ::
 
   $ rtcomp /localhost/MotorUnit.rtc -r /localhost/Sensor0.rtc:out
 
-すでに ``Sensor0.rtc`` がメンバーとして登録された既存の ``MotorUnit.rtc``
-コンポジットコンポジットを編集して、 ``Sensor0.rtc`` の ``out`` ポートを
-隠します。
+すでに ``Sensor0.rtc`` がメンバーとして登録されている既存の ``MotorUnit.rtc``
+コンポジットコンポーネントを編集し、 ``Sensor0.rtc`` の ``out`` ポートを非公
+開にします。
 
 ::
 
   $ rtcomp /localhost/MotorUnit.rtc -r /localhost/Controller0.rtc:in,out
 
-すでに ``Controller0.rtc`` がメンバーとして登録された既存の ``MotorUnit.rtc``
-コンポジットコンポジットを編集して、 ``Controller0.rtc`` の ``in`` と
-``out`` ポートを隠します。
+すでに ``Controller0.rtc`` がメンバーとして登録されている既存の ``MotorUnit.rtc``
+コンポジットコンポーネントを編集し、 ``Controller0.rtc`` の ``in`` と ``out``
+ポートを非公開にします。
 
 ::
 
   $ rtcomp /localhost/MotorUnit.rtc -r /localhost/Controller0.rtc -r
   /localhost/Motor0.rtc
 
-すでに ``Controller0.rtc`` と ``Motor0.rtc`` がメンバーとして登録された
-既存の ``MotorUnit.rtc`` コンポジットコンポジットを編集して、
-``Controller0.rtc`` と ``Motor0.rtc`` を消します。
+すでに ``Controller0.rtc`` と ``Motor0.rtc`` がメンバーとして登録されている
+既存の ``MotorUnit.rtc`` コンポジットコンポーネントを編集し、 ``Controller0.rtc``
+と ``Motor0.rtc`` を削除します。
 
 
 参照

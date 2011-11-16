@@ -166,6 +166,7 @@ Changelog
 - Changed all os.sep occurrences to '/' for consistency with URLs.
 - New command: rtvlog (Display RT Component log events).
 - rtact/rtdeact/rtreset: Allow changing multiple components at once.
+- rtcomp: Support managing compositions of remote components.
 - rtcon: Support making connections involving three or more ports.
 - rtdis: Support removing connections involving three or more ports.
 - rtlog: Added end pointer to simpkl log format to speed up searches.

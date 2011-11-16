@@ -3479,5 +3479,5 @@ if __name__ == '__main__':
         COMP_LIB_PATH = sys.argv[1]
         sys.argv = [sys.argv[0]] + sys.argv[2:]
     unittest.main()
-    #unittest.TextTestRunner().run(suite())
+    #unittest.TextTestRunner().run(rtcomp_suite())
 

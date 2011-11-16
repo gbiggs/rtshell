@@ -317,7 +317,7 @@ Manage composite components.'''
             'after the component name, separated by a colon.')
     parser.add_option('-o', '--options', dest='options', action='store',
             type='string', default='', help='Extra options to pass to the '\
-            'component on creation. Must begin with an "&"')
+            'component on creation.')
     parser.add_option('-r', '--remove', dest='remove', action='append',
             type='string', default=[], help='A component or ports to remove '
             'from the composition.')

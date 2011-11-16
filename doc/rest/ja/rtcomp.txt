@@ -42,7 +42,7 @@ rtcomp [options] <manager[:name]|composite component path>
   このオプションは複数つかえる。
 
 -o OPTIONS, --options=OPTIONS
-  コンポーネントを作る時の追加オプション。「&」で始めてください。
+  コンポーネントを作る時の追加オプション。
 
 -r REMOVE, --remove=REMOVE
   コンポジットコンポーネントから消すコンポーネントやポートを指定する。

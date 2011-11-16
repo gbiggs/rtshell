@@ -550,7 +550,14 @@ class BadMgrAddressError(RtShellError):
 class FailedToNarrowError(RtShellError):
     '''Failed to narrow a CORBA object reference.'''
     def __str__(self):
-        return 'Failed to narrow CORBA object reference.'''
+        return 'Failed to narrow CORBA object reference.'
+
+
+class CannotRemoveFromNewCompositionError(RtShellError):
+    '''Cannot remove components/ports from a new composition.'''
+    def __str__(self):
+        return 'Cannot remove components/ports from a new composition.'
+
 
 # vim: tw=79
 

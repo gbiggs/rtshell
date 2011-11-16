@@ -148,7 +148,7 @@ def find_composite_comp(tree, member, inst_name):
 def format_composite(comp, tree, start_indent=0, use_colour=True, long=0):
     result = []
     indent = start_indent
-    for o in comp.orgs:
+    for o in comp.organisations:
         if not o.sdo_id:
             sdo_id = 'Unknown'
         else:
@@ -301,16 +301,20 @@ def format_component(comp, tree, use_colour=True, long=0):
                                          item[1]))
 
     if comp.properties:
-        result.append('{0}Extra properties:'.format(''.ljust(indent)))
-        indent += 2
-        extra_props = comp.properties
-        keys = extra_props.keys()
-        keys.sort()
-        pad_length = max([len(key) for key in keys]) + 2
-        for key in keys:
-            result.append('{0}{1}{2}'.format(''.ljust(indent),
-                                             key.ljust(pad_length),
-                                             extra_props[key]))
+        if long > 1:
+            result.append('{0}Extra properties:'.format(''.ljust(indent)))
+            indent += 2
+            extra_props = comp.properties
+            keys = extra_props.keys()
+            keys.sort()
+            pad_length = max([len(key) for key in keys]) + 2
+            for key in keys:
+                result.append('{0}{1}{2}'.format(''.ljust(indent),
+                                                 key.ljust(pad_length),
+                                                 extra_props[key]))
+        else:
+            result.append('{0}{1}'.format('+'.rjust(indent),
+                'Extra properties'))
         indent -= 2
 
     if comp.is_composite:

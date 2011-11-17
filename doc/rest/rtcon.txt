@@ -29,6 +29,29 @@ For service ports, the valid properties include::
 
   - port.port_type
 
+When connecting data ports, the properties below may also be used. Some
+properties depend on other properties, and may not have an effect if
+their dependencies are not set appropriately.
+
+========================================= ============================ ==========
+Property                                  Value                        Dependency
+========================================= ============================ ==========
+dataport.inport.buffer.length             <integer>
+dataport.inport.buffer.read.timeout       <float> in seconds
+dataport.inport.buffer.read.empty_policy  readback, do_nothing, block
+dataport.inport.buffer.write.timeout      <float> in seconds
+dataport.inport.buffer.write.full_policy  overwrite, do_nothing, block
+dataport.outport.buffer.length            <integer>
+dataport.outport.buffer.read.timeout      <float> in seconds
+dataport.outport.buffer.read.empty_policy readback, do_nothing, block
+dataport.outport.buffer.write.timeout     <float> in seconds
+dataport.outport.buffer.write.full_policy overwrite, do_nothing, block
+dataport.subscription_type                flush, new, periodic         dataport.dataflow_type is push
+dataport.publisher.push_policy            all, fifo, skip, new         dataport.subscription_type is not flush
+dataport.push_rate                        <float> in Hz                dataport.subscription_type is periodic
+dataport.publisher.skip_count             <integer>                    dataport.publisher.push_policy is skip
+========================================= ============================ ==========
+
 Other properties may also be valid, depending on your OpenRTM
 implementation.
 

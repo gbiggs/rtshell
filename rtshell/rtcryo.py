@@ -39,6 +39,29 @@ import option_store
 import rtshell
 
 
+def clean_props(props):
+    '''Clean properties of dangerous values and wrong data types.
+
+    Make sure the properties don't have IORs or similar in them, because
+    they will confuse the notify_connect calls.
+
+    Make sure that all keys are not unicode.
+
+    '''
+    new_props = {}
+    for p in props:
+        if p == 'dataport.corba_cdr.inport_ior':
+            continue
+        if p == 'dataport.corba_cdr.inport_ref':
+            continue
+        if p == 'dataport.corba_cdr.outport_ior':
+            continue
+        if p == 'dataport.corba_cdr.outport_ref':
+            continue
+        new_props[str(p)] = str(props[p])
+    return new_props
+
+
 def make_comp_id(comp):
     return 'RTC:{0}:{1}:{2}:{3}'.format(comp.vendor, comp.category,
                                         comp.type_name, comp.version)
@@ -98,6 +121,7 @@ def find_unique_connectors(tree, components):
                         subscription_type=conn.properties['dataport.subscription_type'],
                         source_data_port=source_port,
                         target_data_port=dest_port)
+                rts_conn.properties = clean_props(conn.properties)
                 data_connectors.append(rts_conn)
 
         for sp in comp.connected_svcports:
@@ -128,6 +152,7 @@ def find_unique_connectors(tree, components):
                         connector_id=conn.id, name=conn.name,
                         source_service_port=source_port,
                         target_service_port=dest_port)
+                rts_conn.properties = clean_props(conn.properties)
                 svc_connectors.append(rts_conn)
     return data_connectors, svc_connectors
 

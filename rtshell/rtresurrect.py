@@ -51,6 +51,29 @@ def get_data_conn_props(conn):
             'dataport.data_type': str(conn.data_type)}
 
 
+def clean_props(props):
+    '''Clean properties of dangerous values and wrong data types.
+
+    Make sure the properties don't have IORs or similar in them, because
+    they will confuse the notify_connect calls.
+
+    Make sure that all keys are not unicode.
+
+    '''
+    new_props = {}
+    for p in props:
+        if p == 'dataport.corba_cdr.inport_ior':
+            continue
+        if p == 'dataport.corba_cdr.inport_ref':
+            continue
+        if p == 'dataport.corba_cdr.outport_ior':
+            continue
+        if p == 'dataport.corba_cdr.outport_ref':
+            continue
+        new_props[str(p)] = str(props[p])
+    return new_props
+
+
 def data_connection_actions(rtsprofile):
     # The ports on those components in any required connections must also be
     # present.
@@ -74,6 +97,8 @@ def data_connection_actions(rtsprofile):
         checks.append(actions.CheckForPortAct(dest_path, dest_port,
             callbacks=[actions.RequiredActionCB()]))
         props = get_data_conn_props(conn)
+        props.update(conn.properties)
+        props = clean_props(props)
         make_connections.append(actions.ConnectPortsAct(source_path,
             source_port, dest_path, dest_port, str(conn.name),
             str(conn.connector_id), props,
@@ -94,6 +119,8 @@ def data_connection_actions(rtsprofile):
         if dest_port.startswith(prefix):
             dest_port = dest_port[len(prefix):]
         props = get_data_conn_props(conn)
+        props.update(conn.properties)
+        props = clean_props(props)
         make_connections.append(actions.ConnectPortsAct(source_path,
             source_port, dest_path, dest_port, str(conn.name),
             str(conn.connector_id), props))

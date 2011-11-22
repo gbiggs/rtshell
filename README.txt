@@ -161,6 +161,7 @@ Changelog
 4.0
 ---
 
+- Fixed saving and restoring connection properties.
 - Fixed disabling output of colour codes on Windows
 - Adapt to OpenRTM's new data type specification method.
 - Changed all os.sep occurrences to '/' for consistency with URLs.

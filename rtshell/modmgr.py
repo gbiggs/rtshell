@@ -227,7 +227,8 @@ def _replace_time(expr):
 
 def _find_module_names(expr):
     '''Finds all potential module names in an expression.'''
-    return re.findall(r'(?P<mod>[a-zA-Z][\w.]*)+\.[a-zA-Z]', expr)
+    return [x[:-1] for x in re.findall(r'(?P<mod>[a-zA-Z][\w.]*\.)+[a-zA-Z]',
+        expr)]
 
 
 def _find_object_name(expr):

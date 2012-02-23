@@ -18,6 +18,9 @@ Built-in formatters for rtprint.
 
 '''
 
+import inspect
+import rts_exceptions
+
 
 ###############################################################################
 ## Python source formatter
@@ -41,6 +44,7 @@ def import_formatter(form, modmgr):
 
     '''
     # Special case for internal formatters: replace 'rtshell' with 'fmt'
+    form_rpl = form
     if form.startswith('rtshell.'):
         form_rpl = 'fmt.' + form[8:]
     try:

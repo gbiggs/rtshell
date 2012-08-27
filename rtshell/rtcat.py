@@ -183,7 +183,7 @@ def format_composite(comp, tree, start_indent=0, use_colour=True, long=0):
 def format_comp_member(comp, tree, start_indent=0, use_colour=True, long=0):
     result = []
     indent = start_indent
-    for po in comp.parent_orgs:
+    for po in comp.parent_organisations:
         if not po.sdo_id:
             sdo_id = 'Unknown'
         else:

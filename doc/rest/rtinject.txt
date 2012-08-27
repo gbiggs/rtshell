@@ -66,8 +66,7 @@ Inject the first value received at stdin into the ``in`` port of
 
 ::
 
-  $ rtinject /localhost/ConsoleOut0.rtc:in -c
-    'RTC.TimedLong({time}, 42)'
+  $ rtinject /localhost/ConsoleOut0.rtc:in -c 'RTC.TimedLong({time}, 42)'
 
 Inject the constant ``42`` with the current system time into the ``in``
 port of ``ConsoleOut0.rtc``. Note the quotes used to protect the Python
@@ -75,8 +74,7 @@ expression.
 
 ::
 
-  $ rtinject /localhost/ConsoleOut0.rtc:in -c
-    'RTC.TimedLong(RTC.Time(1, 0), 42)'
+  $ rtinject /localhost/ConsoleOut0.rtc:in -c 'RTC.TimedLong(RTC.Time(1, 0), 42)'
 
 Inject the constant ``42`` with a timestamp of 1 second into the ``in``
 port of ``ConsoleOut0.rtc``.
@@ -90,16 +88,14 @@ Inject the first five values received at stdin into the ``in`` port of
 
 ::
 
-  $ rtinject /localhost/ConsoleOut0.rtc:in -n 5 -c
-    'RTC.TimedLong({time}, 42)'
+  $ rtinject /localhost/ConsoleOut0.rtc:in -n 5 -c 'RTC.TimedLong({time}, 42)'
 
 Inject the constant ``42`` with the current system time into the ``in``
 port of ``ConsoleOut0.rtc`` five times.
 
 ::
 
-  $ rtinject /localhost/ConsoleOut0.rtc:in -t 5 -r 10 -c
-    'RTC.TimedLong({time}, 42)'
+  $ rtinject /localhost/ConsoleOut0.rtc:in -t 5 -r 10 -c 'RTC.TimedLong({time}, 42)'
 
 Inject the constant ``42`` with the current system time into the ``in``
 port of ``ConsoleOut0.rtc`` at 10Hz for five seconds.
@@ -114,8 +110,7 @@ once. The data type is specified in a Python module in the
 
 ::
 
-  $ rtinject /localhost/MyComp0.rtc:in -p /usr/local/mods
-    -c 'MyData.MyVal(84)'
+  $ rtinject /localhost/MyComp0.rtc:in -p /usr/local/mods -c 'MyData.MyVal(84)'
 
 Inject the constant ``MyData.MyVal(84)`` ``in`` port of ``MyComp0.rtc``
 once. The data type is specified in a Python module that is not in the
@@ -123,8 +118,7 @@ once. The data type is specified in a Python module that is not in the
 
 ::
 
-  $ rtinject /localhost/MyComp0.rtc:in -p /usr/local/mods -m mymod
-    -c 'MyData.MyVal(84)'
+  $ rtinject /localhost/MyComp0.rtc:in -p /usr/local/mods -m mymod -c 'MyData.MyVal(84)'
 
 Inject the constant ``MyData.MyVal(84)`` ``in`` port of ``MyComp0.rtc``
 once. The data type is specified in the ``mymod`` Python module, which

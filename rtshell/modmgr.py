@@ -115,7 +115,7 @@ class ModuleMgr(object):
                 # Search RTC last to allow user types to override RTC types
                 continue
             types = [member for member in inspect.getmembers(m.mod,
-                    inspect.isclass) if member[0] == name]
+                    inspect.isclass) if member[0] == name or "IDL:"+self._mods.keys()[0]+"/"+member[0]+":1.0" == name]
             if len(types) == 0:
                 continue
             elif len(types) != 1:

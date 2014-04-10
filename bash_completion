@@ -107,7 +107,7 @@ _rtsbc_rtopts()
 
     # If there is an = then don't add a space
     if [[ ${complist} == *= ]] ; then
-        compopt -o nospace
+        @COMPOPT_NOSPACE@
     fi
 
     COMPREPLY=(${complist})
@@ -122,7 +122,7 @@ _rtsbc_rtopts()
 # Receives the currently-being-entered word.
 _rtsbc_rtobj()
 {
-    local objs obj target_dir target_abs target_objs
+    local objs obj target_dir target_abs target_objs nospace
 
     target_objs=""
 
@@ -140,15 +140,15 @@ _rtsbc_rtobj()
         target_objs="${target_objs} ${target_dir}${obj}"
     done
 
-    target_objs=($(compgen -W "${target_objs}" -- $1))
+    target_objs=($(compgen -o nospace -W "${target_objs}" -- $1))
 
     if [[ ${#target_objs[@]} == 1 ]] ; then
         # If the completion target is a directory or port, no space
         if [[ ${target_objs[0]} == */ ]] || [[ ${target_objs[0]} == *:  ]] ; then
-                    compopt -o nospace
+            @COMPOPT_NOSPACE@
         elif [[  $2 == port ]] ; then
             target_objs[0]="${target_objs[0]}:"
-            compopt -o nospace
+            @COMPOPT_NOSPACE@
         fi
     fi
 
@@ -553,7 +553,7 @@ _rtsbc_rtlog()
     case "${prev}" in
         --filename|-f)
             COMPREPLY=($(compgen -f ${cur}))
-            compopt -o filenames
+            @COMPOPT_FILENAMES@
             return 0
             ;;
         --start|-s)
@@ -588,12 +588,12 @@ _rtsbc_rtlog()
             ;;
         --mod|-m)
             COMPREPLY=($(compgen -f ${cur}))
-            compopt -o filenames
+            @COMPOPT_FILENAMES@
             return 0
             ;;
         --path|-p)
             COMPREPLY=($(compgen -f ${cur}))
-            compopt -o filenames
+            @COMPOPT_FILENAMES@
             return 0
             ;;
     esac
@@ -626,7 +626,7 @@ _rtsbc_mgr_comp_load_cmd()
     then
         # No path yet; complete the file name
         COMPREPLY=($(compgen -f ${cur}))
-        compopt -o filenames
+        @COMPOPT_FILENAMES@
     fi
     return 0
 }
@@ -745,7 +745,7 @@ _rtsbc_rtcheck(){
     fi
 
     COMPREPLY=($(compgen -f ${cur}))
-    compopt -o filenames
+    @COMPOPT_FILENAMES@
 
     return 0
 }
@@ -765,12 +765,12 @@ _rtsbc_rtmod()
     case "${prev}" in
         --mod|-m)
             COMPREPLY=($(compgen -f ${cur}))
-            compopt -o filenames
+            @COMPOPT_FILENAMES@
             return 0
             ;;
         --path|-p)
             COMPREPLY=($(compgen -f ${cur}))
-            compopt -o filenames
+            @COMPOPT_FILENAMES@
             return 0
             ;;
     esac
@@ -809,28 +809,28 @@ _rtsbc_optsonly(){
     return 0
 }
 
-complete -F _rtsbc_rtls rtact
-complete -F _rtsbc_rtcheck rtcheck
-complete -F _rtsbc_rtcomp rtcomp
-complete -F _rtsbc_rtcon rtcon
-complete -F _rtsbc_rtconf rtconf
-complete -F _rtsbc_optsonly -A file rtcryo
-complete -F _rtsbc_rtcat rtcat
-complete -F _rtsbc_rtls rtcwd
-complete -F _rtsbc_rtls rtdeact
-complete -F _rtsbc_rtls rtdel
-complete -F _rtsbc_rtdis rtdis
-complete -F _rtsbc_rtls rtdoc
-complete -F _rtsbc_rtls rtexit
-complete -F _rtsbc_rtls rtfind
-complete -F _rtsbc_rtmod rtinject
-complete -F _rtsbc_rtlog rtlog
-complete -F _rtsbc_rtls rtls
-complete -F _rtsbc_rtmgr rtmgr
-complete -F _rtsbc_rtmod rtprint
-complete -F _rtsbc_rtls rtreset
-complete -F _rtsbc_optsonly -A file rtresurrect
-complete -F _rtsbc_optsonly -A file rtstart
-complete -F _rtsbc_optsonly -A file rtstop
-complete -F _rtsbc_optsonly -A file rtteardown
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtls rtact
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtcheck rtcheck
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtcomp rtcomp
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtcon rtcon
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtconf rtconf
+complete @COMPLETE_NOSPACE@ -F _rtsbc_optsonly -A file rtcryo
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtcat rtcat
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtls rtcwd
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtls rtdeact
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtls rtdel
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtdis rtdis
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtls rtdoc
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtls rtexit
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtls rtfind
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtmod rtinject
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtlog rtlog
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtls rtls
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtmgr rtmgr
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtmod rtprint
+complete @COMPLETE_NOSPACE@ -F _rtsbc_rtls rtreset
+complete @COMPLETE_NOSPACE@ -F _rtsbc_optsonly -A file rtresurrect
+complete @COMPLETE_NOSPACE@ -F _rtsbc_optsonly -A file rtstart
+complete @COMPLETE_NOSPACE@ -F _rtsbc_optsonly -A file rtstop
+complete @COMPLETE_NOSPACE@ -F _rtsbc_optsonly -A file rtteardown
 

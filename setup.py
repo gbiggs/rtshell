@@ -181,6 +181,28 @@ class InstallConfigure(install_data):
             with open(dest, 'a') as f:
                 f.writelines((cmd.format(dir=os.path.join(self.install_dir,
                     'share/rtshell')), '\n'))
+            self.config_bash_compl()
+
+    def config_bash_compl(self):
+        COMPOPT_NOSPACE = 'compopt -o nospace'
+        COMPOPT_FILENAME = 'compopt -o filenames'
+        COMPLETE_NOSPACE = '-o nospace'
+        compl_script = '{0}/bash_completion'.format(
+                os.path.join(self.install_dir, 'share/rtshell'))
+        if sys.platform == 'darwin':
+            replace = ['-e', 's/@COMPOPT_NOSPACE@/:/g', '-e',
+                    's/@COMPOPT_FILENAME@/:/g', '-e',
+                    's/@COMPLETE_NOSPACE@/{0}/g'.format(COMPLETE_NOSPACE)]
+        else:
+            replace = ['-e', "'s/@COMPOPT_NOSPACE@/{0}/g'".format(
+                COMPOPT_NOSPACE), '-e', "'s/@COMPOPT_FILENAME@/{0}/g'".format(
+                COMPOPT_FILENAME), '-e', "'s/@COMPLETE_NOSPACE@//g'"]
+        p = subprocess.Popen(['sed'] + replace + ['-i', '', compl_script],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+        stdout, stderr = p.communicate()
+        if p.returncode != 0:
+            print 'Failed to filter bash_completion.'
+            print stderr
 
 
 setup(name='rtshell',

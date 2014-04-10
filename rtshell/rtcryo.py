@@ -113,9 +113,14 @@ def find_unique_connectors(tree, components):
                         instance_name=dest_comp.instance_name, port_name=name)
                 dest_port.properties['COMPONENT_PATH_ID'] = \
                         dest_comp.full_path_str[1:]
+                # Check if the data type is known (see issue 13)
+                if 'dataport.data_type' in conn.properties:
+                    data_type = conn.properties['dataport.data_type']
+                else:
+                    data_type = dest_port.port_name
                 rts_conn = rtsprofile.port_connectors.DataPortConnector(
                         connector_id=conn.id, name=conn.name,
-                        data_type=conn.properties['dataport.data_type'],
+                        data_type=data_type,
                         interface_type=conn.properties['dataport.interface_type'],
                         data_flow_type=conn.properties['dataport.dataflow_type'],
                         subscription_type=conn.properties['dataport.subscription_type'],
@@ -138,6 +143,11 @@ def find_unique_connectors(tree, components):
                 # Get the list of ports this connection goes to
                 dest_ports = [name for name, p in conn.ports \
                                    if not comp.get_port_by_ref(p.object)]
+                if not dest_ports:
+                    # Skip ports with no or unknown connections
+                    # (Unknown connections cannot be preserved)
+                    # See issue 13
+                    continue
                 # Assume the first is the destination and find its component
                 path = rtctree.path.parse_path(dest_ports[0])
                 dest_comp = tree.get_node(path[0])

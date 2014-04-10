@@ -179,7 +179,7 @@ def parse_targets(targets):
                    to use a formatter.
 
     '''
-    regex = re.compile(r'^(?P<path>[:\-\w/.]+?)(?:\.(?P<name>\w+))?(?:#(?P<form>[\w.]+))?$')
+    regex = re.compile(r'^(?P<path>[:\-\w/.\(\)]+?)(?:\.(?P<name>\w+))?(?:#(?P<form>[\w.]+))?$')
     result = []
     for t in targets:
         m = regex.match(t)

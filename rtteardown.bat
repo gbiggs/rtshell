@@ -1,5 +1,5 @@
 @echo off
-rem Copyright (C) 2009-2011
+rem Copyright (C) 2009-2014
 rem     Geoffrey Biggs
 rem     RT-Synthesis Research Group
 rem     Intelligent Systems Research Institute,

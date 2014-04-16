@@ -148,6 +148,15 @@ Changelog
 - rtmgr：コマンドを複数回に使えるようにしました。
 - rtmgr：コマンドを指定された順番に実行するようにしました。
 
+3.0.1
+-----
+
+- Fixed #13: Error with unknown ports when saving systems using rtcryo.
+- Fixed #14/#15: Properly handle data types that include versions and IDL
+  paths in rtprint.
+- Fixed #16: Handle component instance names that include parantheses.
+
+
 3.0
 ---
 

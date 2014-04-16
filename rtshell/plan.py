@@ -2,7 +2,7 @@
 
 '''rtshell
 
-Copyright (C) 2009-2011
+Copyright (C) 2009-2014
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,

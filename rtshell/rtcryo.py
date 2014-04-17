@@ -103,6 +103,8 @@ def find_unique_connectors(tree, components):
                 # Get the list of ports this connection goes to
                 dest_ports = [name for name, p in conn.ports \
                                    if not comp.get_port_by_ref(p.object)]
+                if len(dest_ports) == 0:
+                    continue
                 # Assume the first is the destination and find its component
                 path = rtctree.path.parse_path(dest_ports[0])
                 dest_comp = tree.get_node(path[0])

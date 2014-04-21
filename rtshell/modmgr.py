@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
@@ -55,13 +55,24 @@ class Module(object):
 
     def _load_mod(self):
         '''Loads the module object.'''
+        mod_list = self._name.split('.')
+        self._mod = self._recursive_load(mod_list[0], mod_list[1:], None)
+        print 'Loaded module ' + str(self._mod)
+
+    def _recursive_load(self, head, rest, top_path):
+        '''Recurse through a dotted module path, loading each module.'''
         f = None
         try:
-            f, p, d = imp.find_module(self._name)
-            self._mod = imp.load_module(self._name, f, p, d)
+            f, p, d = imp.find_module(head, top_path)
+            mod = imp.load_module(head, f, p, d)
+            print 'Loaded parent module ' + str(mod)
         finally:
             if f:
                 f.close()
+        if not rest:
+            return mod
+        else:
+            return self._recursive_load(rest[0], rest[1:], mod.__path__)
 
 
 class AutoModule(Module):
@@ -168,7 +179,7 @@ class ModuleMgr(object):
             try:
                 self.load_mod(m + '__POA')
             except ImportError:
-                print >>sys.stderr, '{0}: Failed to import module {1}'.format(\
+                print >>sys.stderr, '{0}: Failed to import POA module {1}'.format(\
                         os.path.basename(sys.argv[0]), m + '__POA')
                 pass
 
@@ -198,7 +209,7 @@ class ModuleMgr(object):
                 self.load_mod(n + '__POA')
             except ImportError:
                 print >>sys.stderr, \
-                        '{0}: Warning: failed to import module {1}'.format(
+                        '{0}: Warning: failed to import POA module {1}'.format(
                                 os.path.basename(sys.argv[0]), n + '__POA')
                 continue
 

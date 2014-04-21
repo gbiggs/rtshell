@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
@@ -194,9 +194,9 @@ class InstallConfigure(install_data):
                     's/@COMPOPT_FILENAME@/:/g', '-e',
                     's/@COMPLETE_NOSPACE@/{0}/g'.format(COMPLETE_NOSPACE)]
         else:
-            replace = ['-e', "'s/@COMPOPT_NOSPACE@/{0}/g'".format(
-                COMPOPT_NOSPACE), '-e', "'s/@COMPOPT_FILENAME@/{0}/g'".format(
-                COMPOPT_FILENAME), '-e', "'s/@COMPLETE_NOSPACE@//g'"]
+            replace = ['-e', 's/@COMPOPT_NOSPACE@/{0}/g'.format(
+                COMPOPT_NOSPACE), '-e', 's/@COMPOPT_FILENAME@/{0}/g'.format(
+                COMPOPT_FILENAME), '-e', 's/@COMPLETE_NOSPACE@//g']
         p = subprocess.Popen(['sed'] + replace + ['-i', '', compl_script],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
         stdout, stderr = p.communicate()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python22
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
@@ -19,7 +19,7 @@ Create a command to change the current working directory environment variable.
 '''
 
 
-#!/usr/bin/env python
+#!/usr/bin/env python22
 
 import os
 import rtctree.tree

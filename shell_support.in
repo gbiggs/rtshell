@@ -8,9 +8,15 @@
 # Licensed under the Eclipse Public License -v 1.0 (EPL)
 # http://www.opensource.org/licenses/eclipse-1.0.txt
 
+if [ `uname` = "Darwin" ]; then
+   PYTHON_COMMAND=python
+elif [ `uname` = "Linux" ]; then
+   PYTHON_COMMAND=python2
+fi
+
 rtcwd()
 {
-   eval $(python2 -c "import sys; import rtshell.rtcwd; sys.exit(rtshell.rtcwd.main(['${1}']))")
+   eval $($PYTHON_COMMAND -c "import sys; import rtshell.rtcwd; sys.exit(rtshell.rtcwd.main(['${1}']))")
 }
 
 rtvis()

@@ -18,6 +18,7 @@ Implementation of the command to connect two ports.
 
 '''
 
+from __future__ import print_function
 
 import optparse
 import os
@@ -28,20 +29,20 @@ import rtctree.path
 import sys
 import traceback
 
-import path
-import rts_exceptions
+from rtshell import path
+from rtshell import rts_exceptions
 import rtshell
 
 
 def connect_ports(paths, options, tree=None):
-    cmd_paths, fps = zip(*paths)
+    cmd_paths, fps = list(zip(*paths))
     pathports = [rtctree.path.parse_path(fp) for fp in fps]
     for ii, p in enumerate(pathports):
         if not p[1]:
             raise rts_exceptions.NotAPortError(cmd_paths[ii])
         if not p[0][-1]:
             raise rts_exceptions.NotAPortError(cmd_paths[ii])
-    paths, ports = zip(*pathports)
+    paths, ports = list(zip(*pathports))
 
     if not tree:
         tree = rtctree.tree.RTCTree(paths=paths, filter=paths)
@@ -74,8 +75,8 @@ def main(argv=None, tree=None):
         if not getattr(parser.values, option.dest):
             setattr(parser.values, option.dest, {})
         if key in getattr(parser.values, option.dest):
-            print >>sys.stderr, '{0}: Warning: duplicate property: {1}'.format(
-                    sys.argv[0], option_value)
+            print('{0}: Warning: duplicate property: {1}'.format(sys.argv[0],
+                option_value), file=sys.stderr)
         getattr(parser.values, option.dest)[key] = value
 
     usage = '''Usage: %prog [options] <path 1> <path 2> [<path 3> ...]
@@ -98,8 +99,8 @@ Connect two or more ports.'''
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except optparse.OptionError, e:
-        print >>sys.stderr, 'OptionError:', e
+    except optparse.OptionError as e:
+        print('OptionError:', e, file=sys.stderr)
         return 1
 
     if not getattr(options, 'properties'):
@@ -107,17 +108,18 @@ Connect two or more ports.'''
 
     if not args:
         # If no paths given then can't do anything.
-        print >>sys.stderr, '{0}: No ports specified.'.format(
-                os.path.basename(sys.argv[0]))
+        print('{0}: No ports specified.'.format(os.path.basename(sys.argv[0])),
+                file=sys.stderr)
         return 1
     paths = [(p, path.cmd_path_to_full_path(p)) for p in args]
 
     try:
         connect_ports(paths, options, tree=tree)
-    except Exception, e:
+    except Exception as e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
+        print('{0}: {1}'.format(os.path.basename(sys.argv[0]), e),
+                file=sys.stderr)
         return 1
     return 0
 

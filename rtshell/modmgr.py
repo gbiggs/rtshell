@@ -18,6 +18,7 @@ Objects for managing dynamically-loaded modules and evaluating strings.
 
 '''
 
+from __future__ import print_function
 
 import imp
 import inspect
@@ -28,7 +29,7 @@ import RTC
 import sys
 import time
 
-import rts_exceptions
+from rtshell import rts_exceptions
 
 
 ###############################################################################
@@ -57,7 +58,7 @@ class Module(object):
         '''Loads the module object.'''
         mod_list = self._name.split('.')
         self._mod = self._recursive_load(mod_list[0], mod_list[1:], None)
-        print 'Loaded module ' + str(self._mod)
+        print('Loaded module ' + str(self._mod))
 
     def _recursive_load(self, head, rest, top_path):
         '''Recurse through a dotted module path, loading each module.'''
@@ -65,7 +66,7 @@ class Module(object):
         try:
             f, p, d = imp.find_module(head, top_path)
             mod = imp.load_module(head, f, p, d)
-            print 'Loaded parent module ' + str(mod)
+            print('Loaded parent module ' + str(mod))
         finally:
             if f:
                 f.close()
@@ -95,7 +96,7 @@ class ModuleMgr(object):
     def _add_paths(self, paths=[]):
         for p in paths:
             if self._verb:
-                print >>sys.stderr, 'Adding {0} to PYTHONPATH'.format(p)
+                print('Adding {0} to PYTHONPATH'.format(p), file=sys.stderr)
             sys.path.insert(0, p)
 
     def evaluate(self, expr):
@@ -121,12 +122,12 @@ class ModuleMgr(object):
         self._auto_import(name)
         # Strip the name down to the class
         name = _find_object_name(name)
-        for m in self._mods.values():
+        for m in list(self._mods.values()):
             if m.name == 'RTC':
                 # Search RTC last to allow user types to override RTC types
                 continue
             types = [member for member in inspect.getmembers(m.mod,
-                    inspect.isclass) if member[0] == name or "IDL:"+self._mods.keys()[0]+"/"+member[0]+":1.0" == name]
+                    inspect.isclass) if member[0] == name or "IDL:"+list(self._mods.keys())[0]+"/"+member[0]+":1.0" == name]
             if len(types) == 0:
                 continue
             elif len(types) != 1:
@@ -134,7 +135,7 @@ class ModuleMgr(object):
             else:
                 # Check for the POA module
                 if m.name != 'RTC':
-                    if not [other_m for other_m in self._mods.values() \
+                    if not [other_m for other_m in list(self._mods.values()) \
                             if other_m.name == m.name + '__POA']:
                         raise rts_exceptions.MissingPOAError(m.name)
                 if self._verb:
@@ -179,13 +180,14 @@ class ModuleMgr(object):
             try:
                 self.load_mod(m + '__POA')
             except ImportError:
-                print >>sys.stderr, '{0}: Failed to import POA module {1}'.format(\
-                        os.path.basename(sys.argv[0]), m + '__POA')
+                print('{0}: Failed to import POA module {1}'.format(\
+                        os.path.basename(sys.argv[0]), m + '__POA'),
+                        file=sys.stderr)
                 pass
 
     @property
     def loaded_mod_names(self):
-        return self._mods.keys()
+        return list(self._mods.keys())
 
     def _auto_import(self, expr):
         '''Tries to import all module names found in an expression.

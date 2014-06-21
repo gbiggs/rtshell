@@ -47,7 +47,7 @@ class C2(OpenRTM_aist.DataFlowComponentBase):
                 d = self._inport.read()
                 with open(self._df, 'a+') as f:
                     f.write('{0}\n'.format(d))
-                print d
+                print(d)
         except:
             traceback.print_exc()
             return RTC.RTC_ERROR

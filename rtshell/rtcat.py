@@ -18,6 +18,7 @@ Implementation of the command to display component information.
 
 '''
 
+from __future__ import print_function
 
 import optparse
 import os
@@ -30,8 +31,8 @@ import SDOPackage
 import sys
 import traceback
 
-import path
-import rts_exceptions
+from rtshell import path
+from rtshell import rts_exceptions
 import rtshell
 
 
@@ -49,7 +50,7 @@ def format_port(port, comp, start_indent=0, use_colour=True, long=0):
                                        name_string))
     if long > 0:
         indent += 2
-        keys = port.properties.keys()
+        keys = list(port.properties.keys())
         keys.sort()
         pad_length = max([len(key) for key in keys]) + 2
         for key in keys:
@@ -102,7 +103,7 @@ def format_port(port, comp, start_indent=0, use_colour=True, long=0):
                                     supported=use_colour)))
                 if long > 1:
                     indent += 2
-                    keys = [k for k in conn.properties.keys() \
+                    keys = [k for k in list(conn.properties.keys()) \
                             if not k.endswith('inport_ref') \
                             if not k.endswith('inport_ior')]
                     pad_length = max([len('Name')] + \
@@ -254,7 +255,7 @@ def format_ec(ec, start_indent=0, use_colour=True, long=0):
                 result.append('{0}{1}'.format('-'.rjust(indent),
                     'Extra properties'.ljust(padding)))
                 indent += 2
-                keys = ec.properties.keys()
+                keys = list(ec.properties.keys())
                 keys.sort()
                 pad_length = max([len(key) for key in keys]) + 2
                 for key in keys:
@@ -305,7 +306,7 @@ def format_component(comp, tree, use_colour=True, long=0):
             result.append('{0}Extra properties:'.format(''.ljust(indent)))
             indent += 2
             extra_props = comp.properties
-            keys = extra_props.keys()
+            keys = list(extra_props.keys())
             keys.sort()
             pad_length = max([len(key) for key in keys]) + 2
             for key in keys:
@@ -338,9 +339,9 @@ def format_manager(mgr, use_colour=True, long=0):
         if key in mgr.profile:
             dest.append('{0}: {1}'.format(title, mgr.profile[key]))
         else:
-            print >>sys.stderr, '{0}: Warning: "{1}" profile entry is \
+            print('{0}: Warning: "{1}" profile entry is \
 missing. Possible version conflict between rtshell and OpenRTM-aist.'.format(\
-                    sys.argv[0], key)
+                    sys.argv[0], key), file=sys.stderr)
 
     result = []
     add_profile_entry(result, 'Name', 'name')
@@ -442,29 +443,30 @@ Display information about a manager or component.'''
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except optparse.OptionError, e:
+    except optparse.OptionError as e:
         print >>sys.stderr, 'OptionError:', e
         return 1, []
 
     if not args:
         # If no path given then can't do anything.
-        print >>sys.stderr, '{0}: Cannot cat a directory.'.format(
-                os.path.basename(sys.argv[0]))
+        print('{0}: Cannot cat a directory.'.format(
+                os.path.basename(sys.argv[0])), file=sys.stderr)
         return 1, []
     elif len(args) == 1:
         cmd_path = args[0]
     else:
-        print >>sys.stderr, usage
+        print(usage, file=sys.stderr)
         return 1, []
     full_path = path.cmd_path_to_full_path(cmd_path)
 
     result = []
     try:
         result = cat_target(cmd_path, full_path, options, tree=tree)
-    except Exception, e:
+    except Exception as e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
+        print('{0}: {1}'.format(os.path.basename(sys.argv[0]), e),
+                file=sys.stderr)
         return 1, []
     return 0, result
 

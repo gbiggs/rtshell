@@ -26,8 +26,8 @@ import rtctree.tree
 import rtctree.utils
 import sys
 
-import gen_comp
-import rts_exceptions
+from rtshell import gen_comp
+from rtshell import rts_exceptions
 
 
 def find_comp_in_mgr(name, mgr):

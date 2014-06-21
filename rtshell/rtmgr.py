@@ -18,6 +18,7 @@ Implementation of the command for controlling managers.
 
 '''
 
+from __future__ import print_function
 
 import rtctree
 import rtctree.exceptions
@@ -35,9 +36,9 @@ import RTM
 import sys
 import traceback
 
+from rtshell import rts_exceptions
+from rtshell import path
 import rtshell
-import rts_exceptions
-import path
 
 
 class DirectManager(object):
@@ -56,7 +57,7 @@ class DirectManager(object):
             raise rts_exceptions.BadMgrAddressError
         try:
             self._mgr = self._obj._narrow(RTM.Manager)
-        except omniORB.CORBA.TRANSIENT, e:
+        except omniORB.CORBA.TRANSIENT as e:
             if e.args[0] == omniORB.TRANSIENT_ConnectFailed:
                 raise rts_exceptions.BadMgrAddressError
             else:
@@ -88,7 +89,7 @@ class DirectManager(object):
         try:
             if self._mgr.load_module(path, init_func) != RTC.RTC_OK:
                 raise rtctree.exceptions.FailedToLoadModuleError(path)
-        except omniORB.CORBA.UNKNOWN, e:
+        except omniORB.CORBA.UNKNOWN as e:
             if e.args[0] == UNKNOWN_UserException:
                 raise rtctree.exceptions.FailedToLoadModuleError(path,
                         'CORBA User Exception')
@@ -191,8 +192,8 @@ Create and remove components with a manager.'''
     options, args = parser.parse_args()
 
     if len(args) != 1:
-        print >>sys.stderr, '{0}: No manager specified.'.format(
-                os.path.basename(sys.argv[0]))
+        print('{0}: No manager specified.'.format(
+                os.path.basename(sys.argv[0])), file=sys.stderr)
         return 1
 
     try:
@@ -205,16 +206,17 @@ Create and remove components with a manager.'''
             tree, mgr = get_manager(args[0], full_path, tree)
 
         if not hasattr(options, 'cmds'):
-            print >>sys.stderr, '{0}: No commands specified.'.format(
-                    os.path.basename(sys.argv[0]))
+            print('{0}: No commands specified.'.format(
+                    os.path.basename(sys.argv[0])), file=sys.stderr)
             return 1
 
         for c in options.cmds:
             c[0](mgr, c[1])
-    except Exception, e:
+    except Exception as e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
+        print('{0}: {1}'.format(os.path.basename(sys.argv[0]), e),
+                file=sys.stderr)
         return 1
     return 0
 

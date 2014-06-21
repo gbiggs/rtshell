@@ -17,6 +17,7 @@ Implementation of the RT System visualisation command.
 
 '''
 
+from __future__ import print_function
 
 import optparse
 import os.path
@@ -127,8 +128,8 @@ Visualise RT Systems using dot files.'''
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except optparse.OptionError, e:
-        print >>sys.stderr, 'OptionError:', e
+    except optparse.OptionError as e:
+        print('OptionError:', e, file=sys.stderr)
         return 1
 
     if not args:
@@ -136,16 +137,17 @@ Visualise RT Systems using dot files.'''
     elif len(args) == 1:
         profile = args[0]
     else:
-        print >>sys.stderr, usage
+        print(usage, file=sys.stderr)
         return 1
 
     try:
         for l in visualise(profile=profile, xml=options.xml, tree=tree):
-            print l
-    except Exception, e:
+            print(l)
+    except Exception as e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
+        print('{0}: {1}'.format(os.path.basename(sys.argv[0]), e),
+                file=sys.stderr)
         return 1
     return 0
 

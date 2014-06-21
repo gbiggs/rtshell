@@ -18,6 +18,7 @@ Implementation of the command to manage component configuration.
 
 '''
 
+from __future__ import print_function
 
 import optparse
 import os
@@ -29,9 +30,9 @@ import rtctree.utils
 import sys
 import traceback
 
-import path
+from rtshell import path
+from rtshell import rts_exceptions
 import rtshell
-import rts_exceptions
 
 
 def is_hidden(name):
@@ -62,7 +63,7 @@ def format_conf_set(set_name, set, is_active, use_colour, long):
     result.append(title)
 
     if long:
-        params = set.data.keys()
+        params = list(set.data.keys())
         if params:
             params.sort()
             padding = len(max(params, key=len)) + 2
@@ -77,7 +78,7 @@ def format_conf_set(set_name, set, is_active, use_colour, long):
 
 def format_conf_sets(sets, active_set_name, all, use_colour, long):
     result = []
-    set_keys = [k for k in sets.keys() if not is_hidden(k) or all]
+    set_keys = [k for k in list(sets.keys()) if not is_hidden(k) or all]
     set_keys.sort()
     for set_name in set_keys:
         result += format_conf_set(set_name, sets[set_name],
@@ -186,8 +187,8 @@ Display and edit configuration parameters and sets.'''
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except optparse.OptionError, e:
-        print >>sys.stderr, 'OptionError:', e
+    except optparse.OptionError as e:
+        print('OptionError:', e, file=sys.stderr)
         return 1, []
 
     if not args:
@@ -214,7 +215,7 @@ Display and edit configuration parameters and sets.'''
                 param = args[0]
                 new_value = args[1]
             else:
-                print >>sys.stderr, usage
+                print(usage, file=sys.stderr)
                 return 1, []
             set_conf_value(param, new_value, cmd_path, full_path, options,
                     tree)
@@ -223,21 +224,22 @@ Display and edit configuration parameters and sets.'''
             if len(args) == 1:
                 param = args[0]
             else:
-                print >>sys.stderr, usage
+                print(usage, file=sys.stderr)
                 return 1, []
             result = get_conf_value(param, cmd_path, full_path, options, tree)
         elif cmd == 'act':
             if len(args) != 0 or options.set_name == '':
-                print >>sys.stderr, usage
+                print(usage, file=sys.stderr)
                 return 1, []
             activate_set(cmd_path, full_path, options, tree)
         else:
-            print >>sys.stderr, usage
+            print(usage, file=sys.stderr)
             return 1, []
-    except Exception, e:
+    except Exception as e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
+        print('{0}: {1}'.format(os.path.basename(sys.argv[0]), e),
+                file=sys.stderr)
         return 1, []
     return 0, result
 

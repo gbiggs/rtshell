@@ -24,7 +24,7 @@ import os
 import pickle
 import traceback
 
-import ilog
+from rtshell import ilog
 
 
 ###############################################################################

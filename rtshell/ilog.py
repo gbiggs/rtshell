@@ -18,6 +18,7 @@ Log interface.
 
 '''
 
+from __future__ import print_function
 
 import sys
 
@@ -172,11 +173,14 @@ class Log(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         d = self.read()
         if not d:
             raise StopIteration
         return d[0]
+
+    def next(self):
+        return self.__next__()
 
     def __str__(self):
         return 'Log interface object.'
@@ -361,5 +365,5 @@ class Log(object):
     def _vb_print(self, string):
         '''Print verbose information when self._vb is True.'''
         if self._vb:
-            print >>sys.stderr, string
+            print(string, file=sys.stderr)
 

@@ -27,7 +27,7 @@ from rtshell import rtfind
 if __name__ == '__main__':
     res, matches = rtfind.main()
     for m in matches:
-        print m
+        print(m)
     sys.exit(res)
 
 

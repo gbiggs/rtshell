@@ -18,6 +18,7 @@ Implementation of the command to list naming contexts.
 
 '''
 
+from __future__ import print_function
 
 import optparse
 import os
@@ -28,8 +29,8 @@ import rtctree.utils
 import sys
 import traceback
 
-import path
-import rts_exceptions
+from rtshell import path
+from rtshell import rts_exceptions
 import rtshell
 
 
@@ -328,8 +329,8 @@ List a name server, directory, manager or component.'''
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except optparse.OptionError, e:
-        print >>sys.stderr, 'OptionError:', e
+    except optparse.OptionError as e:
+        print('OptionError:', e, file=sys.stderr)
         return 1, []
 
     if not args:
@@ -337,17 +338,18 @@ List a name server, directory, manager or component.'''
     elif len(args) == 1:
         cmd_path = args[0]
     else:
-        print >>sys.stderr, usage
+        print(usage, file=sys.stderr)
         return 1, []
     full_path = path.cmd_path_to_full_path(cmd_path)
 
     result = []
     try:
         result = list_target(cmd_path, full_path, options, tree)
-    except Exception, e:
+    except Exception as e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
+        print('{0}: {1}'.format(os.path.basename(sys.argv[0]), e),
+                file=sys.stderr)
         return 1, []
     return 0, result
 

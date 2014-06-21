@@ -19,7 +19,7 @@ Implementation of the command to move a component to the inactive state.
 '''
 
 
-import state_control_base
+from rtshell import state_control_base
 
 
 def deactivate_action(object, ec_index):

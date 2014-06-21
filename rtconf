@@ -27,7 +27,7 @@ from rtshell import rtconf
 if __name__ == '__main__':
     res, lines = rtconf.main()
     for l in lines:
-        print l
+        print(l)
     sys.exit(res)
 
 # vim: tw=79

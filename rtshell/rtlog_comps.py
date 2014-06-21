@@ -18,6 +18,7 @@ Log recording and playing components used by rtlog
 
 '''
 
+from __future__ import print_function
 
 import OpenRTM_aist
 import os.path
@@ -26,9 +27,9 @@ import sys
 import time
 import traceback
 
-import gen_comp
-import ilog
-import rts_exceptions
+from rtshell import gen_comp
+from rtshell import ilog
+from rtshell import rts_exceptions
 
 
 ###############################################################################
@@ -145,41 +146,41 @@ class Player(gen_comp.GenComp):
             for name in self._ports:
                 matches = [s for s in log_port_specs if s.name == name]
                 if len(matches) == 0:
-                    print >>sys.stderr, 'WARNING: Port {0} not found in '\
-                            'log.'.format(name)
+                    print('WARNING: Port {0} not found in log.'.format(name),
+                            file=sys.stderr)
                     continue
                 elif len(matches) != 1:
-                    print >>sys.stderr, 'WARNING: Port {0} occurs multiple '\
-                            'times in the log.'.format(name)
+                    print('WARNING: Port {0} occurs multiple '\
+                            'times in the log.'.format(name), file=sys.stderr)
                     continue
                 m = matches[0]
                 if m.type != self._ports[name].raw.type:
-                    print >>sys.stderr, 'ERROR: Port {0} is incorrect data '\
+                    print('ERROR: Port {0} is incorrect data '\
                             'type; should be {1}.'.format(name,
-                                    type(self._ports[name].data))
+                                type(self._ports[name].data)), file=sys.stderr)
                     self._set()
                     return RTC.RTC_ERROR
 
             # Sanity-check the end time
             if self._end >= 0 and self._end < self._l.start[1]:
-                print >>sys.stderr, 'WARNING: Specified end time is before '\
-                        'the first entry time.'
+                print('WARNING: Specified end time is before the first entry time.',
+                        file=sys.stderr)
 
             self._start_time = time.time()
             # Fast-forward to the start time (with a sanity-check)
             if self._start > 0: # If 0 index, already there; if 0 time... hmm
                 if self._lims_ind:
                     if self._start > self._l.end[0]:
-                        print >>sys.stderr, 'ERROR: Specified start index is '\
-                                'after the last entry index.'
+                        print('ERROR: Specified start index is '\
+                                'after the last entry index.', file=sys.stderr)
                         self._set()
                         return RTC.RTC_ERROR
                     self._l.seek(index=self._start)
                     self._log_start = self._l.pos[1].float
                 else:
                     if self._start > self._l.end[1]:
-                        print >>sys.stderr, 'ERROR: Specified start time is '\
-                                'after the last entry time.'
+                        print('ERROR: Specified start time is '\
+                                'after the last entry time.', file=sys.stderr)
                         self._set()
                         return RTC.RTC_ERROR
                     self._l.seek(timestamp=self._start)
@@ -209,8 +210,9 @@ class Player(gen_comp.GenComp):
                 for ii in range(int(self._rate)):
                     self._vprint('Playing {0} entries.'.format(int(self._rate)))
                     if not self._pub_log_item():
-                        print >>sys.stderr, '{0}: End of log reached.'.format(
-                                os.path.basename(sys.argv[0]))
+                        print('{0}: End of log reached.'.format(
+                                os.path.basename(sys.argv[0])),
+                                file=sys.stderr)
                         self._set()
                         result = RTC.RTC_ERROR
                     else:
@@ -239,8 +241,9 @@ class Player(gen_comp.GenComp):
                         self._set()
                         break
                     if not self._pub_log_item():
-                        print >>sys.stderr, '{0}: End of log reached.'.format(
-                                os.path.basename(sys.argv[0]))
+                        print('{0}: End of log reached.'.format(
+                                os.path.basename(sys.argv[0])),
+                                file=sys.stderr)
                         self._set()
                         result = RTC.RTC_ERROR
                         break
@@ -267,5 +270,5 @@ class Player(gen_comp.GenComp):
 
     def _vprint(self, text):
         if self._verb:
-            print >>sys.stderr, text
+            print(text, file=sys.stderr)
 

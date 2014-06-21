@@ -20,7 +20,7 @@ inactive state.
 '''
 
 
-import state_control_base
+from rtshell import state_control_base
 
 
 def reset_action(object, ec_index):

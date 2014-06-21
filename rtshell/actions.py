@@ -17,14 +17,15 @@ Function objects for actions that can be performed using rtctree.
 
 '''
 
+from __future__ import print_function
 
 import sys
 
 import rtctree.exceptions
 import rtctree.path
 
-import option_store
-import rts_exceptions
+from rtshell import option_store
+from rtshell import rts_exceptions
 
 
 ###############################################################################
@@ -116,10 +117,10 @@ class BaseCallback(object):
     def __call__(self, result, err_msg):
         if err_msg:
             if not result:
-                print >>sys.stderr, 'Action failed: ' + err_msg
+                print('Action failed: ' + err_msg, file=sys.stderr)
         else:
             if not result:
-                print >>sys.stderr, 'Action failed.'
+                print('Action failed.', file=sys.stderr)
 
     def __str__(self):
         return ''
@@ -173,9 +174,9 @@ class CheckForRequiredCompAct(Action):
 
     def _execute(self, rtctree):
         if option_store.OptionStore().verbose:
-            print >>sys.stderr, 'Checking for required component {0} with ID \
+            print('Checking for required component {0} with ID \
 "{1}" and instance name "{2}"'.format(self._path_str, self._id,
-                    self._instance_name)
+                    self._instance_name), file=sys.stderr)
         # Check there is a component at the specified path
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
@@ -226,8 +227,8 @@ component at path {1}'.format(self._port_name, self._path_str))
 
     def _execute(self, rtctree):
         if option_store.OptionStore().verbose:
-            print >>sys.stderr, 'Checking for required port {0} on component \
-{1}'.format(self._port_name, self._path_str)
+            print('Checking for required port {0} on component \
+{1}'.format(self._port_name, self._path_str), file=sys.stderr)
         # Get the component at the specified path
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
@@ -267,8 +268,9 @@ class CheckActiveConfigSetAct(Action):
 
     def _execute(self, rtctree):
         if option_store.OptionStore().verbose:
-            print >>sys.stderr, 'Checking configuration set "{0}" is active '\
-                    'on component {1}'.format(self._set, self._path_str)
+            print('Checking configuration set "{0}" is active '\
+                    'on component {1}'.format(self._set, self._path_str),
+                    file=sys.stderr)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
             return False, 'Component missing: {0}'.format(self._path_str)
@@ -306,8 +308,8 @@ component at path {1}'.format(self._set, self._path_str))
 
     def _execute(self, rtctree):
         if option_store.OptionStore().verbose:
-            print >>sys.stderr, 'Setting configuration set "{0}" active on \
-component {1}'.format(self._set, self._path_str)
+            print('Setting configuration set "{0}" active on \
+component {1}'.format(self._set, self._path_str), file=sys.stderr)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
             return False, 'Component missing: {0}'.format(self._path_str)
@@ -347,9 +349,9 @@ class CheckConfigParamAct(Action):
 
     def _execute(self, rtctree):
         if option_store.OptionStore().verbose:
-            print >>sys.stderr, 'Checking parameter "{0}" in set "{1}" on '\
+            print('Checking parameter "{0}" in set "{1}" on '\
                     'component "{2}" is "{3}"'.format(self._param, self._set,
-                            self._path_str, self._value)
+                            self._path_str, self._value), file=sys.stderr)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
             return False, 'Component missing: {0}'.format(self._path_str)
@@ -396,9 +398,9 @@ component at path {2} to "{3}"'.format(self._param, self._set,
 
     def _execute(self, rtctree):
         if option_store.OptionStore().verbose:
-            print >>sys.stderr, 'Setting parameter "{0}" in set "{1}" on \
+            print('Setting parameter "{0}" in set "{1}" on \
 component at path {2} to "{3}"'.format(self._param, self._set,
-                    self._path_str, self._new_value)
+                    self._path_str, self._new_value), file=sys.stderr)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
             return False, 'Component missing: {0}'.format(self._path_str)
@@ -449,9 +451,9 @@ class CheckForConnAct(Action):
 
     def _execute(self, rtctree):
         if option_store.OptionStore().verbose:
-            print 'Checking for connection between {0}:{1} and ' \
+            print('Checking for connection between {0}:{1} and ' \
                     '{2}:{3}'.format(self._source[0], self._source[1],
-                            self._dest[0], self._dest[1])
+                            self._dest[0], self._dest[1]))
         # Get the source component
         s_comp = rtctree.get_node(self._s_path)
         if not s_comp or not s_comp.is_component:
@@ -527,10 +529,10 @@ ID {4} and properties {5}'.format(self._source_path_str, self._source_port,
 
     def _execute(self, rtctree):
         if option_store.OptionStore().verbose:
-            print >>sys.stderr, 'Connect {0}:{1} to {2}:{3} with \
+            print('Connect {0}:{1} to {2}:{3} with \
 ID {4} and properties {5}'.format(self._source_path_str, self._source_port,
                     self._dest_path_str, self._dest_port, self._id,
-                    self._properties)
+                    self._properties), file=sys.stderr)
         source_comp = rtctree.get_node(self._source_path)
         if not source_comp or not source_comp.is_component:
             return False, 'Source component missing: {0}'.format(\
@@ -579,9 +581,8 @@ ID {4} and properties {5}'.format(self._source_path_str, self._source_port,
                                         self._source_port, self._dest_path_str,
                                         self._dest_port, self._id)
                 if option_store.OptionStore().verbose:
-                    print >>sys.stderr, \
-                            'Skipped existing connection with ID {0}'.format(
-                                    self._id)
+                    print('Skipped existing connection with ID {0}'.format(
+                                    self._id), file=sys.stderr)
                 return True, None
 
 
@@ -614,10 +615,10 @@ class DisconnectPortsAct(Action):
 
     def _execute(self, rtctree):
         if option_store.OptionStore().verbose:
-            print >>sys.stderr, \
-                    'Disconnecting {0}:{1} from {2}:{3} with ID {4}'.format(\
+            print('Disconnecting {0}:{1} from {2}:{3} with ID {4}'.format(\
                     self._source_path_str, self._source_port,
-                    self._dest_path_str, self._dest_port, self._id)
+                    self._dest_path_str, self._dest_port, self._id),
+                    file=sys.stderr)
         source_comp = rtctree.get_node(self._source_path)
         if not source_comp or not source_comp.is_component:
             return False, 'Source component missing: {0}'.format(\
@@ -698,8 +699,8 @@ class StateChangeAct(Action):
 
     def _execute(self, rtctree):
         if option_store.OptionStore().verbose:
-            print >>sys.stderr, '{0} {1} in {2}'.format(self._verbose_str,
-                    self._path_str, self._ec_id)
+            print((self._verbose_str, self._path_str, self._ec_id),
+                    file=sys.stderr)
         comp = rtctree.get_node(self._path)
         if not comp or not comp.is_component:
             return False, 'Component missing: {0}'.format(self._path_str)

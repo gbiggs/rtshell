@@ -19,7 +19,8 @@ Reader component used by rtprint
 '''
 
 
-import gen_comp
+from rtshell import gen_comp
+
 import OpenRTM_aist
 import RTC
 
@@ -33,10 +34,10 @@ class Reader(gen_comp.GenComp):
 
     def _behv(self, ec_id):
         execed = 0
-        for p in self._ports.values():
+        for p in list(self._ports.values()):
             if p.port.isNew():
                 execed = 1
                 p.read()
-                print p.format()
+                print(p.format())
         return RTC.RTC_OK, execed
 

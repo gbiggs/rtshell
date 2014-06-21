@@ -18,6 +18,7 @@ Implementation of the command to print data sent by ports to the console.
 
 '''
 
+from __future__ import print_function
 
 import optparse
 import os.path
@@ -30,11 +31,11 @@ import traceback
 import OpenRTM_aist
 import RTC
 
-import comp_mgmt
-import modmgr
-import path
-import port_types
-import rtinject_comp
+from rtshell import comp_mgmt
+from rtshell import modmgr
+from rtshell import path
+from rtshell import port_types
+from rtshell import rtinject_comp
 import rtshell
 
 
@@ -44,25 +45,26 @@ def write_to_ports(raw_paths, options, tree=None):
     mm = modmgr.ModuleMgr(verbose=options.verbose, paths=options.paths)
     mm.load_mods_and_poas(options.modules)
     if options.verbose:
-        print >>sys.stderr, \
-                'Pre-loaded modules: {0}'.format(mm.loaded_mod_names)
+        print('Pre-loaded modules: {0}'.format(mm.loaded_mod_names),
+                file=sys.stderr)
 
     if options.const:
         val = mm.evaluate(options.const)
         if options.verbose:
-            print >>sys.stderr, 'Evaluated value to {0}'.format(val)
+            print('Evaluated value to {0}'.format(val), file=sys.stderr)
     else:
         if options.verbose:
-            print >>sys.stderr, 'Reading values from stdin.'
+            print('Reading values from stdin.', file=sys.stderr)
 
     if options.timeout == -1:
         max = options.max
         if options.verbose:
-            print >>sys.stderr, 'Will run {0} times.'.format(max)
+            print('Will run {0} times.'.format(max), file=sys.stderr)
     else:
         max = -1
         if options.verbose:
-            print >>sys.stderr, 'Will stop after {0}s'.format(options.timeout)
+            print('Will stop after {0}s'.format(options.timeout),
+                    file=sys.stderr)
 
     targets = port_types.parse_targets(raw_paths)
     if not tree:
@@ -71,8 +73,8 @@ def write_to_ports(raw_paths, options, tree=None):
     port_specs = port_types.make_port_specs(targets, mm, tree)
     port_types.require_all_output(port_specs)
     if options.verbose:
-        print >>sys.stderr, \
-                'Port specifications: {0}'.format([str(p) for p in port_specs])
+        print('Port specifications: {0}'.format([str(p) for p in port_specs]),
+                file=sys.stderr)
 
     if options.const:
         comp_name, mgr = comp_mgmt.make_comp('rtinject_writer', tree,
@@ -85,7 +87,7 @@ def write_to_ports(raw_paths, options, tree=None):
                 rtinject_comp.StdinWriter, port_specs, event=event,
                 rate=options.rate, max=max, buf=buffer, mutex=mutex)
     if options.verbose:
-        print >>sys.stderr, 'Created component {0}'.format(comp_name)
+        print('Created component {0}'.format(comp_name), file=sys.stderr)
     comp = comp_mgmt.find_comp_in_mgr(comp_name, mgr)
     comp_mgmt.connect(comp, port_specs, tree)
     comp_mgmt.activate(comp)
@@ -96,7 +98,10 @@ def write_to_ports(raw_paths, options, tree=None):
             elif options.max > -1:
                 event.wait()
             else:
-                raw_input()
+                if sys.version_info[0] == 3:
+                    input()
+                else:
+                    raw_input()
         except KeyboardInterrupt:
             pass
         except EOFError:
@@ -165,21 +170,22 @@ Write a constant value to one or more ports.'''
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except optparse.OptionError, e:
-        print >>sys.stderr, 'OptionError:', e
+    except optparse.OptionError as e:
+        print('OptionError:', e, file=sys.stderr)
         return 1
 
     if len(args) < 1:
-        print >>sys.stderr, usage
+        print(usage, file=sys.stderr)
         return 1
 
     try:
         write_to_ports([path.cmd_path_to_full_path(p) \
                 for p in args], options, tree=tree)
-    except Exception, e:
+    except Exception as e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
+        print('{0}: {1}'.format(os.path.basename(sys.argv[0]), e),
+                file=sys.stderr)
         return 1
     return 0
 

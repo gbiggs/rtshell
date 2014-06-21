@@ -27,7 +27,7 @@ from rtshell import rtls
 if __name__ == '__main__':
     res, lines = rtls.main()
     for l in lines:
-        print l
+        print(l)
     sys.exit(res)
 
 

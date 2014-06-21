@@ -19,7 +19,7 @@ Writer component used by rtinject
 '''
 
 
-import gen_comp
+from rtshell import gen_comp
 
 import OpenRTM_aist
 import RTC
@@ -35,7 +35,7 @@ class Writer(gen_comp.GenComp):
         self._val = val
 
     def _behv(self, ec_id):
-        for p in self._ports.values():
+        for p in list(self._ports.values()):
             p.port.write(self._val)
         return RTC.RTC_OK, 1
 

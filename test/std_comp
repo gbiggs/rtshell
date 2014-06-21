@@ -47,7 +47,7 @@ class StdComp(OpenRTM_aist.DataFlowComponentBase):
             d = self._inport.read().data
             with open(self._df, 'a+') as f:
                 f.write('{0}\n'.format(d))
-            print d
+            print(d)
         return RTC.RTC_OK
 
 

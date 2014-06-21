@@ -19,6 +19,7 @@ variable.
 
 '''
 
+from __future__ import print_function
 
 import os
 import sys
@@ -29,13 +30,13 @@ from rtshell.path import ENV_VAR
 
 def main(argv):
     if len(argv) > 1 and (argv[1] == '--help' or argv[1] == '-h'):
-        print >>sys.stderr, \
-                'Print the name of the current rtshell working directory.'
+        print('Print the name of the current rtshell working directory.',
+                file=sys.stderr)
         return 0
     if ENV_VAR in os.environ:
-        print os.environ[ENV_VAR]
+        print(os.environ[ENV_VAR])
     else:
-        print '/'
+        print('/')
     return 0
 
 

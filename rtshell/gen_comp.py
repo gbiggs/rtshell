@@ -18,6 +18,7 @@ Base class for generated-on-demand components.
 
 '''
 
+from __future__ import print_function
 
 import inspect
 import OpenRTM_aist
@@ -154,7 +155,7 @@ class GenComp(OpenRTM_aist.DataFlowComponentBase):
                 self._ports[p.name] = Port(p_data, p_port,
                         formatter=p.formatter, raw_spec=p)
         except:
-            print >>sys.stderr, traceback.format_exc()
+            print(traceback.format_exc(), file=sys.stderr)
             return RTC.RTC_ERROR
         return RTC.RTC_OK
 

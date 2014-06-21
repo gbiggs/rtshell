@@ -17,6 +17,7 @@ Implementation of the command to display component documentation.
 
 '''
 
+from __future__ import print_function
 
 import docutils.core
 import optparse
@@ -27,8 +28,8 @@ import rtctree.path
 import sys
 import traceback
 
-import path
-import rts_exceptions
+from rtshell import path
+from rtshell import rts_exceptions
 import rtshell
 
 
@@ -86,8 +87,8 @@ def get_config_docs(comp):
     return result
 
 
-from rtstodot import port_name as dot_port_name
-from rtstodot import escape as dot_escape
+from rtshell.rtstodot import port_name as dot_port_name
+from rtshell.rtstodot import escape as dot_escape
 
 def make_comp_graph(comp):
     result = []
@@ -163,7 +164,7 @@ def get_comp_docs(comp, tree, options):
         doc_set = comp.conf_sets['__doc__']
         if doc_set.has_param('__order__') and doc_set.data['__order__']:
             order = doc_set.data['__order__'].split(',')
-        sections += [k for k in doc_set.data.keys() if not k.startswith('__')]
+        sections += [k for k in list(doc_set.data.keys()) if not k.startswith('__')]
 
     if doc_set:
         if doc_set.has_param('__license__'):
@@ -181,8 +182,8 @@ def get_comp_docs(comp, tree, options):
     for s in order:
         if s not in sections:
             if doc_set:
-                print >>sys.stderr, ('{0}: Unknown section in order: '
-                    '{1}'.format(os.path.basename(sys.argv[0]), s))
+                print('{0}: Unknown section in order: {1}'.format(
+                    os.path.basename(sys.argv[0]), s), file=sys.stderr)
             continue
         do_section(result, comp, doc_set, s, options)
 
@@ -236,14 +237,14 @@ Display component documentation.'''
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except optparse.OptionError, e:
-        print >>sys.stderr, 'OptionError:', e
+    except optparse.OptionError as e:
+        print('OptionError:', e, file=sys.stderr)
         return 1
 
     if not args:
         # If no path given then can't do anything.
-        print >>sys.stderr, '{0}: No component specified.'.format(
-                os.path.basename(sys.argv[0]))
+        print('{0}: No component specified.'.format(os.path.basename(sys.argv[0])),
+                file=sys.stderr)
         return 1
     elif len(args) == 1:
         cmd_path = args[0]
@@ -255,13 +256,15 @@ Display component documentation.'''
     try:
         docs = '\n'.join(get_docs(cmd_path, full_path, options, tree=tree))
         if options.format == 'rst':
-            print docs
+            print(docs)
         else:
-            print docutils.core.publish_string(docs, writer_name=options.format)
-    except Exception, e:
+            print(docutils.core.publish_string(docs,
+                writer_name=options.format))
+    except Exception as e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
+        print('{0}: {1}'.format(os.path.basename(sys.argv[0]), e),
+                file=sys.stderr)
         return 1
     return 0
 

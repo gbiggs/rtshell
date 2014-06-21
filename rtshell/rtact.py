@@ -19,7 +19,7 @@ Implementation of the command to move a component to the activated state.
 '''
 
 
-import state_control_base
+from rtshell import state_control_base
 
 
 def activate_action(object, ec_index):

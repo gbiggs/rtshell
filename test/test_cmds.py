@@ -2340,8 +2340,8 @@ class rtlogTests(unittest.TestCase):
         time.sleep(1)
         logger.terminate()
         stdout, stderr = logger.communicate()
-        print stdout
-        print stderr
+        print(stdout)
+        print(stderr)
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(logger.returncode, -15)

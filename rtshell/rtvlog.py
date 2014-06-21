@@ -18,6 +18,7 @@ Implementation of the command to make a component exit.
 
 '''
 
+from __future__ import print_function
 
 import optparse
 import os
@@ -29,13 +30,13 @@ import RTC
 import sys
 import traceback
 
-import path
-import rts_exceptions
+from rtshell import path
+from rtshell import rts_exceptions
 import rtshell
 
 
 def log_cb(rtc, time, source, level, msg):
-    print '[{0} {1}] {2} <{3}> {4}'.format(rtc, time, level, source, msg)
+    print('[{0} {1}] {2} <{3}> {4}'.format(rtc, time, level, source, msg))
 
 
 def print_logs(paths, options, tree=None):
@@ -66,7 +67,7 @@ def print_logs(paths, options, tree=None):
             id = rtc.add_logger(log_cb, level=options.level,
                     filters=filters)
             ids.append((rtc, id))
-    except rtctree.exceptions.AddLoggerError, e:
+    except rtctree.exceptions.AddLoggerError as e:
         # Remove all the loggers that were added
         for i in ids:
             i[0].remove_logger(i[1])
@@ -76,7 +77,10 @@ def print_logs(paths, options, tree=None):
     # Wait for a keyboard interrupt
     try:
         while True:
-            raw_input('')
+            if sys.version_info[0] == 3:
+                input()
+            else:
+                raw_input('')
     except KeyboardInterrupt:
         pass
     # Remove all the loggers that were added
@@ -103,23 +107,24 @@ View a component logs.'''
         sys.argv = [sys.argv[0]] + argv
     try:
         options, args = parser.parse_args()
-    except optparse.OptionError, e:
-        print >>sys.stderr, 'OptionError:', e
+    except optparse.OptionError as e:
+        print('OptionError:', e, file=sys.stderr)
         return 1
 
     if not args:
         # If no paths given then can't do anything.
-        print >>sys.stderr, '{0}: No component specified.'.format(
-                os.path.basename(sys.argv[0]))
+        print('{0}: No component specified.'.format(
+                os.path.basename(sys.argv[0])), file=sys.stderr)
         return 1
     paths = [[p, path.cmd_path_to_full_path(p)] for p in args]
 
     try:
         print_logs(paths, options, tree)
-    except Exception, e:
+    except Exception as e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
+        print('{0}: {1}'.format(os.path.basename(sys.argv[0]), e),
+                file=sys.stderr)
         return 1
     return 0
 

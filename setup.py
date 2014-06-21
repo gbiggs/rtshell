@@ -22,6 +22,8 @@ rtshell install script.
 
 # $Source$
 
+from __future__ import print_function
+
 
 from distutils.command.install_scripts import install_scripts
 from distutils.command.install_data import install_data
@@ -43,15 +45,18 @@ def get_files(dir, ext=None):
 
 if sys.platform != 'win32':
     cwd = os.path.join(os.getcwd(), 'doc')
-    s = raw_input('Generate documentation? ')
+    if sys.version_info[0] == 3:
+        s = input('Generate documentation? ')
+    else:
+        s = raw_input('Generate documentation? ')
     if s.lower() == 'y' or s.lower() == 'YES':
-        print 'Generating documentation'
+        print('Generating documentation')
         p = subprocess.Popen(['./make_docs', 'man', 'html', 'pdf', '-v'],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
         stdout, stderr = p.communicate()
         if p.returncode != 0:
-            print 'Failed to generate documentation. Check docutils are installed.'
-            print stderr
+            print('Failed to generate documentation. Check docutils are installed.')
+            print(stderr)
 try:
     man_files_en = get_files(os.path.join(os.getcwd(), 'doc/man/man1'))
     html_files_en = get_files(os.path.join(os.getcwd(), 'doc/html'))
@@ -138,7 +143,7 @@ class InstallRename(install_scripts):
         install_scripts.run(self)
         if sys.platform == 'win32':
             # Rename the installed scripts to add .py on the end for Windows
-            print 'Renaming scripts'
+            print('Renaming scripts')
             for s in base_scripts:
                 dest = os.path.join(self.install_dir, s + '.py')
                 if os.path.exists(dest):
@@ -201,8 +206,8 @@ class InstallConfigure(install_data):
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
         stdout, stderr = p.communicate()
         if p.returncode != 0:
-            print 'Failed to filter bash_completion.'
-            print stderr
+            print('Failed to filter bash_completion.')
+            print(stderr)
 
 
 setup(name='rtshell',

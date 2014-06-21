@@ -38,7 +38,7 @@ class ZombieComp(OpenRTM_aist.DataFlowComponentBase):
 
     def onExecute(self, ec_id):
         if self._inport.isNew():
-            print self._inport.read().data
+            print(self._inport.read().data)
         return RTC.RTC_OK
 
 

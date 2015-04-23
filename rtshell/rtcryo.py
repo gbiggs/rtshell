@@ -234,7 +234,7 @@ def freeze_dry(servers, dest='-', xml=True, abstract='', vendor='', sysname='',
     rtsp.creation_date = today.isoformat()
     rtsp.update_date = today.isoformat()
     rtsp.version = rtsprofile.RTSPROFILE_SPEC_VERSION
-    rtsp.id = 'RTSystem :{0}.{1}.{2}'.format(vendor, sysname, version)
+    rtsp.id = 'RTSystem:{0}:{1}:{2}'.format(vendor, sysname, version)
     rtsp.components = rts_components
     rtsp.data_port_connectors = data_connectors
     rtsp.service_port_connectors = svc_connectors

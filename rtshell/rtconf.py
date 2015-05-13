@@ -192,7 +192,7 @@ Display and edit configuration parameters and sets.'''
         return 1, []
 
     if not args:
-        print >>sys.stderr, usage
+        print(usage, file=sys.stderr)
         return 1, []
     elif len(args) == 1:
         cmd_path = args[0]

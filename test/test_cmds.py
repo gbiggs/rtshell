@@ -4,15 +4,15 @@
 
 '''rtshell
 
-Copyright (C) 2009-2010
+Copyright (C) 2009-2015
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
     National Institute of Advanced Industrial Science and Technology (AIST),
     Japan
     All rights reserved.
-Licensed under the Eclipse Public License -v 1.0 (EPL)
-http://www.opensource.org/licenses/eclipse-1.0.txt
+Licensed under the GNU Lesser General Public License version 3.
+http://www.gnu.org/licenses/lgpl-3.0.en.html
 
 Tests for the commands.
 
@@ -1761,7 +1761,7 @@ class rtdocTests(unittest.TestCase):
         self.assert_('Documentation component' in stdout)
         self.assert_('Geoffrey Biggs' in stdout)
         self.assert_('test' in stdout)
-        self.assert_('EPL' in stdout)
+        self.assert_('LGPL3' in stdout)
         self.assert_('example.com' in stdout)
         self.assert_('http://www.openrtm.org' in stdout)
         self.assert_('This is the introduction.' in stdout)

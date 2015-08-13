@@ -1,13 +1,13 @@
 @echo off
-rem Copyright (C) 2009-2014
+rem Copyright (C) 2009-2015
 rem     Geoffrey Biggs
 rem     RT-Synthesis Research Group
 rem     Intelligent Systems Research Institute,
 rem     National Institute of Advanced Industrial Science and Technology (AIST),
 rem     Japan
 rem     All rights reserved.
-rem Licensed under the Eclipse Public License -v 1.0 (EPL)
-rem http://www.opensource.org/licenses/eclipse-1.0.txt
+rem Licensed under the GNU Lesser General Public License version 3.
+rem http://www.gnu.org/licenses/lgpl-3.0.en.html
 
 rtdel.py %*
 

@@ -19,8 +19,8 @@ activate/deactivate/resetしたり、ポートの接続を行うことができ�
 の次世代ロボット知能化技術開発プロジェクトの支援により、独立行政法人産業
 技術総合研究所によって開発されています。管理番号H23PRO-1214.
 
-This software is licensed under the Eclipse Public License -v 1.0 (EPL).
-See LICENSE.txt.
+This software is licensed under the GNU Lesser General Public License version 3
+(LGPL3). See LICENSE.txt.
 
 
 必要条件

@@ -5,15 +5,15 @@
 
 '''rtshell
 
-Copyright (C) 2010
+Copyright (C) 2009-2015
     Geoffrey Biggs
     RT-Synthesis Research Group
     Intelligent Systems Research Institute,
     National Institute of Advanced Industrial Science and Technology (AIST),
     Japan
     All rights reserved.
-Licensed under the Eclipse Public License -v 1.0 (EPL)
-http://www.opensource.org/licenses/eclipse-1.0.txt
+Licensed under the GNU Lesser General Public License version 3.
+http://www.gnu.org/licenses/lgpl-3.0.en.html
 
 Component with lots of documentation.
 
@@ -63,7 +63,7 @@ comp_spec = ['implementation_id', 'Doc',
         'language', 'Python',
         'lang_type', 'script',
         'conf.__doc__.__order__', '',
-        'conf.__doc__.__license__', 'EPL',
+        'conf.__doc__.__license__', 'LGPL3',
         'conf.__doc__.__contact__', 'a@example.com',
         'conf.__doc__.__url__', 'http://www.openrtm.org',
         'conf.__doc__.intro', 'This is the introduction.',

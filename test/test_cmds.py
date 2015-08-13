@@ -121,6 +121,7 @@ def clean_zombies():
 
 
 def launch_manager(tries=40, res=0.01):
+    #subprocess.call(['killall', 'rtcd'])
     p = start_process(['rtcd', '-d', '-f', './test/rtc.conf'])
     while tries > 0:
         stdout, stderr, ret = call_process(['./rtls',
@@ -129,6 +130,9 @@ def launch_manager(tries=40, res=0.01):
             return p
         tries -= 1
         time.sleep(res)
+    print 'Manager launch output:'
+    print 'stdout:', stdout
+    print 'stderr:', stderr
     raise RTCLaunchFailedError
 
 
@@ -212,6 +216,26 @@ def test_port2notfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(stdout, '')
     tester.assertEqual(stderr,
         '{0}: Port not found: /localhost/local.host_cxt/{1}'.format(
+            os.path.basename(cmd), obj2))
+    tester.assertEqual(ret, 1)
+
+
+def test_notaport(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+    stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
+        obj1=obj1, obj2=obj2) + extra_opts)
+    tester.assertEqual(stdout, '')
+    tester.assertEqual(stderr,
+        '{0}: Not a port: /localhost/local.host_cxt/{1}'.format(
+            os.path.basename(cmd), obj1))
+    tester.assertEqual(ret, 1)
+
+
+def test_notaport2(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+    stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
+        obj1=obj1, obj2=obj2) + extra_opts)
+    tester.assertEqual(stdout, '')
+    tester.assertEqual(stderr,
+        '{0}: Not a port: /localhost/local.host_cxt/{1}'.format(
             os.path.basename(cmd), obj2))
     tester.assertEqual(ret, 1)
 
@@ -1182,7 +1206,7 @@ class rtcryoTests(unittest.TestCase):
         self.assertEqual(ret, 0)
         orig = load_file('./test/sys.rtsys')
         self.assertNotEqual(stdout, orig)
-        self.assert_('rts:id="RTSystem :Me.system name.0"' in stdout)
+        self.assert_('rts:id="RTSystem:Me:system name:0"' in stdout)
 
     def test_freeze_version(self):
         stdout, stderr, ret = call_process(['./rtcryo', '-v',
@@ -1191,7 +1215,7 @@ class rtcryoTests(unittest.TestCase):
         self.assertEqual(ret, 0)
         orig = load_file('./test/sys.rtsys')
         self.assertNotEqual(stdout, orig)
-        self.assert_('rts:id="RTSystem :Me.RTSystem.42"' in stdout)
+        self.assert_('rts:id="RTSystem:Me:RTSystem:42"' in stdout)
 
     def test_freeze_vendor(self):
         stdout, stderr, ret = call_process(['./rtcryo', '-e',
@@ -1200,7 +1224,7 @@ class rtcryoTests(unittest.TestCase):
         self.assertEqual(ret, 0)
         orig = load_file('./test/sys.rtsys')
         self.assertNotEqual(stdout, orig)
-        self.assert_('rts:id="RTSystem :UnitTest.RTSystem.0"' in stdout)
+        self.assert_('rts:id="RTSystem:UnitTest:RTSystem:0"' in stdout)
 
 
 def rtcryo_suite():
@@ -1313,6 +1337,7 @@ class rtdeactTests(unittest.TestCase):
         make_zombie()
         self._mgr = launch_manager()
         call_process(['./rtact', '/localhost/local.host_cxt/Std0.rtc'])
+        call_process(['./rtact', '/localhost/local.host_cxt/Output0.rtc'])
         wait_for_comp('Std0.rtc', state='Active')
         wait_for_comp('Output0.rtc', state='Active')
 
@@ -1403,8 +1428,8 @@ class rtdelTests(unittest.TestCase):
     def _load_mgr(self):
         stdout, stderr, ret = call_process(['./rtmgr',
             '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so'), '-i',
-            'MotorInit', '-c', 'Motor'])
+            os.path.join(COMP_LIB_PATH, 'Motor.so') + ':MotorInit',
+            '-c', 'Motor'])
         self.assertEqual(ret, 0)
 
     def test_rtc(self):
@@ -1715,7 +1740,7 @@ class rtdisTests(unittest.TestCase):
                 obj2='Std0.rtc:noport')
 
     def test_bad_dest_rtc(self):
-        test_noobject2(self, 'rtdis', obj1='Std0.rtc:in',
+        test_notaport2(self, 'rtdis', obj1='Std0.rtc:in',
                 obj2='Output0.rtc/:out')
         test_noobject2(self, 'rtdis', obj1='Std0.rtc:in',
                 obj2='NotAComp0.rtc:out')
@@ -3475,9 +3500,9 @@ def suite():
 
 
 if __name__ == '__main__':
-    if len(sys.argv) >= 2:
-        COMP_LIB_PATH = sys.argv[1]
-        sys.argv = [sys.argv[0]] + sys.argv[2:]
+    if len(sys.argv) >= 3 and sys.argv[1] == '--clp':
+        COMP_LIB_PATH = sys.argv[2]
+        sys.argv = [sys.argv[0]] + sys.argv[3:]
     unittest.main()
     #unittest.TextTestRunner().run(rtcomp_suite())
 

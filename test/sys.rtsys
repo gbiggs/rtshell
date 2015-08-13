@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<rts:RtsProfile rts:abstract="RT System created by rtcryo." rts:creationDate="2010-12-13T21:13:02" rts:id="RTSystem :Me.RTSystem.0" rts:updateDate="2010-12-13T21:13:02" rts:version="0.2" xmlns:rts="http://www.openrtp.org/namespaces/rts" xmlns:rtsExt="http://www.openrtp.org/namespaces/rts_ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<rts:RtsProfile rts:abstract="RT System created by rtcryo." rts:creationDate="2015-08-13T17:57:36" rts:id="RTSystem:Me:RTSystem:0" rts:updateDate="2015-08-13T17:57:36" rts:version="0.2" xmlns:rts="http://www.openrtp.org/namespaces/rts" xmlns:rtsExt="http://www.openrtp.org/namespaces/rts_ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <rts:Components rts:activeConfigurationSet="default" rts:compositeType="None" rts:id="RTC:Geoffrey Biggs:test:Std:1.0" rts:instanceName="Std0" rts:isRequired="true" rts:pathUri="localhost/local.host_cxt/Std0.rtc" rtsExt:visible="true">
         <rts:DataPorts rts:name="in" rtsExt:visible="true"/>
         <rts:ConfigurationSets rts:id="default">
@@ -16,21 +16,26 @@
         </rts:ConfigurationSets>
         <rts:ExecutionContexts rts:id="0" rts:kind="PERIODIC" rts:rate="1000.0"/>
         <rtsExt:Location rtsExt:direction="DOWN" rtsExt:height="0" rtsExt:width="0" rtsExt:x="0" rtsExt:y="0"/>
-        <rtsExt:Properties rtsExt:name="IOR" rtsExt:value="IOR:010000003500000049444c3a6f70656e72746d2e616973742e676f2e6a702f4f70656e52544d2f44617461466c6f77436f6d706f6e656e743a312e3000000000010000000000000064000000010102000c0000003139322e3136382e302e3300bb9e00000e000000fe730d064d00004eab000000000100000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"/>
+        <rtsExt:Properties rtsExt:name="IOR" rtsExt:value="IOR:010000003500000049444c3a6f70656e72746d2e616973742e676f2e6a702f4f70656e52544d2f44617461466c6f77436f6d706f6e656e743a312e3000000000010000000000000064000000010102000d0000003135302e32392e39382e39330000fdb40e000000fe1f5bcc55000022c8000000000100000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"/>
     </rts:Components>
     <rts:Components rts:compositeType="None" rts:id="RTC:Geoffrey Biggs:Test:Output:1.0" rts:instanceName="Output0" rts:isRequired="true" rts:pathUri="localhost/local.host_cxt/Output0.rtc" rtsExt:visible="true">
         <rts:DataPorts rts:name="out" rtsExt:visible="true"/>
         <rts:ConfigurationSets rts:id="default"/>
         <rts:ExecutionContexts rts:id="0" rts:kind="PERIODIC" rts:rate="1000.0"/>
         <rtsExt:Location rtsExt:direction="DOWN" rtsExt:height="0" rtsExt:width="0" rtsExt:x="0" rtsExt:y="0"/>
-        <rtsExt:Properties rtsExt:name="IOR" rtsExt:value="IOR:010000003500000049444c3a6f70656e72746d2e616973742e676f2e6a702f4f70656e52544d2f44617461466c6f77436f6d706f6e656e743a312e3000000000010000000000000064000000010102000c0000003139322e3136382e302e330032cf00000e000000fe740d064d00004eb5000000000100000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"/>
+        <rtsExt:Properties rtsExt:name="IOR" rtsExt:value="IOR:010000003500000049444c3a6f70656e72746d2e616973742e676f2e6a702f4f70656e52544d2f44617461466c6f77436f6d706f6e656e743a312e3000000000010000000000000064000000010102000d0000003135302e32392e39382e3933000044b30e000000fe1f5bcc55000022cb000000000100000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"/>
     </rts:Components>
-    <rts:DataPortConnectors rts:connectorId="connection_id0" rts:dataType="TimedLong" rts:dataflowType="push" rts:interfaceType="corba_cdr" rts:name="in_out" rts:pushInterval="0.0" rts:subscriptionType="flush" rtsExt:visible="true">
+    <rts:DataPortConnectors rts:connectorId="connection_id0" rts:dataType="IDL:RTC/TimedLong:1.0" rts:dataflowType="push" rts:interfaceType="corba_cdr" rts:name="in_out" rts:pushInterval="0.0" rts:subscriptionType="new" rtsExt:visible="true">
         <rts:sourceDataPort rts:componentId="RTC:Geoffrey Biggs:Test:Output:1.0" rts:instanceName="Output0" rts:portName="Output0.out">
             <rtsExt:Properties rtsExt:name="COMPONENT_PATH_ID" rtsExt:value="localhost/local.host_cxt/Output0.rtc"/>
         </rts:sourceDataPort>
         <rts:targetDataPort rts:componentId="RTC:Geoffrey Biggs:test:Std:1.0" rts:instanceName="Std0" rts:portName="Std0.in">
             <rtsExt:Properties rtsExt:name="COMPONENT_PATH_ID" rtsExt:value="localhost/local.host_cxt/Std0.rtc"/>
         </rts:targetDataPort>
+        <rtsExt:Properties rtsExt:name="dataport.dataflow_type" rtsExt:value="push"/>
+        <rtsExt:Properties rtsExt:name="dataport.serializer.cdr.endian" rtsExt:value="little,big"/>
+        <rtsExt:Properties rtsExt:name="dataport.data_type" rtsExt:value="IDL:RTC/TimedLong:1.0"/>
+        <rtsExt:Properties rtsExt:name="dataport.interface_type" rtsExt:value="corba_cdr"/>
+        <rtsExt:Properties rtsExt:name="dataport.subscription_type" rtsExt:value="new"/>
     </rts:DataPortConnectors>
 </rts:RtsProfile>

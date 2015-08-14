@@ -114,7 +114,11 @@ def disconnect_ports(paths, options, tree=None):
         conns = port_objs[0].get_connections_by_dests(port_objs[1:])
 
     if not conns:
-        raise rts_exceptions.MultiConnectionNotFoundError
+        if options.id:
+            raise rts_exceptions.ConnectionIDNotFoundError(options.id,
+                    cmd_paths[0])
+        else:
+            raise rts_exceptions.MultiConnectionNotFoundError
     for c in conns:
         c.disconnect()
 

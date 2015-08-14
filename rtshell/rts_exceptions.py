@@ -390,10 +390,10 @@ class ConnectionIDNotFoundError(RtShellError):
 
     def __str__(self):
         if type(self._path) == tuple:
-            return 'No connection from {0} with ID {1}.'.format(
+            return 'No connection from {0} with ID {1}'.format(
                     rtctree.path.format_path(self._path), self._id)
         elif type(self._path) == list:
-            return 'No connection from {0} with ID {1}.'.format(
+            return 'No connection from {0} with ID {1}'.format(
                     rtctree.path.format_path((self._path, None)), self._id)
         else:
             return 'No connection from {0} with ID {1}'.format(self._path,

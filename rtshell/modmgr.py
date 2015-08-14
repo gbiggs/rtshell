@@ -58,7 +58,6 @@ class Module(object):
         '''Loads the module object.'''
         mod_list = self._name.split('.')
         self._mod = self._recursive_load(mod_list[0], mod_list[1:], None)
-        print('Loaded module ' + str(self._mod))
 
     def _recursive_load(self, head, rest, top_path):
         '''Recurse through a dotted module path, loading each module.'''
@@ -66,7 +65,6 @@ class Module(object):
         try:
             f, p, d = imp.find_module(head, top_path)
             mod = imp.load_module(head, f, p, d)
-            print('Loaded parent module ' + str(mod))
         finally:
             if f:
                 f.close()

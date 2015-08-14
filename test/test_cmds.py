@@ -60,7 +60,7 @@ def start_process(args):
 def find_omninames():
     # If on Windows, ...
     # Else use ps
-    procs, stderr, ret_code = call_process(['ps', '-e'])
+    procs, stderr, ret_code = call_process(['ps', '-aux'])
     for p in procs.split('\n'):
         if 'omniNames' in p:
             return p.split()[0]
@@ -86,6 +86,10 @@ def start_ns():
     # Check if omniNames is running
     pid = find_omninames()
     if pid:
+        # Print a warning about possibly not being able to kill the name server
+        print("A name server is already running. If this is a system name "
+                "server, tests will not be able to stop and restart it. "
+                "This may pollute the results of subsequent tests.")
         # Kill the name server to get a clean one for the test
         call_process(['killall', 'omniNames'])
     # Start omniNames and return the PID
@@ -124,15 +128,18 @@ def launch_manager(tries=40, res=0.01):
     #subprocess.call(['killall', 'rtcd'])
     p = start_process(['rtcd', '-d', '-f', './test/rtc.conf'])
     while tries > 0:
-        stdout, stderr, ret = call_process(['./rtls',
-            '/localhost/local.host_cxt/manager.mgr'])
-        if stdout == '' and stderr == '':
+        stdout, stderr, ret = call_process(['./rtfind', '.', '-t', 'm'])
+        if stdout != '' and \
+                '/localhost/local.host_cxt/manager.mgr' in stdout and \
+                stderr == '':
             return p
         tries -= 1
         time.sleep(res)
-    print 'Manager launch output:'
-    print 'stdout:', stdout
-    print 'stderr:', stderr
+    #print '-----\nManager launch failure output:'
+    #print 'stdout: ', stdout
+    #print 'stderr: ', stderr
+    #print 'retcode:', ret
+    #print '-----'
     raise RTCLaunchFailedError
 
 
@@ -1676,9 +1683,8 @@ class rtdisTests(unittest.TestCase):
             '/localhost/local.host_cxt/Output0.rtc:out',
             '/localhost/local.host_cxt/Std0.rtc:in',])
         self.assertEqual(stdout, '')
-        self.assertEqual(stderr, 'rtdis: No connection from '
-            '/localhost/local.host_cxt/Output0.rtc:out to '
-            '/localhost/local.host_cxt/Std0.rtc:in')
+        self.assertEqual(stderr, 'rtdis: No connection found involving the '
+                'specified ports.')
         self.assertEqual(ret, 1)
         stdout, stderr, ret = call_process(['./rtcat', '-l',
             '/localhost/local.host_cxt/Output0.rtc:out'])
@@ -1698,22 +1704,15 @@ class rtdisTests(unittest.TestCase):
         self.assert_('/localhost/local.host_cxt/Err0.rtc:in' in stdout)
 
     def test_no_source_port(self):
-        test_sourceportnotfound(self, 'rtdis', obj1='Std0.rtc',
+        test_notaport(self, 'rtdis', obj1='Std0.rtc',
                 obj2='Output0.rtc:out')
-        test_sourceportnotfound(self, 'rtdis', obj1='Output0.rtc',
+        test_notaport(self, 'rtdis', obj1='Output0.rtc',
                 obj2='Std0.rtc:in')
 
-    def test_too_many_targets(self):
-        stdout, stderr, ret = call_process(['./rtdis', 'Std0.rtc:in',
-            'Output0.rtc:out', 'Err0.rtc:in'])
-        self.assertEqual(stdout, '')
-        self.assert_('Usage:' in stderr)
-        self.assertEqual(ret, 1)
-
     def test_no_dest_port(self):
-        test_destportnotfound(self, 'rtdis', obj1='Std0.rtc:in',
+        test_notaport2(self, 'rtdis', obj1='Std0.rtc:in',
                 obj2='Output0.rtc')
-        test_destportnotfound(self, 'rtdis', obj1='Output0.rtc:out',
+        test_notaport2(self, 'rtdis', obj1='Output0.rtc:out',
                 obj2='Std0.rtc')
 
     def test_bad_source_port(self):
@@ -1723,9 +1722,9 @@ class rtdisTests(unittest.TestCase):
                 obj2='Std0.rtc:in')
 
     def test_bad_source_rtc(self):
-        test_sourceportnotfound(self, 'rtdis', obj1='',
+        test_notaport(self, 'rtdis', obj1='',
                 obj2='Output0.rtc:out')
-        test_noobject(self, 'rtdis', obj1='Std0.rtc/:in',
+        test_notaport(self, 'rtdis', obj1='Std0.rtc/:in',
                 obj2='Output0.rtc:out')
         test_noobject(self, 'rtdis', obj1='NotAComp0.rtc:in',
                 obj2='Output0.rtc:out')
@@ -1748,8 +1747,8 @@ class rtdisTests(unittest.TestCase):
                 obj2='NotAComp0.rtc:in')
 
     def test_context(self):
-        test_noobject(self, 'rtdis', obj1=':port', obj2='Output0.rtc:out')
-        test_noobject2(self, 'rtdis', obj1='Std0.rtc:in', obj2=':port')
+        test_notaport(self, 'rtdis', obj1=':port', obj2='Output0.rtc:out')
+        test_notaport2(self, 'rtdis', obj1='Std0.rtc:in', obj2=':port')
 
     def test_manager(self):
         test_notacomp(self, 'rtdis', obj1='manager.mgr:port',
@@ -1782,7 +1781,6 @@ class rtdocTests(unittest.TestCase):
         stop_ns(self._ns)
 
     def _check_stdout(self, stdout, title):
-        self.assert_(title in stdout)
         self.assert_('Documentation component' in stdout)
         self.assert_('Geoffrey Biggs' in stdout)
         self.assert_('test' in stdout)
@@ -1804,33 +1802,33 @@ class rtdocTests(unittest.TestCase):
             '/localhost/local.host_cxt/Doc0.rtc'])
         self.assertEqual(stderr, ''),
         self.assertEqual(ret, 0)
-        self._check_stdout(stdout, 'Doc0.rtc')
+        self._check_stdout(stdout, 'Doc')
 
     def test_doc_rst(self):
         stdout, stderr, ret = call_process(['./rtdoc',
             '/localhost/local.host_cxt/Doc0.rtc', '-f', 'rst'])
         self.assertEqual(stderr, ''),
         self.assertEqual(ret, 0)
-        self._check_stdout(stdout, 'Doc0.rtc')
+        self._check_stdout(stdout, 'Doc')
 
     def test_doc_html(self):
         stdout, stderr, ret = call_process(['./rtdoc',
             '/localhost/local.host_cxt/Doc0.rtc', '-f', 'html'])
         self.assertEqual(stderr, ''),
         self.assertEqual(ret, 0)
-        self._check_stdout(stdout, 'Doc0.rtc')
+        self._check_stdout(stdout, 'Doc')
 
     def test_doc_latex(self):
         stdout, stderr, ret = call_process(['./rtdoc',
             '/localhost/local.host_cxt/Doc0.rtc', '-f', 'latex'])
         self.assertEqual(stderr, ''),
         self.assertEqual(ret, 0)
-        self._check_stdout(stdout, 'Doc0.rtc')
+        self._check_stdout(stdout, 'Doc')
 
     def test_no_doc(self):
         stdout, stderr, ret = call_process(['./rtdoc',
             '/localhost/local.host_cxt/Std0.rtc', '-f', 'rst'])
-        self.assert_(stdout.startswith('Std0.rtc\n'))
+        self.assert_(stdout.startswith('Std\n'))
         self.assert_('Introduction' not in stdout)
         self.assert_('Requirements' not in stdout)
         self.assert_('Installation' not in stdout)
@@ -1841,7 +1839,7 @@ class rtdocTests(unittest.TestCase):
     def test_no_ports_config(self):
         stdout, stderr, ret = call_process(['./rtdoc',
             '/localhost/local.host_cxt/Doc20.rtc', '-f', 'rst'])
-        self.assert_(stdout.startswith('Doc20.rtc\n'))
+        self.assert_(stdout.startswith('Doc2\n'))
         self.assert_('Ports' not in stdout)
         self.assert_('Configuration parameters' not in stdout)
         self.assertEqual(stderr, ''),
@@ -2365,8 +2363,6 @@ class rtlogTests(unittest.TestCase):
         time.sleep(1)
         logger.terminate()
         stdout, stderr = logger.communicate()
-        print(stdout)
-        print(stderr)
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(logger.returncode, -15)
@@ -2510,18 +2506,18 @@ class rtlsTests(unittest.TestCase):
     def _load_mgr(self):
         stdout, stderr, ret = call_process(['./rtmgr',
             '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Controller.so'), '-i',
-            'ControllerInit', '-c', 'Controller'])
+            os.path.join(COMP_LIB_PATH, 'Controller.so:ControllerInit'),
+            '-c', 'Controller'])
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtmgr',
             '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Sensor.so'), '-i',
-            'SensorInit', '-c', 'Sensor'])
+            os.path.join(COMP_LIB_PATH, 'Sensor.so:SensorInit'),
+            '-c', 'Sensor'])
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtmgr',
             '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so'), '-i',
-            'MotorInit', '-c', 'Motor'])
+            os.path.join(COMP_LIB_PATH, 'Motor.so:MotorInit'),
+            '-c', 'Motor'])
         self.assertEqual(ret, 0)
 
     def test_ls_nothing(self):

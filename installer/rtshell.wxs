@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Name='RTShell 4.0'
+    Manufacturer='AIST'
+    Id='a999a734-5509-11e5-89aa-d4bed9a6ae6d'
+    UpgradeCode='bc9fbf12-5509-11e5-89aa-d4bed9a6ae6d'
+    Language='1033'
+    Codepage='1252'
+    Version='4.0.0'>
+    <!--Language='1041' Codepage='932' for Japanese-->
+    <Package Id='*'
+      Keywords='Installer'
+      Description='RTShell 4.0 installer'
+      Comments='RTShell is a product of the National Institute for Advanced Industrial Science and Technology, Japan'
+      Manufacturer='AIST'
+      InstallerVersion='400'
+      Languages='1033'
+      Compressed='yes'
+      SummaryCodepage='1252'
+      />
+  </Product>
+
+  <Property Id='PYTHON27DIRKEY'
+    Roor='HKLM'
+    Key='SOFTWARE\Python\PythonCore\2.7\InstallPath'
+    <?if $(env.ARCH) = x86_64 ?>
+      Win64='yes'
+    <?endif?>
+    Type='raw'
+    />
+
+  <Media Id='1' Cabinet='RTShell.cab' EmbedCab='yes'/>
+
+  <Condition Message="[ProductName] requires Python 2.7">
+    <![CDATA[Installed OR (PYTHON27 <> "")]]>
+  </Condition>
+
+  <!-- C:\Python27\Lib\site-packages -->
+  <Directory Id='TARGETDIR' Name='SourceDir'>
+    <Directory Id='PYTHON27DIR' Name='[[PYTHON27DIRKEY]]'>
+    </Directory><!--PYTHON27DIR'-->
+  </Directory><!--TARGETDIR-->
+</Wix>

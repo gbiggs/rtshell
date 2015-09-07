@@ -1,0 +1,260 @@
+=====
+rtlog
+=====
+
+---------------------------
+record and replay log files
+---------------------------
+
+.. include:: ../../common/en/docinfo_block.txt
+
+Synopsis
+========
+
+rtlog [options] <path1>:<port1> [<path2>:<port2>...]
+
+Description
+===========
+
+Records and replays logs of data sent by components over their ports.
+A log file can be made from the data of any number of output ports. This
+log file can be replayed at a later time, maintaining the timing
+information in order to mimic the original system that was recorded.
+
+It is possible to only replay some of the streams of data contained in a
+log file, for example to select just one laser sensor's data from a log
+file containing many laser sensors. Options are available to play back a
+selection of entries from the log file based on index or time, change
+the playback rate, and modify the timestamps in the replayed data.
+
+The default action is to record a log file. All ports specified on the
+command line must be output ports. If replay mode is enabled, all
+specified ports must be input ports matching the recorded data's data
+types.
+
+Each port recorded in a log file creates a single data stream. When
+replaying the log file, each data stream can be sent to one or more
+target ports. Data streams are identified by name. This name is
+specified on the command line as part of the source port. If no name is
+given, a default name is created automatically.
+
+Connections will be made to the ports using the default connection
+settings compatible with the port.
+
+Options
+=======
+
+-a, --absolute-times
+  Times from the logged data are sent as recorded during replay, rather
+  than adjusted to the current timeframe.
+
+-d, --display-info
+  Display the log information and exit.
+
+-e END, --end=END
+  Time or entry index to stop recording or playback. Must be within the
+  bounds of the log. Specify ``-1`` to record forever or replay to the
+  end of the log.  Use ``--index`` to specify that this value is an
+  index.
+
+-f FILENAME, --filename=FILENAME
+  File name of the log file to record to/playback from. If not specified
+  for recording, a default will be created based on the current time.
+  Must be specified for playback.
+
+--path=PATHS
+  Extra module search paths to add to the ``PYTHONPATH``.
+
+-i, --index
+  Interpret the start and end values as entry indices instead of
+  timestamps.
+
+-l LOGGER, --logger=LOGGER
+  The type of logger to use. The default is the SimplePickle logger
+  (``simpkl``). Alternatively, the text logger (specify using ``text``)
+  may be used. The text logger does not support playback.
+
+-m MODULES, --mod=MODULES
+  Extra modules to import. If automatic module loading struggles with
+  the data types, try listing the modules here. The module and its
+  ``__POA`` partner will be imported.
+
+-n, --ignore-times
+  (Replay mode only.) Ignore the log timestamps and play back a fixed
+  number of entries per execution cycle. Use ``--exec-rate`` to change
+  the execution rate.
+
+-p, --play
+  Replay mode.
+
+-r RATE, --rate=RATE
+  (Replay mode only.) Scale the playback speed of the log.
+
+-s START, --start=START
+  (Replay mode only.) Time or entry index to start playback from. Must
+  be within the bounds of the log. Use ``--index`` to specify that this
+  value is an index.
+
+-t TIMEOUT, --timeout=TIMEOUT
+  Record/replay data for this many seconds. This option overrides
+  ``--start``/``--end``.
+
+-x EXEC_RATE, --exec-rate=EXEC_RATE
+  Specify the rate in Hertz at which to run the component.
+
+.. include:: ../../common/en/common_opts.txt
+
+.. include:: ../../common/en/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtlog -f log.rtlog /localhost/ConsoleIn0.rtc:out.numbers
+
+Log values sent by the ``ConsoleIn0.rtc`` component over its ``out``
+output port. The data stream will be named ``numbers`` in the log file.
+The log file will be named ``log.rtlog``.
+
+::
+
+  $ rtlog -f log.rtlog -p /localhost/ConsoleOut0.rtc:in.numbers
+
+Play the entries from the stream named ``numbers`` in the log file into
+the ``in`` input port of the ``ConsoleOut0.rtc`` component.
+
+::
+
+  $ rtlog -f log.rtlog -d
+
+Display information about the log file, including its start and end
+times and the data streams it contains.
+
+::
+
+  $ rtlog -f log.rtlog -e 1292489690
+    /localhost/ConsoleIn0.rtc:out.numbers
+
+Record data until the computer's clock reads 1292489690, then stop
+logging.
+
+::
+
+  $ rtlog -f log.rtlog -e 10 -i /localhost/ConsoleIn0.rtc:out.numbers
+
+Record 10 entries, then stop logging.
+
+::
+
+  $ rtlog -f log.rtlog -t 10 /localhost/ConsoleIn0.rtc:out.numbers
+
+Record for 10 seconds, then stop logging.
+
+::
+
+  $ rtlog -f log.rtlog -p -s 1292489690
+    /localhost/ConsoleOut0.rtc:in.numbers
+
+Replay data from the log file starting at timestamp 1292489690.
+
+::
+
+  $ rtlog -f log.rtlog -p -e 1292489700
+    /localhost/ConsoleOut0.rtc:in.numbers
+
+Replay data from the log file from the beginning until timestamp
+1292489700.
+
+::
+
+  $ rtlog -f log.rtlog -p -s 1292489690 -e 1292489700
+    /localhost/ConsoleOut0.rtc:in.numbers
+
+Replay data from the log file from timestamp 1292489690 until timestamp
+1292489700 (i.e. 10 seconds of data).
+
+::
+
+  $ rtlog -f log.rtlog -p -s 5 -i
+    /localhost/ConsoleOut0.rtc:in.numbers
+
+Replay data from the log file starting at the 5th entry.
+
+::
+
+  $ rtlog -f log.rtlog -p -e 10 /localhost/ConsoleOut0.rtc:in.numbers
+
+Replay data from the log file from the beginning until the 10th entry.
+
+::
+
+  $ rtlog -f log.rtlog -p -s 5 -e 10
+    /localhost/ConsoleOut0.rtc:in.numbers
+
+Replay data from the log file from the 5th entry until the 10th entry
+(i.e. 5 entries).
+
+::
+
+  $ rtlog -f log.rtlog -p -t 10 /localhost/ConsoleOut0.rtc:in.numbers
+
+Replay data the first 10 seconds of data from the log file.
+
+::
+
+  $ rtlog -f log.rtlog -p -r 5 /localhost/ConsoleOut0.rtc:in.numbers
+
+Replay the data at five times the speed it was recorded at.
+
+::
+
+  $ rtlog -f log.rtlog -p -r 0.2 /localhost/ConsoleOut0.rtc:in.numbers
+
+Replay the data at one fifth of the speed it was recorded at.
+
+::
+
+  $ rtlog -f log.rtlog -p -n 5 -x 1 /localhost/ConsoleOut0.rtc:in.numbers
+
+Replay the data, executing once per second and playing exactly 5 entries
+per execution.
+
+::
+
+  $ rtlog -f log.rtlog /localhost/Sensor0.rtc:out.sensor
+    /localhost/Controller0.rtc:out.ctrl /localhost/Motor0.rtc:out.motor
+
+Record three streams of data into a single log file. The streams will be
+named ``sensor``, ``ctrl`` and ``motor``.
+
+::
+
+  $ rtlog -f log.rtlog /localhost/Sensor0.rtc:in.motor
+    /localhost/Motor0.rtc:in.ctrl
+
+Play two streams of data from a single log file into different targets.
+
+::
+
+  $ rtlog -f log.rtlog -p /localhost/Controller0.rtc:in.sensor
+    /localhost/Controller0.rtc:in.motor
+
+Play two streams of data from a log file into a single port.
+
+::
+
+  $ rtlog -f log.rtlog -p /localhost/Sensor0.rtc:in.motor
+    /localhost/Controller0.rtc:in.motor
+
+Play the same stream of data from a log file into multiple ports.
+
+See rtinject(1) for examples using ``--mod`` and ``--path``.
+
+See Also
+========
+
+  ``rtcat`` (1),
+  ``rtinject`` (1),
+  ``rtprint`` (1)
+

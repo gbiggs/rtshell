@@ -1,11 +1,11 @@
 =======
-rtshell
+RTShell
 =======
 
 イントロダクション
 ==================
 
-rtcshell は、ネームサーバ上に登録されているRTコンポーネントをシェルから
+RTShell は、ネームサーバ上に登録されているRTコンポーネントをシェルから
 管理することができるツールです。コンポーネントを
 activate/deactivate/resetしたり、ポートの接続を行うことができます。RTシ
 ステムを管理することもできます。
@@ -26,17 +26,21 @@ This software is licensed under the GNU Lesser General Public License version 3
 必要条件
 ========
 
-- rtctree 3.0以上が必要となります.
+- RTCTree 以上が必要となります.
 
-- rtsprofile-2.0 が必要となります。
+- RTSProfile が必要となります。
 
-- Python 2.5以下では存在しない機能を使うので、Python 2.6以上が必要となり
-  ます。
+- Python 2.7が必要となります。
 
 - rtprint、rtinjectおよびrtlogはOpenRTM-Python-1.0.0以上が必要となります。
 
-- Ubuntu 9.04を使っていたら、手動でPython 2.6をインストールすることが必
-  要となります。Ubuntu 9.04以上をおすすめします。
+- omniORB-py 4.x 以上が必要となります。
+
+- ソースからのインストールの場合は、ドキュメントをコンパイルするために
+  Sphinx が必要となります。
+
+pip によりインストールする場合は、RTCTree と RTSProfile は自動的に
+インストールされます。
 
 
 インストール
@@ -44,46 +48,49 @@ This software is licensed under the GNU Lesser General Public License version 3
 
 インストールはいくつかの方法が利用可能です。
 
-  1.リポジトリまたはソースアーカイブからダウンロード後、適当なディレクト
-  リで解凍し、そこでコマンドを実行する。
+1. （好ましい方法）pip を利用してPyPiからインストールする。
 
-  2.リポジトリまたはソースアーカイブからダウンロード後、適当なディレクト
-  リで解凍し、インストールする。
+  a. 必要にお応じて pip をインストールします。
+     https://pip.pypa.io/en/latest/installing/ に参照してください::
 
-    a) ソースを展開する::
+  b. pip を実効します。
 
-        $ cd /home/blurgle/src/
-        $ tar -xvzf rtshell-3.0.0.tar.gz
+     $ pip install rtshell
 
-    b) setup.pyを実行する::
+  c. 以下のコマンドを実効し、インストール後のアクションを行います::
 
-        $ python setup.py install
+     $ rtshell_post_install
 
-    c) 必要に応じて、環境変数を設定します。これはデフォルトで設定されて
-    いますが、設定されていない場合は自分で設定する必要があります。
-    Windows上では、Python の site-packages ディレクトリが ``PYTHONPATH``
-    環境変数に、Pythonスクリプトのディレクトリが PATH 環境変数に設定され
-    ていることを確認してください。通常、これらは
-    ``C:\Python26\Lib\site-packages\`` と ``C:\Python26\Scripts\``
-    です（Pythonが``C:\Python26\``にインストールされた場合）。
+  d. Windows上では、必要に応じて環境変数を設定します。通常デフォルトで
+     設定されていますが、設定されていない場合は自分で設定する必要が
+     あります。Pythonスクリプトのディレクトリが PATH 環境変数に設定され
+     ていることを確認してください。通常、これらは ``C:\Python27\Scripts\``
+     です（Pythonが``C:\Python27\``にインストールされた場合）。
 
-  3. Windows ではインストーラの使用を推奨します。``setup.py`` を利用すれ
-  ば結果より容易に設定することができます。ただし、環境によってはさらに環
-  境変数の設定が必要な場合があります。
+2. リポジトリまたはソースアーカイブからダウンロード後、適当なディレクトリで
+   解凍し、インストールする。
 
-  4. Windows　ではない場合、シェルスクリプトをインストールする必要です。
-  ``${prefix}/share/rtshell/shell_support``（${prefix}はrtcshellをインス
-  トールされたディレクトリです。）というファイルを``source``コマンドに
-  よってロードしてください（例はrtshellが``/usr/local``にインストールさ
-  れた場合）::
+  a. ソースを展開する::
 
-    source /usr/local/share/rtshell/shell_support
+     $ cd /home/blurgle/src/
+     $ tar -xvzf rtshell.tar.gz
 
-  いつも新しいシェルを実効する時に以上のコマンドを実効することは必要な
-  いように以下の行を``.bashrc``などのファイルに追加してください
-  （rtshellが``/usr/local``にインストールsされた場合）::
+  b. setup.pyを実行する::
 
-    source /usr/local/share/rtshell/shell_support
+     $ python setup.py install
+
+  c. 以下のコマンドを実効し、インストール後のアクションを行います::
+
+     $ rtshell_post_install
+
+  d. Windows上では、必要に応じて環境変数を設定します。通常デフォルトで
+     設定されていますが、設定されていない場合は自分で設定する必要が
+     あります。Pythonスクリプトのディレクトリが PATH 環境変数に設定され
+     ていることを確認してください。通常、これらは ``C:\Python27\Scripts\``
+     です（Pythonが``C:\Python27\``にインストールされた場合）。
+
+3. Windows上では、インストーラプログラムを利用してインストールすることが
+   可能です。
 
 
 リポジトリ
@@ -103,11 +110,11 @@ clone」を使うこともできます。パッチを送りたがったら、こ
 
 ドキュメントはマンページとして提供します（Windowsの場合はHTMLに提供しま
 す）。``${prefix}/share/man``にインストールされます。このパスを
-``$MANPATH``という環境変数に追加する必要です。例えば、rtshellは
-``/usr/local``にインストールされた場合、以下の行を``.bashrc``に追加して
+``$MANPATH``という環境変数に追加する必要です。例えば、RTShellは
+``/home/blurgle``にインストールされた場合、以下の行を``.bashrc``に追加して
 ください::
 
-  export MANPATH=/usr/local/share/man:${MANPATH}
+  export MANPATH=/home/blurgle/share/man:${MANPATH}
 
 
 テストの実効
@@ -128,6 +135,12 @@ $ ./test/test_cmds.py ~/share/OpenRTM-aist/examples/rtcs/ rtactTests
 
 Changelog
 =========
+
+4.1
+---
+
+- distutils から setuptools への切り替え
+- Python 2.6 のサポート終了
 
 4.0
 ---

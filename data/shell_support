@@ -1,0 +1,30 @@
+# Copyright (C) 2009-2015
+#     Geoffrey Biggs
+#     RT-Synthesis Research Group
+#     Intelligent Systems Research Institute,
+#     National Institute of Advanced Industrial Science and Technology (AIST),
+#     Japan
+#     All rights reserved.
+# Licensed under the GNU Lesser General Public License version 3.
+# http://www.gnu.org/licenses/lgpl-3.0.en.html
+
+if [ `uname` = "Darwin" ]; then
+   PYTHON_COMMAND=python
+elif [ `uname` = "Linux" ]; then
+   PYTHON_COMMAND=python
+fi
+
+rtcwd()
+{
+   eval $($PYTHON_COMMAND -c "import sys; import rtshell.rtcwd; sys.exit(rtshell.rtcwd.main(['${1}']))")
+}
+
+rtvis()
+{
+    rtcryo | rtstodot | dot -T xlib
+}
+
+if [[ $BASH ]]; then
+    MY_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)
+    source "${MY_DIR}/bash_completion"
+fi

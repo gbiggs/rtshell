@@ -1,0 +1,114 @@
+=====
+rtcon
+=====
+
+-------------
+connect ports
+-------------
+
+.. include:: ../../common/en/docinfo_block.txt
+
+Synopsis
+========
+
+rtcon [options] <path 1> <path 2> [<path 3> ...]
+
+Description
+===========
+
+Connects two or more data or service ports together.
+
+For data ports, the valid properties include::
+
+  - dataport.data_type
+  - dataport.dataflow_type
+  - dataport.interface_type
+  - dateport.subscription_type
+
+For service ports, the valid properties include::
+
+  - port.port_type
+
+When connecting data ports, the properties below may also be used. Some
+properties depend on other properties, and may not have an effect if
+their dependencies are not set appropriately.
+
+========================================= ============================ ==========
+Property                                  Value                        Dependency
+========================================= ============================ ==========
+dataport.inport.buffer.length             <integer>
+dataport.inport.buffer.read.timeout       <float> in seconds
+dataport.inport.buffer.read.empty_policy  readback, do_nothing, block
+dataport.inport.buffer.write.timeout      <float> in seconds
+dataport.inport.buffer.write.full_policy  overwrite, do_nothing, block
+dataport.outport.buffer.length            <integer>
+dataport.outport.buffer.read.timeout      <float> in seconds
+dataport.outport.buffer.read.empty_policy readback, do_nothing, block
+dataport.outport.buffer.write.timeout     <float> in seconds
+dataport.outport.buffer.write.full_policy overwrite, do_nothing, block
+dataport.subscription_type                flush, new, periodic         dataport.dataflow_type is push
+dataport.publisher.push_policy            all, fifo, skip, new         dataport.subscription_type is not flush
+dataport.push_rate                        <float> in Hz                dataport.subscription_type is periodic
+dataport.publisher.skip_count             <integer>                    dataport.publisher.push_policy is skip
+========================================= ============================ ==========
+
+Other properties may also be valid, depending on your OpenRTM
+implementation.
+
+Options
+=======
+
+-i ID, --id=ID
+  ID of the connection.
+
+-n NAME, --name=NAME
+  Name of the connection.
+
+-p PROPERTIES, --property=PROPERTIES
+  Connection properties.
+
+.. include:: ../../common/en/common_opts.txt
+
+.. include:: ../../common/en/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtcon /localhost/ConsoleIn0.rtc:out /localhost/ConsoleOut0.rtc:in
+
+Connect the ``out`` port of ``ConsoleIn0.rtc`` to the ``in`` port of
+``ConsoleOut0.rtc`` using the default connection properties.
+
+::
+
+  $ rtcon Motor0.rtc:out Sensor0.rtc:in --property
+    dataport.dataflow_type=pull
+
+Connect the ``out`` port of ``Motor0.rtc`` to the ``in`` port of
+``Sensor0.rtc`` using a ``pull`` connection.
+
+::
+
+  $ rtcon Motor0.rtc:out Sensor0.rtc:in -i con1 -n motor_data
+
+Connect the ``out`` port of ``Motor0.rtc`` to the ``in`` port of
+``Sensor0.rtc``, giving the connection the name ``motor_data`` and the
+ID ``con1``.
+
+::
+
+  $ rtcon ConsoleIn0.rtc:out ConsoleOut0.rtc:in ConsoleOut1.rtc:in
+
+Connect the ``out`` port of ``ConsoleIn0.rtc`` to the ``in`` port of
+``ConsoleOut0.rtc`` and the ``in`` port of ``ConsoleOut1.rtc`` using the
+default connection properties.
+
+
+See Also
+========
+
+  ``rtcat`` (1),
+  ``rtdis`` (1)
+

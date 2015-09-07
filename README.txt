@@ -1,11 +1,11 @@
 =======
-rtshell
+RTShell
 =======
 
 Introduction
 ============
 
-rtshell provides commands used to manage individual RT components and
+RTShell provides commands used to manage individual RT components and
 managers, as well as complete RT Systems. It can be used with the
 OpenRTM-aist middleware or middlewares that use a compatible CORBA-based
 introspection system.
@@ -24,7 +24,7 @@ components on low-resource systems, systems where a GUI is not available
 (particularly where no network connection is available to manage
 components from another computer), as well as those who face other
 difficulties using RTSystemEditor.  Being familiar with using a
-command-line is a benefit when using these commands of rtshell.
+command-line is a benefit when using these commands of RTShell.
 
 This software is developed at the National Institute of Advanced
 Industrial Science and Technology. Approval number
@@ -39,23 +39,25 @@ This software is licensed under the GNU Lesser General Public License version 3
 Requirements
 ============
 
-rtshell requires rtctree 3.0. It must be installed for the commands to
-function.
+omniORB-py 4.x is required.
 
-The commands that work with RtsProfile files require rtsprofile 2.0. It
-must be installed for these commands to function/
+RTShell requires rtctree. It must be installed for the commands to function.
 
-rtshell uses the new string formatting operations that were introduced
-in Python 2.6. It will not function with an earlier version of Python.
-It has not been tested with Python 3 and it is likely that several
-changes will be necessary to make it function using this version of
-Python.
+The commands that work with RtsProfile files require rtsprofile. It must be
+installed for these commands to function/
+
+RTShell requires Python 2.7. It will not function with an earlier version of
+Python. It has not been tested with Python 3 and it is likely that several
+changes will be necessary to make it function using this version of Python.
 
 rtprint, rtinject and rtlog require the Python version of OpenRTM-aist.
 
-For Ubuntu users, if you are using a version of Ubuntu prior to 9.04,
-you will need to install a suitable Python version by hand. You may want
-to consider upgrading to Ubuntu 9.04 or later (10.04 offers LTS).
+Sphinx must be installed to build the documentation, if installing from source
+(method 2).
+
+If RTShell is installed using pip (method 1, below), RTCTree and RTSProfile
+will be installed automatically. omniORB-py and OpenRTM-python must still be
+installed manually.
 
 
 Installation
@@ -63,62 +65,56 @@ Installation
 
 There are several methods of installation available:
 
-  1. Download the source from either the repository (see "Repository,"
-  below) or a source archive, extract it somewhere, and run the commands
-  from that directory.
+1. (Preferred method) Use pip to install the PyPi package.
 
-  2. Download the source from either the repository (see "Repository,"
-  below) or a source archive, extract it somewhere, and install it into
-  your Python distribution:
+ a. Install pip if it is not already installed.
+    See https://pip.pypa.io/en/latest/installing/
 
-    a) Extract the source, e.g. to a directory ~/rtshell::
+ b. Execute the following command to install RTShell::
 
-      $ cd /home/blurgle/src/
-      $ tar -xvzf rtshell-3.0.0.tar.gz
+    $ pip install rtshell
 
-    b) Run setup.py to install rtshell to your default Python
-    installation::
+ c. Execute the post-installation setup::
 
-     $ python setup.py install
+    $ rtshell_post_install
 
-    c) If necessary, set environment variables. These should be set by
-    default, but if not you will need to set them yourself. On Windows,
-    you will need to ensure that your Python site-packages directory is
-    in the PYTHONPATH variable and the Python scripts directory is in
-    the PATH variable.  Typically, these will be something like
-    ``C:\Python26\Lib\site-packages\`` and ``C:\Python26\Scripts\``,
-    respectively (assuming Python 2.6 installed in ``C:\Python26\``).
+ d. On Windows, you will need to ensure that your Python scripts directory is
+    in the PATH variable.  Typically, this will be something like
+    ``C:\Python27\Scripts\`` (assuming Python 2.7 installed in
+    ``C:\Python27\``).
 
-  3. Use the Windows installer. This will perform the same job as running
-  setup.py (see #2), but saves opening a command prompt. You may still need to
-  add paths to your environment variables (see step c, above).
+2. Download the source from either the repository (see "Repository," below) or
+   a source archive, extract it somewhere, and install it into your Python
+   distribution:
 
-  4. In non-Windows operating systems, you must source the shell support
-  file to gain full functionaliy. Amongst other things, rtcwd will not
-  work without sourcing this file. You can find this file at
-  ``${prefix}/share/rtshell/shell_support`` (``${prefix}`` is the
-  directory where you installed rtshell). You can source it by running
-  the following command (assuming rtshell has been installed to
-  ``/usr/local``)::
+ a. Extract the source, e.g. to a directory ~/rtshell::
 
-   source /usr/local/share/rtshell/shell_support
+    $ cd /home/blurgle/src/
+    $ tar -xvzf rtshell.tar.gz
 
-  So that you don't have to run this command every time you open a
-  terminal, you can add it to your shell's startup file. For example, if
-  you are using a bash shell and installed rtshell to ``/usr/local``, add
-  the following line to the ``.bashrc`` file in your home directory::
+ b. Run setup.py to install RTShell to your default Python installation::
 
-    source /usr/local/share/rtshell/shell_support
+    $ python setup.py install
+
+ c. Execute the post-installation setup::
+
+    $ rtshell_post_install
+
+ d. On Windows, you will need to ensure that your Python scripts directory is
+    in the PATH variable.  Typically, this will be something like
+    ``C:\Python27\Scripts\`` (assuming Python 2.7 installed in
+    ``C:\Python27\``).
+
+3. On Windows, use the Windows installer.
 
 
 Repository
 ==========
 
 The latest source is stored in a Git repository at github, available at
-``http://github.com/gbiggs/rtshell``. You can download it as a zip file
-or tarball by clicking the "Download Source" link in the top right of
-the page.  Alternatively, use Git to clone the repository. This is
-better if you wish to contribute patches::
+``http://github.com/gbiggs/rtshell``. You can download it as a zip file or
+tarball by clicking the "Download Source" link on that page. Alternatively, use
+Git to clone the repository. This is better if you wish to contribute patches::
 
   $ git clone git://github.com/gbiggs/rtshell.git
 
@@ -130,10 +126,10 @@ Documentation is available in the form of man pages (on Windows, these
 are available as HTML files). These will be installed under
 ``${prefix}/share/man``.  You must add this folder to your system's
 ``$MANPATH`` environment variable to be able to use them. For example,
-if you installed rtshell into /usr/local, add the following line to your
+if you installed RTShell into /home/blag, add the following line to your
 ``.bashrc``::
 
-  export MANPATH=/usr/local/share/man:${MANPATH}
+  export MANPATH=/home/blag/share/man:${MANPATH}
 
 
 Running the tests
@@ -158,6 +154,12 @@ This will run only the tests for the rtact command.
 
 Changelog
 =========
+
+4.1
+---
+
+- Switched setup script from distutils to setuptools
+- Dropped support for Python 2.6
 
 4.0
 ---
@@ -218,7 +220,7 @@ Changelog
 - rtresurrect: Don't recreate existing connections.
 - rtteardown: Fail if the connector ID doesn't match.
 - rtresurrect/rtstart/rtstop/rtteardown: Accept input from standard input.
-- Refactored former rtsshell commands into rtshell-style libraries.
+- Refactored former rtsshell commands into RTShell-style libraries.
 - Added tests.
 
 

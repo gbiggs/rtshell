@@ -1,0 +1,78 @@
+=====
+rtcat
+=====
+
+----------------------------------------
+view component information and meta-data
+----------------------------------------
+
+.. include:: ../../common/en/docinfo_block.txt
+
+Synopsis
+========
+
+rtcat [options] <path>
+
+Description
+===========
+
+Equivalent to the POSIX ``cat`` command. Reads and displays the
+meta-information of RT-Components, ports and managers, as well as
+displaying the information obtained from the introspection interfaces of
+these objects.
+
+Options
+=======
+
+-l
+  Show more information. Specify multiple times for even more
+  information. [Default:: ``False``]
+
+.. include:: ../../common/en/common_opts.txt
+
+.. include:: ../../common/en/common_body.txt
+
+Examples
+========
+
+::
+
+  $ rtcat /localhost/local.host_cxt/Motor0.rtc
+
+Show the basic information about the ``Motor0.rtc`` component.
+
+::
+
+  $ rtcat /localhost/local.host_cxt/Motor0.rtc -l
+
+Show more information about the ``Motor0.rtc`` component, including port
+and execution context details.
+
+::
+
+  $ rtcat /localhost/local.host_cxt/Motor0.rtc -ll
+
+Show even more information about the ``Motor0.rtc`` component, including
+current connections on each port.
+
+::
+
+  $ rtcat /localhost/local.host_cxt/Motor0.rtc:in -l
+
+Show only the information about the port named ``in`` on the
+``Motor0.rtc`` component.
+
+::
+
+  $ rtcat /localhost/local.host_cxt/manager.mgr
+
+Show the basic information about the ``manager.mgr`` manager.
+
+See Also
+========
+
+``rtcon`` (1),
+``rtconf`` (1),
+``rtprint`` (1),
+``rtstodot`` (1)
+

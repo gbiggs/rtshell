@@ -2,6 +2,8 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 '''rtshell
 
 Copyright (C) 2009-2015
@@ -24,175 +26,254 @@ rtshell install script.
 
 from __future__ import print_function
 
-
-from distutils.command.install_scripts import install_scripts
-from distutils.command.install_data import install_data
-from distutils.core import setup
+from distutils.command.build import build
+from distutils.command.install import install
+from distutils.core import Command
+from distutils import errors
+from distutils import log
 import os
 import os.path
+import setuptools
+import shutil
 import subprocess
 import sys
 
 
-# Hacky method of installing the documentation. Need a nice hook for this.
-def get_files(dir, ext=None):
-    files = [os.path.join(dir, f) for f in os.listdir(dir) \
-            if os.path.isfile(os.path.join(dir, f))]
-    if ext:
-        return [f for f in files if os.path.splitext(f)[1] == ext]
-    else:
-        return files
-
-if sys.platform != 'win32':
-    cwd = os.path.join(os.getcwd(), 'doc')
-    if sys.version_info[0] == 3:
-        s = input('Generate documentation? ')
-    else:
-        s = raw_input('Generate documentation? ')
-    if s.lower() == 'y' or s.lower() == 'YES':
-        print('Generating documentation')
-        p = subprocess.Popen(['./make_docs', 'man', 'html', 'pdf', '-v'],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-        stdout, stderr = p.communicate()
-        if p.returncode != 0:
-            print('Failed to generate documentation. Check docutils are installed.')
-            print(stderr)
-try:
-    man_files_en = get_files(os.path.join(os.getcwd(), 'doc/man/man1'))
-    html_files_en = get_files(os.path.join(os.getcwd(), 'doc/html'))
-    pdf_files_en = get_files(os.path.join(os.getcwd(), 'doc/pdf'), ext='.pdf')
-    man_files_ja = get_files(os.path.join(os.getcwd(), 'doc/man/ja/man1'))
-    html_files_ja = get_files(os.path.join(os.getcwd(), 'doc/html/ja'))
-    pdf_files_ja = get_files(os.path.join(os.getcwd(), 'doc/pdf/ja'), ext='.pdf')
-except OSError:
-    man_files_en = []
-    html_files_en = []
-    pdf_files_en = []
-    man_files_ja = []
-    html_files_ja = []
-    pdf_files_ja = []
+scripts_build_dir = os.path.join('data')
+scripts_install_dir = os.path.join('rtshell', 'data')
+doc_build_dir = os.path.join('doc')
+doc_install_dir = os.path.join('rtshell', 'data', 'doc')
 
 
-base_scripts = ['rtact',
-                'rtcat',
-                'rtcheck',
-                'rtcomp',
-                'rtcon',
-                'rtconf',
-                'rtcryo',
-                'rtdeact',
-                'rtdel',
-                'rtdis',
-                'rtexit',
-                'rtfind',
-                'rtinject',
-                'rtlog',
-                'rtls',
-                'rtdoc',
-                'rtmgr',
-                'rtprint',
-                'rtpwd',
-                'rtreset',
-                'rtresurrect',
-                'rtstart',
-                'rtstodot',
-                'rtstop',
-                'rtteardown',
-                'rtvlog']
-if sys.platform == 'win32':
-    batch_files = ['rtact.bat',
-                   'rtcat.bat',
-                   'rtcheck.bat',
-                   'rtcomp.bat',
-                   'rtcon.bat',
-                   'rtconf.bat',
-                   'rtcryo.bat',
-                   'rtcwd.bat',
-                   'rtdeact.bat',
-                   'rtdel.bat',
-                   'rtdis.bat',
-                   'rtdoc.bat',
-                   'rtexit.bat',
-                   'rtfind.bat',
-                   'rtinject.bat',
-                   'rtlog.bat',
-                   'rtls.bat',
-                   'rtmgr.bat',
-                   'rtprint.bat',
-                   'rtpwd.bat',
-                   'rtreset.bat',
-                   'rtresurrect.bat',
-                   'rtstart.bat',
-                   'rtstop.bat',
-                   'rtteardown.bat',
-                   'rtvlog.bat']
-    scripts = base_scripts + batch_files
-    data_files = [('Doc/rtshell', html_files_en + pdf_files_en),
-            ('Doc/rtshell/ja', html_files_ja + pdf_files_ja)]
-else:
-    scripts = base_scripts
-    data_files = [('share/rtshell', ['shell_support.in']),
-            ('share/man/man1', man_files_en),
-            ('share/man/ja/man1', man_files_ja),
-            ('share/doc/rtshell', html_files_en + pdf_files_en),
-            ('share/doc/rtshell/ja', html_files_ja + pdf_files_ja)]
+class BuildDocumentation(Command):
+    description = 'build the manpage, HTML and PDF documentation'
+    user_options = [
+            ('no-man', 'm', 'do not generate man pages'),
+            ('no-html', 'h', 'do not generate HTML documentation'),
+            ('pdf', 'p', 'do generate PDF documentation (disabled on Windows)'),
+            ('no-english', 'e', 'do not generate English documentation'),
+            ('no-japanese', 'j', 'do not generate Japanese documentation'),
+            ('build-dir=', 'd', 'directory to build in'),
+            ]
+    boolean_options = ['no-man', 'no-html', 'pdf', 'no-english',
+            'no-japanese']
+
+    def initialize_options(self):
+        self.no_man = False
+        self.no_html = False
+        self.pdf = False
+        self.no_english = False
+        self.no_japanese = False
+        self.build_dir = None
+
+    def finalize_options(self):
+        if 'win' in sys.platform:
+            self.pdf = False
+        self.set_undefined_options('build', ('build_base', 'build_dir'))
+
+    def source_dir(self, lang):
+        return os.path.join(os.getcwd(), 'doc', 'rest', lang)
+
+    def dest_dir(self, t, lang):
+        return os.path.join(self.build_dir, 'doc', t, lang)
+
+    def check_timestamps_in_dir(self, lang, lhs, rhs, verb=False):
+        log.info('Checking documentation timestamps for directory {}'.format(rhs))
+        for f in os.listdir(lhs):
+            lhs_f = os.path.join(lhs, f)
+            if not os.path.isfile(lhs_f):
+                continue
+            rhs_f = os.path.join(rhs, f)
+            if not os.path.isfile(rhs_f):
+                log.warn('Documentation file {} missing for language '
+                    '{1}.'.format(f, lang))
+                continue
+            lhs_time = os.path.getmtime(lhs_f)
+            rhs_time = os.path.getmtime(rhs_f)
+            if lhs_time > rhs_time:
+                log.warn('Documentation file {} for language {} is out of '
+                    'date.'.format(f, lang))
 
 
-class InstallRename(install_scripts):
+    def check_timestamps(self, lang):
+        # Base documentation files
+        base_dir = os.path.join(os.getcwd(), 'doc', 'rest', 'en')
+        check_dir = os.path.join(os.getcwd(), 'doc', 'rest', lang)
+        self.check_timestamps_in_dir(lang, base_dir, check_dir)
+        # Shared content
+        base_dir = os.path.join(os.getcwd(), 'doc', 'common', 'en')
+        check_dir = os.path.join(os.getcwd(), 'doc', 'common', lang)
+        self.check_timestamps_in_dir(lang, base_dir, check_dir)
+
+
+    def compile_docs(self, s, d, cmd, ext):
+        if os.path.exists(d):
+            # Remove the destination to clear out any existing junk
+            shutil.rmtree(d)
+        self.mkpath(d)
+        for f in os.listdir(s):
+            src = os.path.join(s, f)
+            if not os.path.isfile(src):
+                log.warn('Skipping non-file {}'.format(src))
+                continue
+            dest = os.path.join(d, os.path.splitext(f)[0] + ext)
+            log.debug('Compiling {} to {}'.format(src, dest))
+            try:
+                p = subprocess.Popen([cmd, src, dest], stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
+                stdout, stderr = p.communicate()
+            except OSError as e:
+                if e.errno == 2:
+                    # The non-.py version of the command was not found; try it
+                    # with the .py extension (for platforms like Gentoo)
+                    p = subprocess.Popen([cmd + '.py', src, dest],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    stdout, stderr = p.communicate()
+            if p.returncode != 0:
+                raise errors.DistutilsFileError(
+                    'Failed to compile {} to {}.\nStdout:\n{}\n---\n'
+                    'Stderr:\n{}'.format(src, dest, stdout, stderr))
+
+    def compile_tex(self, s, d):
+        if os.path.exists(d):
+            # Remove the destination to clear out any existing junk
+            shutil.rmtree(d)
+        self.mkpath(d)
+        tex_files = [os.path.join(s, f) for f in os.listdir(s) \
+                if os.path.splitext(f)[1] == '.tex']
+        for src in tex_files:
+            dest = os.path.join(d, os.path.splitext(os.path.basename(src))[0] + '.pdf')
+            log.debug('Compiling {} to {}'.format(src, dest))
+            p = subprocess.Popen(['rubber', '-d', '--into', d, src],
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = p.communicate()
+            if p.returncode != 0:
+                raise errors.DistutilsFileError(
+                    'Failed to compile {} to {}.\nStdout:\n{}\n---\n'
+                    'Stderr:\n{}'.format(src, dest, stdout, stderr))
+        # Clear up the auxiliary files
+        log.debug('Cleaning temporary files from {}'.format(d))
+        for f in [f for f in os.listdir(d) if os.path.splitext(f)[1] \
+                in ['.aux', '.log', '.out']]:
+            os.remove(os.path.join(d, f))
+
+    def clean_tex(self):
+        for l in ['en', 'ja']:
+            tex_dir=self.dest_dir('latex', l)
+            if os.path.exists(tex_dir):
+                log.debug('Removing latex directory {}'.format(tex_dir))
+                shutil.rmtree(tex_dir)
+
+    def compile_man(self, lang):
+        log.info('Compiling manpage documentation for language {}'.format(lang))
+        self.compile_docs(self.source_dir(lang),
+                os.path.join(self.dest_dir('man', lang), 'man1'), 'rst2man', '.1')
+
+    def compile_html(self, lang):
+        log.info('Compiling HTML documentation for language {}'.format(lang))
+        self.compile_docs(self.source_dir(lang),
+                self.dest_dir('html', lang), 'rst2html', '.html')
+
+    def compile_pdf(self, lang):
+        log.info('Compiling PDF documentation for language {}'.format(lang))
+        tex_dir = self.dest_dir('latex', lang)
+        self.compile_docs(self.source_dir(lang), tex_dir, 'rst2latex', '.tex')
+        self.compile_tex(tex_dir, self.dest_dir('pdf', lang))
+        self.clean_tex()
+
     def run(self):
-        install_scripts.run(self)
-        if sys.platform == 'win32':
-            # Rename the installed scripts to add .py on the end for Windows
-            print('Renaming scripts')
-            for s in base_scripts:
-                dest = os.path.join(self.install_dir, s + '.py')
-                if os.path.exists(dest):
-                    os.remove(dest)
-                self.move_file(os.path.join(self.install_dir, s), dest)
-            # Make links for the docs
-            #print 'Creating Start Menu links'
-            #rtshell_dir = os.path.join(self._get_start_menu(), 'rtshell')
-            #if not os.path.exists(rtshell_dir):
-                #os.mkdir(rtshell_dir)
-            #docs_en_path = os.path.join(rtshell_dir,
-                    #'Documentation (English).url')
-            #docs_ja_path = os.path.join(rtshell_dir,
-                    #'Documentation (Japanese).lnk')
+        msg = 'Compiling documentation in formats '
+        if not self.no_man:
+            msg += 'man, '
+        if not self.no_html:
+            msg += 'html, '
+        if self.pdf:
+            msg += 'pdf'
+        if msg[-2] == ',':
+            msg = msg[:-2]
+        msg += ' for languages '
+        if not self.no_english:
+            msg += 'English, '
+        if not self.no_japanese:
+            msg += 'Japanese, '
+        if msg[-2] == ',':
+            msg = msg[:-2]
+        log.info(msg)
 
-    def _get_start_menu(self):
-        if sys.platform != 'win32':
-            return ''
-        import ctypes
-        import ctypes.wintypes
-        SHGetFolderPath = ctypes.windll.shell32.SHGetFolderPathW
-        SHGetFolderPath.argtypes = [ctypes.wintypes.HWND, ctypes.c_int,
-                ctypes.wintypes.HANDLE, ctypes.wintypes.DWORD,
-                ctypes.wintypes.LPCWSTR]
-        path = ctypes.wintypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-        SHGetFolderPath(0, 2, 0, 0, path)
-        return path.value
+        langs = []
+        if not self.no_english:
+            langs.append('en')
+        if not self.no_japanese:
+            langs.append('ja')
+            self.check_timestamps('ja')
+        for l in langs:
+            if not self.no_man:
+                self.compile_man(l)
+            if not self.no_html:
+                self.compile_html(l)
+            if self.pdf:
+                self.compile_pdf(l)
+
+        log.info('Documentation compilation complete')
 
 
-class InstallConfigure(install_data):
+class InstallDocumentation(Command):
+    description = 'install documentation'
+    user_options = [
+        ('install-dir=', 'd', 'directory to install documentation to'),
+        ('build-dir=', 'b', 'build directory (where to install from)'),
+        ('force', 'f', 'force installation (overwrite existing files)'),
+        ('skip-build', None, 'skip the build steps'),
+        ]
+    boolean_options = ['force', 'skip-build']
+
+    def initialize_options(self):
+        self.install_dir = None
+        self.build_dir = None
+        self.force = None
+        self.skip_build = None
+
+    def finalize_options(self):
+        self.set_undefined_options('build', ('build_base', 'build_dir'))
+        self.set_undefined_options('install', ('force', 'force'),
+                ('skip_build', 'skip_build'))
+        # Documentation gets installed into the module's data directory.
+        # This is <install_lib>/rtshell/data
+        # This is necessary to ensure consistent and correct placement of the
+        # data files on Windows and Unix. Installing the docs as data causes
+        # the wheel to put them in the right place (under the install prefix,
+        # e.g. /usr/share/doc) on Unix but on Windows they end up in the Python
+        # installation's root directory, which is dirty.
+        self.set_undefined_options('install', ('install_lib', 'install_dir'))
+
     def run(self):
-        install_data.run(self)
-        if sys.platform != 'win32':
-            cmd = 'echo $SHELL | grep -q bash && source {dir}/bash_completion\n'
-            dest = os.path.join(self.install_dir, 'share/rtshell', 'shell_support')
-            if os.path.isfile(dest):
-                os.remove(dest)
-            self.move_file(os.path.join(self.install_dir, 'share/rtshell',
-                    'shell_support.in'), dest)
-            with open(dest, 'a') as f:
-                f.writelines((cmd.format(dir=os.path.join(self.install_dir,
-                    'share/rtshell')), '\n'))
-            self.config_bash_compl()
+        if not self.skip_build:
+            self.run_command('build_documentation')
+        self.outfiles = self.copy_tree(
+                os.path.join(self.build_dir, doc_build_dir),
+                os.path.join(self.install_dir, doc_install_dir))
+
+    def get_outputs(self):
+        return self.outfiles or []
+
+
+class BuildShellSupport(Command):
+    description = '"build" the shell support scripts'
+    user_options = [
+            ('build-dir=', 'd', 'directory to build in'),
+            ]
+
+    def initialize_options(self):
+        self.build_dir = None
+
+    def finalize_options(self):
+        self.set_undefined_options('build', ('build_base', 'build_dir'))
 
     def config_bash_compl(self):
         COMPOPT_NOSPACE = 'compopt -o nospace'
         COMPOPT_FILENAME = 'compopt -o filenames'
         COMPLETE_NOSPACE = '-o nospace'
-        with open('bash_completion', 'rt') as f:
+        with open(os.path.join('data', 'bash_completion.in'), 'rt') as f:
             bash_comp = f.read()
         if sys.platform == 'darwin':
             bash_comp = bash_comp.replace('@COMPOPT_NOSPACE@', ':')
@@ -204,38 +285,151 @@ class InstallConfigure(install_data):
             bash_comp = bash_comp.replace('@COMPOPT_FILENAMES@',
                     COMPOPT_FILENAME)
             bash_comp = bash_comp.replace('@COMPLETE_NOSPACE@', '')
-        with open('{0}/bash_completion'.format(
-                os.path.join(self.install_dir, 'share/rtshell')), 'w') as f:
+        bash_completion_dir = os.path.join(self.build_dir, scripts_build_dir)
+        bash_completion_path = os.path.join(bash_completion_dir,
+                'bash_completion')
+        if not os.path.isdir(bash_completion_dir):
+            self.mkpath(bash_completion_dir)
+        with open(bash_completion_path, 'w') as f:
             f.write(bash_comp)
 
+    def copy_shell_support(self):
+        shutil.copy(os.path.join('data', 'shell_support'),
+                os.path.join(self.build_dir, scripts_build_dir))
 
-setup(name='rtshell',
-      version='4.0.0',
-      description='Shell commands for managing RT Components and RT Systems.',
-      author='Geoffrey Biggs and contributors',
-      author_email='git@killbots.net',
-      url='http://github.com/gbiggs/rtshell',
-      license='LGPL3',
-      long_description='Shell commands for managing RT-Middleware.',
-      classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'Environment :: Console',
-          'Intended Audience :: Developers',
-          'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
-          'Natural Language :: English',
-          'Operating System :: OS Independent',
-          'Programming Language :: Python :: 2.6',
-          'Programming Language :: Python :: 2.7',
-          'Topic :: Software Development',
-          'Topic :: Utilities'
-          ],
-      packages=['rtshell'],
-      scripts=scripts,
-      data_files=data_files,
-      cmdclass={'install_scripts':InstallRename,
-          'install_data':InstallConfigure}
-      )
+    def copy_batch_files(self):
+        shutil.copy(os.path.join('data', 'rtcwd.bat'),
+                os.path.join(self.build_dir, scripts_build_dir))
+
+    def run(self):
+        # Configure the shell support scripts
+        self.config_bash_compl()
+        self.copy_shell_support()
+        self.copy_batch_files()
 
 
-# vim: tw=79
+class InstallShellSupport(Command):
+    description = 'install the shell support scripts'
+    user_options = [
+        ('install-dir=', 'd', 'directory to install shell support scripts to'),
+        ('build-dir=', 'b', 'build directory (where to install from)'),
+        ('force', 'f', 'force installation (overwrite existing files)'),
+        ('skip-build', None, 'skip the build steps'),
+        ]
+    boolean_options = ['force', 'skip-build']
 
+    def initialize_options(self):
+        self.install_dir = None
+        self.build_dir = None
+        self.force = None
+        self.skip_build = None
+
+    def finalize_options(self):
+        self.set_undefined_options('build', ('build_base', 'build_dir'))
+        self.set_undefined_options('install', ('force', 'force'),
+                ('skip_build', 'skip_build'))
+        # Shell scripts get installed into the module's data directory.
+        # This is <install_lib>/rtshell/data
+        # This is necessary to ensure consistent and correct placement of the
+        # data files on Windows and Unix. Installing them as data causes the
+        # wheel to put them in the right place (under the install prefix, e.g.
+        # /usr/share/doc) on Unix but on Windows they end up in the Python
+        # installation's root directory, which is dirty.
+        self.set_undefined_options('install', ('install_lib', 'install_dir'))
+
+    def run(self):
+        if not self.skip_build:
+            self.run_command('build_shell_support')
+        self.outfiles = self.copy_tree(
+                os.path.join(self.build_dir, scripts_build_dir),
+                os.path.join(self.install_dir, scripts_install_dir))
+
+    def get_outputs(self):
+        return self.outfiles or []
+
+
+
+class CustomInstall(install):
+    def run(self):
+        install.run(self)
+
+
+build.sub_commands.append(('build_shell_support', None))
+install.sub_commands.append(('install_shell_support', None))
+build.sub_commands.append(('build_documentation', None))
+install.sub_commands.append(('install_documentation', None))
+# Setuptools/distutils has a bug where the install command does not consider
+# entry points to be scripts. This means that if entry points are specified but
+# no scripts are directly installed (using the scripts parameter to setup()),
+# the entry points will not be installed.
+# This does not apply when using pip with a wheel because pip will create the
+# entry point scripts separately.
+# To get around this bug, the below lines remove the has_scripts predicate used
+# to determine if the install_scripts sub-command should be run, ensuring that
+# it is always run.
+install.sub_commands = [c for c in install.sub_commands \
+        if c[0] != 'install_scripts']
+install.sub_commands.insert(2, ('install_scripts', None))
+
+
+setuptools.setup(name='rtshell',
+    version='4.1.0',
+    description='Shell commands for managing RT Components and RT Systems.',
+    author='Geoffrey Biggs and contributors',
+    author_email='geoffrey.biggs@aist.go.jp',
+    url='http://github.com/gbiggs/rtshell',
+    license='LGPL3',
+    long_description='Shell commands for managing RT-Middleware.',
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2.7',
+        'Topic :: Software Development',
+        'Topic :: Utilities'
+        ],
+    packages=setuptools.find_packages(),
+    install_requires=['rtctree>=4', 'rtsprofile>=4'],
+    cmdclass={'build_shell_support': BuildShellSupport,
+        'install_shell_support': InstallShellSupport,
+        'build_documentation': BuildDocumentation,
+        'install_documentation': InstallDocumentation,
+        'install': CustomInstall,
+        },
+    entry_points = {
+        'console_scripts': [
+            'rtshell_post_install = rtshell.post_install:main',
+            'rtact = rtshell.rtact:main',
+            'rtcat = rtshell.rtcat:main',
+            'rtcheck = rtshell.rtcheck:main',
+            'rtcomp = rtshell.rtcomp:main',
+            'rtcon = rtshell.rtcon:main',
+            'rtconf = rtshell.rtconf:main',
+            'rtcryo = rtshell.rtcryo:main',
+            'rtdeact = rtshell.rtdeact:main',
+            'rtdel = rtshell.rtdel:main',
+            'rtdis = rtshell.rtdis:main',
+            'rtdoc = rtshell.rtdoc:main',
+            'rtexit = rtshell.rtexit:main',
+            'rtfind = rtshell.rtfind:main',
+            'rtinject = rtshell.rtinject:main',
+            'rtlog = rtshell.rtlog:main',
+            'rtls = rtshell.rtls:main',
+            'rtmgr = rtshell.rtmgr:main',
+            'rtprint = rtshell.rtprint:main',
+            'rtpwd = rtshell.rtpwd:main',
+            'rtreset = rtshell.rtreset:main',
+            'rtresurrect = rtshell.rtresurrect:main',
+            'rtstart = rtshell.rtstart:main',
+            'rtstodot = rtshell.rtstodot:main',
+            'rtstop = rtshell.rtstop:main',
+            'rtteardown = rtshell.rtteardown:main',
+            'rtvlog = rtshell.rtvlog:main',
+            ],
+        }
+    )
+
+#  vim: set expandtab tabstop=8 shiftwidth=4 softtabstop=4 textwidth=79

@@ -6,7 +6,7 @@ rtexit
 RTコンポーネントのログを表示する
 --------------------------------
 
-.. include:: ../../common/docinfo_block.txt
+.. include:: ../../common/ja/docinfo_block.txt
 
 書式
 ====

@@ -1,4 +1,6 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+
+from __future__ import print_function
 
 
 import optparse
@@ -11,10 +13,11 @@ import traceback
 
 def vprint(verb, msg):
     if verb:
-        print >>sys.stderr, msg
+        print(msg, file=sys.stderr)
 
 
 def call_process(args):
+    print('Running command', args)
     p = subprocess.Popen(args, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
     output = p.communicate()
@@ -31,7 +34,7 @@ def compile_docs(src_dir, dest_dir, cmd, ext, verb=False):
                 '{0}'.format(dest_dir))
     else:
         os.makedirs(dest_dir)
-    suffix = '.py'
+    suffix = ''
     for f in os.listdir(src_dir):
         src = os.path.join(src_dir, f)
         if not os.path.isfile(src):
@@ -43,10 +46,10 @@ def compile_docs(src_dir, dest_dir, cmd, ext, verb=False):
         vprint(verb, 'Compiling {0} to {1}'.format(src, dest))
         try:
             stdout, stderr, ret = call_process([cmd + suffix, src, dest])
-        except OSError, e:
-            if e.errno == 13:
-                # The .py version of the command was not found; try without it
-                suffix = ''
+        except OSError as e:
+            if e.errno == 2:
+                # The non-.py version of the command was not found; try with it
+                suffix = '.py'
                 # Repeat the previous command
                 stdout, stderr, ret = call_process([cmd + suffix, src, dest])
             else:
@@ -146,14 +149,14 @@ def check_timestamps_in_dir(lang, src_dir, check_dir, verb=False):
             continue
         check = os.path.join(check_dir, f)
         if not os.path.isfile(check):
-            print >>sys.stderr, 'File {0} missing for language {1}.'.format(f,
-                    lang)
+            print('File {0} missing for language {1}.'.format(f, lang),
+                    file=sys.stderr)
             continue
         src_time = os.path.getmtime(src)
         check_time = os.path.getmtime(check)
         if src_time > check_time:
-            print >>sys.stderr, ('File {0} for language {1} is out of '
-                'date.'.format(f, lang))
+            print('File {0} for language {1} is out of date.'.format(f, lang),
+            file=sys.stderr)
 
 
 def check_timestamps(lang='en', verb=False):
@@ -181,7 +184,7 @@ def main(argv):
     try:
         options, args = parser.parse_args()
     except optparse.OptionError, e:
-        print >>sys.stderr, 'OptionError:', e
+        print('OptionError:', e, file=sys.stderr)
         return 1
     if not args:
         args = ['man', 'html', 'pdf']
@@ -194,7 +197,7 @@ def main(argv):
             langs.append('en')
         if options.ja:
             langs.append('ja')
-    print 'Languages: {0}'.format(langs)
+    print('Languages: {0}'.format(langs))
 
     try:
         for l in langs:
@@ -204,7 +207,8 @@ def main(argv):
     except Exception, e:
         if options.verbose:
             traceback.print_exc()
-        print >>sys.stderr, '{0}: {1}'.format(os.path.basename(sys.argv[0]), e)
+        print('{0}: {1}'.format(os.path.basename(sys.argv[0]), e),
+                file=sys.stderr)
         return 1
     return 0
 

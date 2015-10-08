@@ -1,43 +1,189 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Name='RTShell 4.0'
-    Manufacturer='AIST'
-    Id='a999a734-5509-11e5-89aa-d4bed9a6ae6d'
-    UpgradeCode='bc9fbf12-5509-11e5-89aa-d4bed9a6ae6d'
-    Language='1033'
-    Codepage='1252'
-    Version='4.0.0'>
-    <!--Language='1041' Codepage='932' for Japanese-->
-    <Package Id='*'
-      Keywords='Installer'
-      Description='RTShell 4.0 installer'
-      Comments='RTShell is a product of the National Institute for Advanced Industrial Science and Technology, Japan'
-      Manufacturer='AIST'
-      InstallerVersion='400'
-      Languages='1033'
-      Compressed='yes'
-      SummaryCodepage='1252'
+  <Product Name="RTShell 4.1"
+    Manufacturer="AIST"
+    Id="a999a734-5509-11e5-89aa-d4bed9a6ae6d"
+    UpgradeCode="bc9fbf12-5509-11e5-89aa-d4bed9a6ae6d"
+    Language="1033"
+    Codepage="1252"
+    Version="4.0.0">
+    <!--Language="1041" Codepage="932" for Japanese-->
+    <Package Id="*"
+      Keywords="Installer"
+      Description="RTShell 4.0 installer"
+      Comments="RTShell is a product of the National Institute for Advanced Industrial Science and Technology, Japan"
+      Manufacturer="AIST"
+      InstallerVersion="400"
+      Languages="1033"
+      Compressed="yes"
+      SummaryCodepage="1252"
       />
   </Product>
 
-  <Property Id='PYTHON27DIRKEY'
-    Roor='HKLM'
-    Key='SOFTWARE\Python\PythonCore\2.7\InstallPath'
-    <?if $(env.ARCH) = x86_64 ?>
-      Win64='yes'
+  <Property Id="PYTHON27DIRKEY"
+    Roor="HKLM"
+    Key="SOFTWARE\Python\PythonCore\2.7\InstallPath"
+    <?if $(env.ARCH) = x86_64?>
+      Win64="yes"
     <?endif?>
-    Type='raw'
+    Type="raw"
     />
 
-  <Media Id='1' Cabinet='RTShell.cab' EmbedCab='yes'/>
+  <InstallExecuteSequence>
+    <Custom Action="COMPILE_IDL_PY27" After="InstallFinalize">
+      NOT Installed
+    </Custom>
+  </InstallExecuteSequence>
+
+  <Media Id="1" Cabinet="RTShell.cab" EmbedCab="yes"/>
 
   <Condition Message="[ProductName] requires Python 2.7">
     <![CDATA[Installed OR (PYTHON27 <> "")]]>
   </Condition>
 
-  <!-- C:\Python27\Lib\site-packages -->
-  <Directory Id='TARGETDIR' Name='SourceDir'>
-    <Directory Id='PYTHON27DIR' Name='[[PYTHON27DIRKEY]]'>
-    </Directory><!--PYTHON27DIR'-->
+  <Directory Id="TARGETDIR" Name="SourceDir">
+    <Directory Id="PYTHON27DIR" Name="[[PYTHON27DIRKEY]]">
+      <Directory Id="PythonLibDir" Name="Lib">
+        <Directory Id="SitePackagesDir" Name="site-packages">
+          <Directory Id="RtshellDir" Name="rtshell">
+            <Directory Id="RtshellDataDir" Name="data">
+              <Directory Id="RtshellDocDir" Name="doc">
+                <Directory Id="RtshellHTMLDir" Name="html">
+                  <Directory Id="RtshellHTMLEnDir" Name="en">
+                  </Directory>
+                  <Directory Id="RtshellHTMLJaDir" Name="ja">
+                  </Directory>
+                </Directory>
+              </Directory>
+            </Directory>
+          </Directory>
+          <Directory Id="RtshellInfoDir" Name="rtshell-4.1.0.dist-info">
+          </Directory>
+        </Directory>
+      </Directory>
+      <Directory Id="PythonScriptsDir" Name="Scripts">
+      </Directory>
+    </Directory><!--PYTHON27DIR"-->
   </Directory><!--TARGETDIR-->
+
+  <DirectoryRef Id="RtshellDir">
+  </DirectoryRef>
+  <DirectoryRef Id="RtshellDataDir">
+  </DirectoryRef>
+  <DirectoryRef Id="RtshellHTMLEnDir">
+  </DirectoryRef>
+  <DirectoryRef Id="RtshellHTMLJaDir">
+  </DirectoryRef>
+  <DirectoryRef Id="RtshellInfoDir">
+    <Component Id="InfoDescription" Guid="">
+      <File Id="description.rst" Source="Lib/site-packages/rtshell-4.1.0.dist-info/Description.rst" KeyPath="yes"/>
+    </Component>
+    <Component Id="InfoEntryPoints" Guid="">
+      <File Id="entry_points.txt" Source="Lib/site-packages/rtshell-4.1.0.dist-info/entry_points.txt" KeyPath="yes"/>
+    </Component>
+    <Component Id="InfoMetadata" Guid="">
+      <File Id="metadata" Source="Lib/site-packages/rtshell-4.1.0.dist-info/METADATA" KeyPath="yes"/>
+    </Component>
+    <Component Id="InfoMetadataJson" Guid="">
+      <File Id="metadata.json" Source="Lib/site-packages/rtshell-4.1.0.dist-info/metadata.json" KeyPath="yes"/>
+    </Component>
+    <Component Id="InfoRecord" Guid="">
+      <File Id="RECORD" Source="Lib/site-packages/rtshell-4.1.0.dist-info/RECORD" KeyPath="yes"/>
+    </Component>
+    <Component Id="InfoTopLevel" Guid="">
+      <File Id="top_level.txt" Source="Lib/site-packages/rtshell-4.1.0.dist-info/top_level.txt" KeyPath="yes"/>
+    </Component>
+    <Component Id="InfoWheel" Guid="">
+      <File Id="wheel" Source="Lib/site-packages/rtshell-4.1.0.dist-info/WHEEL" KeyPath="yes"/>
+    </Component>
+  </DirectoryRef>
+  <DirectoryRef Id="PythonScriptsDir">
+    <Component Id="ScriptsRtact" Guid="">
+      <File Id="rtact.exe" Source="Scripts/rtact.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtcat" Guid="">
+      <File Id="rtcat.exe" Source="Scripts/rtcat.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtcheck" Guid="">
+      <File Id="rtcheck.exe" Source="Scripts/rtcheck.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtcomp" Guid="">
+      <File Id="rtcomp.exe" Source="Scripts/rtcomp.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtcon" Guid="">
+      <File Id="rtcon.exe" Source="Scripts/rtcon.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtconf" Guid="">
+      <File Id="rtconf.exe" Source="Scripts/rtconf.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtcryo" Guid="">
+      <File Id="rtcryo.exe" Source="Scripts/rtcryo.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtcwd" Guid="">
+      <File Id="rtcwd.bat" Source="Scripts/rtcwd.bat" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtdeact" Guid="">
+      <File Id="rtdeact.exe" Source="Scripts/rtdeact.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtdel" Guid="">
+      <File Id="rtdel.exe" Source="Scripts/rtdel.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtdis" Guid="">
+      <File Id="rtdis.exe" Source="Scripts/rtdis.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtdoc" Guid="">
+      <File Id="rtdoc.exe" Source="Scripts/rtdoc.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtexit" Guid="">
+      <File Id="rtexit.exe" Source="Scripts/rtexit.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtfind" Guid="">
+      <File Id="rtfind.exe" Source="Scripts/rtfind.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtinject" Guid="">
+      <File Id="rtinject.exe" Source="Scripts/rtinject.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtlog" Guid="">
+      <File Id="rtlog.exe" Source="Scripts/rtlog.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtls" Guid="">
+      <File Id="rtls.exe" Source="Scripts/rtls.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtmgr" Guid="">
+      <File Id="rtmgr.exe" Source="Scripts/rtmgr.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtprint" Guid="">
+      <File Id="rtprint.exe" Source="Scripts/rtprint.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtpwd" Guid="">
+      <File Id="rtpwd.exe" Source="Scripts/rtpwd.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtreset" Guid="">
+      <File Id="rtreset.exe" Source="Scripts/rtreset.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtresurrect" Guid="">
+      <File Id="rtresurrect.exe" Source="Scripts/rtresurrect.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtstart" Guid="">
+      <File Id="rtstart.exe" Source="Scripts/rtstart.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtstodot" Guid="">
+      <File Id="rtstodot.exe" Source="Scripts/rtstodot.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtstop" Guid="">
+      <File Id="rtstop.exe" Source="Scripts/rtstop.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtteardown" Guid="">
+      <File Id="rtteardown.exe" Source="Scripts/rtteardown.exe" KeyPath="yes"/>
+    </Component>
+    <Component Id="ScriptsRtvlog" Guid="">
+      <File Id="rtvlog.exe" Source="Scripts/rtvlog.exe" KeyPath="yes"/>
+    </Component>
+  </DirectoryRef>
+
+  <Feature Id="RTShell" Title="RTShell" Level="1">
+    <ComponentRef Id=""/>
+  </Feature>
+  <Feature Id="RTShellDoc" Title="RTShell documentation" Level="1">
+  </Feature>
 </Wix>

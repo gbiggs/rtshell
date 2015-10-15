@@ -1,1 +1,3 @@
-rtshell.msi
+*.msi
+*.msm
+*.wixpdb

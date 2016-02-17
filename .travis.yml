@@ -6,6 +6,6 @@ install:
   - sudo apt-get install -qq -y python-pip python-dev openrtm-aist-python python-omniorb omniidl-python omniorb-nameserver omniorb-idl omniidl
   - sudo pip install pyyaml rtsprofile rtctree nose rednose coverage coveralls
 script:
-  - nosetests -v --rednose --with-doctest --with-coverage --cover-package=rtshell --cover-erase test/unittests.py
+  - nosetests -v --rednose --with-doctest --with-coverage --cover-package=rtshell --cover-erase test/*.py
 after_success:
   coveralls

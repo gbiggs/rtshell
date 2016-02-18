@@ -409,6 +409,7 @@ Record data from output ports, or replay data into input ports.'''
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    sys.exit(main())
 
 

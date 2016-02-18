@@ -32,7 +32,8 @@ def main(argv=None, tree=None):
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    sys.exit(main())
 
 
 # vim: tw=79

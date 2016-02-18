@@ -153,6 +153,7 @@ Print the data being sent by one or more output ports.'''
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    sys.exit(main())
 
 

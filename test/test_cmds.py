@@ -44,13 +44,15 @@ def load_file(fn):
         return f.read()
 
 def call_process(args):
+    if type(args) == str:
+        args = [args]
     if args[0].find('./') == 0:
-        args = ['python', '-m', args[0].replace('./', 'rtshell.')] + args[1:]
+        args = ['python', '-m', args[0].replace('././', './').replace('./', 'rtshell.')] + args[1:]
     print 'running command: ' + ' '.join(args)
     p = subprocess.Popen(args, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
     output = p.communicate()
-    output = (output[0].strip(), output[1].strip())
+    output = (output[0].strip().replace('.py:', ':'), output[1].strip().replace('.py:', ':'))
     return_code = p.returncode
     return output[0], output[1], return_code
 

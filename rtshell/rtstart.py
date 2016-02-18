@@ -150,5 +150,9 @@ Start an RT system using an RTSProfile.'''
     return 0
 
 
+if __name__ == '__main__':
+    main()
+
+
 # vim: tw=79
 

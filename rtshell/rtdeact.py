@@ -31,5 +31,9 @@ def main(argv=None, tree=None):
             deactivate_action, argv)
 
 
+if __name__ == '__main__':
+    main()
+
+
 # vim: tw=79
 

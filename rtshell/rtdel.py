@@ -124,5 +124,9 @@ Delete an object from a name server.'''
     return 0
 
 
+if __name__ == '__main__':
+    main()
+
+
 # vim: tw=79
 

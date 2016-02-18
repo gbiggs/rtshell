@@ -356,5 +356,9 @@ List a name server, directory, manager or component.'''
     return 0
 
 
+if __name__ == '__main__':
+    main()
+
+
 # vim: tw=79
 

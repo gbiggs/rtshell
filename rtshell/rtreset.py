@@ -32,5 +32,9 @@ def main(argv=None, tree=None):
             argv)
 
 
+if __name__ == '__main__':
+    main()
+
+
 # vim: tw=79
 

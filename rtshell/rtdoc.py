@@ -269,5 +269,9 @@ Display component documentation.'''
     return 0
 
 
+if __name__ == '__main__':
+    main()
+
+
 # vim: tw=79
 

@@ -97,5 +97,9 @@ Make a component exit.'''
     return 0
 
 
+if __name__ == '__main__':
+    main()
+
+
 # vim: tw=79
 

@@ -44,6 +44,9 @@ def load_file(fn):
         return f.read()
 
 def call_process(args):
+    if args[0].find('./') == 0:
+        args = ['python', '-m', args[0].replace('./', 'rtshell.')] + args[1:]
+    print 'running command: ' + ' '.join(args)
     p = subprocess.Popen(args, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
     output = p.communicate()
@@ -128,7 +131,7 @@ def launch_manager(tries=40, res=0.01):
     #subprocess.call(['killall', 'rtcd'])
     p = start_process(['rtcd', '-d', '-f', './test/rtc.conf'])
     while tries > 0:
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-t', 'm'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-t', 'm'])
         if stdout != '' and \
                 '/localhost/local.host_cxt/manager.mgr' in stdout and \
                 stderr == '':

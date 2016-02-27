@@ -78,12 +78,16 @@ def init(mgr):
     profile = OpenRTM_aist.Properties(defaults_str=spec)
     mgr.registerFactory(profile, C2,
             OpenRTM_aist.Delete)
+
+    
+def initcreate(mgr):
+    init(mgr)
     comp = mgr.createComponent("C2")
 
 
 def main():
     mgr = OpenRTM_aist.Manager.init(len(sys.argv), sys.argv)
-    mgr.setModuleInitProc(init)
+    mgr.setModuleInitProc(initcreate)
     mgr.activateManager()
     mgr.runManager()
     return 0

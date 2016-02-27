@@ -128,7 +128,7 @@ def clean_zombies():
 
 
 def launch_manager(tries=40, res=0.01):
-    #subprocess.call(['killall', 'rtcd_python'])
+    call_process(['killall', 'rtcd_python'])
     p = start_process(['rtcd_python', '-d', '-f', './test/rtc.conf'])
     while tries > 0:
         stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-t', 'm'])
@@ -138,11 +138,11 @@ def launch_manager(tries=40, res=0.01):
             return p
         tries -= 1
         time.sleep(res)
-    #print '-----\nManager launch failure output:'
-    #print 'stdout: ', stdout
-    #print 'stderr: ', stderr
-    #print 'retcode:', ret
-    #print '-----'
+    print '-----\nManager launch failure output:'
+    print 'stdout: ', stdout
+    print 'stderr: ', stderr
+    print 'retcode:', ret
+    print '-----'
     raise RTCLaunchFailedError
 
 

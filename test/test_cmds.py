@@ -32,9 +32,6 @@ import time
 import unittest
 
 
-COMP_LIB_PATH='/usr/local/share/openrtm-1.1/example/rtcs'
-
-
 class RTCLaunchFailedError(Exception):
     pass
 
@@ -73,8 +70,9 @@ def find_omninames():
 
 
 def launch_comp(name):
-    p = subprocess.Popen([os.path.join('./test', name),
-        '-f', './test/rtc.conf'], stdout=subprocess.PIPE)
+    args = [os.path.join('./test', name + '.py'), '-f', './test/rtc.conf']
+    print 'running command: ' + ' '.join(args)
+    p = subprocess.Popen(args, stdout=subprocess.PIPE)
     p.poll()
     if p.returncode is not None:
         raise RTCLaunchFailedError
@@ -130,8 +128,8 @@ def clean_zombies():
 
 
 def launch_manager(tries=40, res=0.01):
-    #subprocess.call(['killall', 'rtcd'])
-    p = start_process(['rtcd', '-d', '-f', './test/rtc.conf'])
+    #subprocess.call(['killall', 'rtcd_python'])
+    p = start_process(['rtcd_python', '-d', '-f', './test/rtc.conf'])
     while tries > 0:
         stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-t', 'm'])
         if stdout != '' and \
@@ -151,7 +149,7 @@ def launch_manager(tries=40, res=0.01):
 def stop_manager(mgr):
     mgr.terminate()
     mgr.wait()
-    call_process(['killall', 'rtcd'])
+    call_process(['killall', 'rtcd_python'])
 
 
 def add_obj_strs(args, obj1=None, obj2=None):
@@ -1438,10 +1436,11 @@ class rtdelTests(unittest.TestCase):
         stop_ns(self._ns)
 
     def _load_mgr(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
+        stdout, stderr, ret = call_process([
+            './rtmgr',
             '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so') + ':MotorInit',
-            '-c', 'Motor'])
+            'c1_comp:init',
+            '-c', 'C1'])
         self.assertEqual(ret, 0)
 
     def test_rtc(self):
@@ -1476,14 +1475,14 @@ class rtdelTests(unittest.TestCase):
 
     def test_manager_child(self):
         stdout, stderr, ret = call_process(['./rtdel',
-            '/localhost/local.host_cxt/manager.mgr/Motor0.rtc'])
+            '/localhost/local.host_cxt/manager.mgr/C10.rtc'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, 'rtdel: Parent not a directory: '
-            '/localhost/local.host_cxt/manager.mgr/Motor0.rtc')
+            '/localhost/local.host_cxt/manager.mgr/C10.rtc')
         self.assertEqual(ret, 1)
         stdout, stderr, ret = call_process(['./rtls',
-            '/localhost/local.host_cxt/manager.mgr/Motor0.rtc'])
-        self.assertEqual(stdout, 'Motor0.rtc')
+            '/localhost/local.host_cxt/manager.mgr/C10.rtc'])
+        self.assertEqual(stdout, 'C10.rtc')
 
     def test_port(self):
         stdout, stderr, ret = call_process(['./rtdel',
@@ -2509,20 +2508,17 @@ class rtlsTests(unittest.TestCase):
         stop_ns(self._ns)
 
     def _load_mgr(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Controller.so:ControllerInit'),
-            '-c', 'Controller'])
+        stdout, stderr, ret = call_process([
+            './rtmgr',
+            '/localhost/local.host_cxt/manager.mgr',
+            '-l', 'c1_comp:init',
+            '-c', 'C1'])
         self.assertEqual(ret, 0)
-        stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Sensor.so:SensorInit'),
-            '-c', 'Sensor'])
-        self.assertEqual(ret, 0)
-        stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so:MotorInit'),
-            '-c', 'Motor'])
+        stdout, stderr, ret = call_process([
+            './rtmgr',
+            '/localhost/local.host_cxt/manager.mgr',
+            '-l', 'c2_comp:init',
+            '-c', 'C2'])
         self.assertEqual(ret, 0)
 
     def test_ls_nothing(self):
@@ -2566,16 +2562,14 @@ class rtlsTests(unittest.TestCase):
     def test_ls_mgr_dir(self):
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/manager.mgr'])
-        self.assert_('Motor0.rtc' in stdout)
-        self.assert_('Controller0.rtc' in stdout)
-        self.assert_('Sensor0.rtc' in stdout)
+        self.assert_('C10.rtc' in stdout)
+        self.assert_('C20.rtc' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtls',
             '/localhost/local.host_cxt/manager.mgr'])
-        self.assert_('Motor0.rtc' in stdout)
-        self.assert_('Controller0.rtc' in stdout)
-        self.assert_('Sensor0.rtc' in stdout)
+        self.assert_('C10.rtc' in stdout)
+        self.assert_('C20.rtc' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
@@ -2596,9 +2590,8 @@ class rtlsTests(unittest.TestCase):
     def test_ls_mgr_obj(self):
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/manager.mgr'])
-        self.assert_('Controller0.rtc' in stdout)
-        self.assert_('Motor0.rtc' in stdout)
-        self.assert_('Sensor0.rtc' in stdout)
+        self.assert_('C10.rtc' in stdout)
+        self.assert_('C20.rtc' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
@@ -2613,7 +2606,7 @@ class rtlsTests(unittest.TestCase):
         stdout, stderr, ret = call_process(['./rtls', '-l',
             'localhost/local.host_cxt'])
         self.assert_('Inactive  1/0  1/0  0/0  0/0  Std0.rtc' in stdout)
-        self.assert_('Inactive  2/0  1/0  1/0  0/0  Motor0.rtc' in stdout)
+        self.assert_('Inactive  2/0  1/0  1/0  0/0  C10.rtc' in stdout)
         self.assert_('-         -    -    -    -    manager.mgr' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
@@ -2637,7 +2630,7 @@ class rtlsTests(unittest.TestCase):
         self.assert_('/localhost' in stdout)
         self.assert_('/localhost/local.host_cxt' in stdout)
         self.assert_('Std0.rtc' in stdout)
-        self.assert_('Motor0.rtc' in stdout)
+        self.assert_('C10.rtc' in stdout)
         self.assert_('/localhost/local.host_cxt/manager.mgr' in stdout)
         self.assert_('manager.mgr' in stdout)
         self.assert_('*Zombie0.rtc' in stdout)
@@ -2649,7 +2642,7 @@ class rtlsTests(unittest.TestCase):
         self.assert_('/localhost' in stdout)
         self.assert_('/localhost/local.host_cxt' in stdout)
         self.assert_('Inactive  1/0  1/0  0/0  0/0  Std0.rtc' in stdout)
-        self.assert_('Inactive  2/0  1/0  1/0  0/0  Motor0.rtc' in stdout)
+        self.assert_('Inactive  2/0  1/0  1/0  0/0  C10.rtc' in stdout)
         self.assert_('/localhost/local.host_cxt/manager.mgr' in stdout)
         self.assert_('-         -    -    -    -    manager.mgr' in stdout)
         self.assert_('-         -    -    -    -    *Zombie0.rtc' in stdout)
@@ -2698,14 +2691,16 @@ class rtmgrTests(unittest.TestCase):
         stop_ns(self._ns)
 
     def _load_mgr(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
+        stdout, stderr, ret = call_process([
+            './rtmgr',
             '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Controller.so') + ':ControllerInit'])
+            'c1_comp:init'])
         self.assertEqual(ret, 0)
-        stdout, stderr, ret = call_process(['./rtmgr',
+        stdout, stderr, ret = call_process([
+            './rtmgr',
             '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Sensor.so') + ':SensorInit',
-            '-c', 'Sensor'])
+            'c2_comp:init',
+            '-c', 'C2'])
         self.assertEqual(ret, 0)
 
     def _grab_section(self, stdout, sec, next_sec=''):
@@ -2716,21 +2711,22 @@ class rtmgrTests(unittest.TestCase):
             re.S).groups()[0]
 
     def test_load_mod(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
+        stdout, stderr, ret = call_process([
+            './rtmgr',
             '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so') + ':MotorInit'])
+            'std_comp:CompInit'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/manager.mgr'])
         loaded = self._grab_section(stdout, 'Loaded modules:')
-        self.assert_(os.path.join(COMP_LIB_PATH, 'Motor.so') in loaded)
+        self.assert_('std_comp' in loaded)
 
     def test_load_mod_no_init(self):
         stdout, stderr, ret = call_process(['./rtmgr',
             '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so')])
+            'std_comp'])
         self.assertEqual(stdout, '')
         self.assert_(stderr.endswith('rtmgr: error: No initialisation '
             'function specified.'))
@@ -2738,45 +2734,45 @@ class rtmgrTests(unittest.TestCase):
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/manager.mgr'])
         loaded = self._grab_section(stdout, 'Loaded modules:')
-        self.assert_(os.path.join(COMP_LIB_PATH, 'Motor.so') not in loaded)
+        self.assert_('std_comp' not in loaded)
 
     def test_create_rtc(self):
         stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/manager.mgr', '-c', 'Controller'])
+            '/localhost/local.host_cxt/manager.mgr', '-c', 'C1'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/manager.mgr'])
-        self.assert_('Controller0.rtc' in stdout)
+        self.assert_('C10.rtc' in stdout)
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/'])
-        self.assert_('Controller0.rtc' in stdout)
+        self.assert_('C10.rtc' in stdout)
 
     def test_delete_rtc(self):
         stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/manager.mgr', '-d', 'Sensor0'])
+            '/localhost/local.host_cxt/manager.mgr', '-d', 'C20'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/manager.mgr'])
-        self.assert_('Sensor0.rtc' not in stdout)
+        self.assert_('C20.rtc' not in stdout)
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/'])
-        self.assert_('Sensor0.rtc' not in stdout)
+        self.assert_('C20.rtc' not in stdout)
 
     def test_unload_mod(self):
         stdout, stderr, ret = call_process(['./rtmgr',
             '/localhost/local.host_cxt/manager.mgr', '-u',
-            os.path.join(COMP_LIB_PATH, 'Controller.so')])
+            'c1_comp'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/manager.mgr'])
         loaded = self._grab_section(stdout, 'Loaded modules:')
-        self.assert_(os.path.join(COMP_LIB_PATH, 'Controller.so') not in loaded)
+        self.assert_('c1_comp' not in loaded)
 
     def test_no_cmds(self):
         stdout, stderr, ret = call_process(['./rtmgr',
@@ -2789,33 +2785,35 @@ class rtmgrTests(unittest.TestCase):
         # Load a module, unload it, load it again, create a component from it,
         # load another module, create a component from it, delete the first
         # component, unload its module.
-        stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/manager.mgr', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so') + ':MotorInit',
-            '-u', os.path.join(COMP_LIB_PATH, 'Motor.so'), '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so') + ':MotorInit',
-            '-c', 'Motor', '-l',
-            os.path.join(COMP_LIB_PATH, 'Controller.so') + ':ControllerInit',
-            '-c', 'Controller', '-d', 'Motor0', '-u',
-            os.path.join(COMP_LIB_PATH, 'Motor.so')])
+        stdout, stderr, ret = call_process([
+            './rtmgr',
+            '/localhost/local.host_cxt/manager.mgr',
+            '-l', 'std_comp:CompInit',
+            '-u', 'std_comp',
+            '-l', 'std_comp:CompInit',
+            '-c', 'Std',
+            '-l', 'c1_comp:init',
+            '-c', 'C1',
+            '-d', 'Std0',
+            '-u', 'std_comp'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/manager.mgr'])
         loaded = self._grab_section(stdout, 'Loaded modules:')
-        self.assert_(os.path.join(COMP_LIB_PATH, 'Motor.so') not in loaded)
-        self.assert_(os.path.join(COMP_LIB_PATH, 'Controller.so') in loaded)
+        self.assert_(os.path.join(COMP_LIB_PATH, 'std_comp') not in loaded)
+        self.assert_(os.path.join(COMP_LIB_PATH, 'c1_comp') in loaded)
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/manager.mgr'])
-        self.assert_('Controller0.rtc' in stdout)
+        self.assert_('C10.rtc' in stdout)
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/'])
-        self.assert_('Controller0.rtc' in stdout)
+        self.assert_('C10.rtc' in stdout)
 
     def test_port(self):
         stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/manager.mgr:port', '-c', 'Controller'])
+            '/localhost/local.host_cxt/manager.mgr:port', '-c', 'C1'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, 'rtmgr: Not a manager: '
             '/localhost/local.host_cxt/manager.mgr:port')
@@ -2823,7 +2821,7 @@ class rtmgrTests(unittest.TestCase):
 
     def test_rtc(self):
         stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/Std0.rtc', '-c', 'Controller'])
+            '/localhost/local.host_cxt/Std0.rtc', '-c', 'C1'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, 'rtmgr: Not a manager: '
             '/localhost/local.host_cxt/Std0.rtc')
@@ -2831,7 +2829,7 @@ class rtmgrTests(unittest.TestCase):
 
     def test_context(self):
         stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt', '-c', 'Controller'])
+            '/localhost/local.host_cxt', '-c', 'C1'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, 'rtmgr: Not a manager: '
             '/localhost/local.host_cxt')
@@ -2839,7 +2837,7 @@ class rtmgrTests(unittest.TestCase):
 
     def test_ns(self):
         stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost', '-c', 'Controller'])
+            '/localhost', '-c', 'C1'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, 'rtmgr: Not a manager: '
             '/localhost')
@@ -2848,7 +2846,7 @@ class rtmgrTests(unittest.TestCase):
     def test_zombie(self):
         make_zombie()
         stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/Zombie0.rtc', '-c', 'Controller'])
+            '/localhost/local.host_cxt/Zombie0.rtc', '-c', 'C1'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, 'rtmgr: Zombie object: '
             '/localhost/local.host_cxt/Zombie0.rtc')
@@ -2857,97 +2855,104 @@ class rtmgrTests(unittest.TestCase):
 
     def test_noobject(self):
         stdout, stderr, ret = call_process(['./rtmgr',
-            '/localhost/local.host_cxt/NotAComp.rtc', '-c', 'Controller'])
+            '/localhost/local.host_cxt/NotAComp.rtc', '-c', 'C1'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, 'rtmgr: No such object: '
             '/localhost/local.host_cxt/NotAComp.rtc')
         self.assertEqual(ret, 1)
 
     def test_load_mod_corbaloc(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
-            'corbaloc::localhost:2810/manager', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so') + ':MotorInit'])
+        stdout, stderr, ret = call_process([
+            './rtmgr',
+            'corbaloc::localhost:2810/manager',
+            '-l', 'std_comp:CompInit'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/manager.mgr'])
         loaded = self._grab_section(stdout, 'Loaded modules:')
-        self.assert_(os.path.join(COMP_LIB_PATH, 'Motor.so') in loaded)
+        self.assert_('std_comp' in loaded)
 
     def test_create_rtc_corbaloc(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
-            'corbaloc::localhost:2810/manager', '-c', 'Controller'])
+        stdout, stderr, ret = call_process([
+            './rtmgr',
+            'corbaloc::localhost:2810/manager', '-c', 'C1'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/manager.mgr'])
-        self.assert_('Controller0.rtc' in stdout)
+        self.assert_('C20.rtc' in stdout)
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/'])
-        self.assert_('Controller0.rtc' in stdout)
+        self.assert_('C20.rtc' in stdout)
 
     def test_delete_rtc_corbaloc(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
-            'corbaloc::localhost:2810/manager', '-d', 'Sensor0'])
+        stdout, stderr, ret = call_process([
+            './rtmgr',
+            'corbaloc::localhost:2810/manager', '-d', 'C20'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/manager.mgr'])
-        self.assert_('Sensor0.rtc' not in stdout)
+        self.assert_('C20.rtc' not in stdout)
         stdout, stderr, ret = call_process(['./rtls',
             'localhost/local.host_cxt/'])
-        self.assert_('Sensor0.rtc' not in stdout)
+        self.assert_('C20.rtc' not in stdout)
 
     def test_unload_mod_corbaloc(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
-            'corbaloc::localhost:2810/manager', '-u',
-            os.path.join(COMP_LIB_PATH, 'Controller.so')])
+        stdout, stderr, ret = call_process([
+            './rtmgr',
+            'corbaloc::localhost:2810/manager',
+            '-u', 'c1_comp'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/manager.mgr'])
         loaded = self._grab_section(stdout, 'Loaded modules:')
-        self.assert_(os.path.join(COMP_LIB_PATH, 'Controller.so') not in loaded)
+        self.assert_('c1_comp' not in loaded)
 
     def test_load_mod_corbaloc_no_port(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
-            'corbaloc::localhost/manager', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so') + ':MotorInit'])
+        stdout, stderr, ret = call_process([
+            './rtmgr',
+            'corbaloc::localhost/manager',
+            '-l', 'std_comp:CompInit'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/manager.mgr'])
         loaded = self._grab_section(stdout, 'Loaded modules:')
-        self.assert_(os.path.join(COMP_LIB_PATH, 'Motor.so') in loaded)
+        self.assert_('std_comp' in loaded)
 
     def test_load_mod_corbaloc_no_id(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
-            'corbaloc::localhost:2810', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so') + ':MotorInit'])
+        stdout, stderr, ret = call_process([
+            './rtmgr',
+            'corbaloc::localhost:2810',
+            '-l', 'std_comp:CompInit'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/manager.mgr'])
         loaded = self._grab_section(stdout, 'Loaded modules:')
-        self.assert_(os.path.join(COMP_LIB_PATH, 'Motor.so') in loaded)
+        self.assert_('std_comp' in loaded)
 
     def test_load_mod_corbaloc_no_port_or_id(self):
-        stdout, stderr, ret = call_process(['./rtmgr',
-            'corbaloc::localhost', '-l',
-            os.path.join(COMP_LIB_PATH, 'Motor.so') + ':MotorInit'])
+        stdout, stderr, ret = call_process([
+            './rtmgr',
+            'corbaloc::localhost',
+            '-l', 'std_comp:CompInit'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/manager.mgr'])
         loaded = self._grab_section(stdout, 'Loaded modules:')
-        self.assert_(os.path.join(COMP_LIB_PATH, 'Motor.so') in loaded)
+        self.assert_('std_comp' in loaded)
 
 
 def rtmgr_suite():

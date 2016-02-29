@@ -70,14 +70,15 @@ def find_omninames():
 
 
 def launch_comp(name):
-    call_process(['pkill', '-f', name])
-    args = [os.path.join('./test', name + '.py'), '-f', './test/rtc.conf']
+    fname = os.path.join('./test', name + '.py')
+    call_process(['pkill', '-f', fname])
+    args = [fname, '-f', './test/rtc.conf']
     print 'running command: ' + ' '.join(args)
     p = subprocess.Popen(args, stdout=subprocess.PIPE)
     p.poll()
     if p.returncode is not None:
         raise RTCLaunchFailedError
-    return (p, name)
+    return (p, fname)
 
 
 def stop_comp(comp):

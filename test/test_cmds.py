@@ -1977,24 +1977,24 @@ class rtfindTests(unittest.TestCase):
         stop_ns(self._ns)
 
     def test_find_by_exact_name(self):
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-n', 'Std0.rtc'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-n', 'Std0.rtc'])
         self.assertEqual(stdout, '/localhost/local.host_cxt/Std0.rtc')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-n', 'std0.rtc'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-n', 'std0.rtc'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
     def test_find_by_type_c(self):
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-t', 'c'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-t', 'c'])
         self.assert_('/localhost/local.host_cxt/Std0.rtc' in stdout)
         self.assert_('/localhost/local.host_cxt/Output0.rtc' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
     def test_find_by_type_d(self):
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-t', 'd'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-t', 'd'])
         self.assert_('/localhost' in stdout)
         self.assert_('/localhost/local.host_cxt' in stdout)
         self.assert_('/localhost/local.host_cxt/manager.mgr' in stdout)
@@ -2002,25 +2002,25 @@ class rtfindTests(unittest.TestCase):
         self.assertEqual(ret, 0)
 
     def test_find_by_type_m(self):
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-t', 'm'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-t', 'm'])
         self.assertEqual(stdout, '/localhost/local.host_cxt/manager.mgr')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
     def test_find_by_type_n(self):
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-t', 'n'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-t', 'n'])
         self.assertEqual(stdout, '/localhost')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
     def test_find_by_type_z(self):
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-t', 'z'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-t', 'z'])
         self.assertEqual(stdout, '/localhost/local.host_cxt/Zombie0.rtc')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
     def test_find_by_type_multiple(self):
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-t', 'cm'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-t', 'cm'])
         self.assert_('/localhost/local.host_cxt/Std0.rtc' in stdout)
         self.assert_('/localhost/local.host_cxt/Output0.rtc' in stdout)
         self.assert_('/localhost/local.host_cxt/manager.mgr' in stdout)
@@ -2028,36 +2028,36 @@ class rtfindTests(unittest.TestCase):
         self.assertEqual(ret, 0)
 
     def test_find_by_part_name(self):
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-n', 'Std*'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-n', 'Std*'])
         self.assertEqual(stdout, '/localhost/local.host_cxt/Std0.rtc')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-n', '*d0.rtc'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-n', '*d0.rtc'])
         self.assertEqual(stdout, '/localhost/local.host_cxt/Std0.rtc')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-n', 'Std?.rtc'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-n', 'Std?.rtc'])
         self.assertEqual(stdout, '/localhost/local.host_cxt/Std0.rtc')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
     def test_find_by_exact_iname(self):
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-i', 'std0.rtc'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-i', 'std0.rtc'])
         self.assertEqual(stdout, '/localhost/local.host_cxt/Std0.rtc')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-i', 'std0.rtc'])
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-i', 'std0.rtc'])
         self.assertEqual(stdout, '/localhost/local.host_cxt/Std0.rtc')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
     def test_max_depth(self):
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-n', 'Std0.rtc',
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-n', 'Std0.rtc',
             '-m', '1'])
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
-        stdout, stderr, ret = call_process(['./rtfind', '.', '-n', 'Std0.rtc',
+        stdout, stderr, ret = call_process(['./rtfind', '/localhost', '-n', 'Std0.rtc',
             '-m', '3'])
         self.assertEqual(stdout, '/localhost/local.host_cxt/Std0.rtc')
         self.assertEqual(stderr, '')

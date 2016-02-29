@@ -70,6 +70,7 @@ def find_omninames():
 
 
 def launch_comp(name):
+    call_process(['pkill', '-f', name])
     args = [os.path.join('./test', name + '.py'), '-f', './test/rtc.conf']
     print 'running command: ' + ' '.join(args)
     p = subprocess.Popen(args, stdout=subprocess.PIPE)
@@ -82,7 +83,7 @@ def launch_comp(name):
 def stop_comp(comp):
     comp[0].terminate()
     comp[0].wait()
-    call_process(['killall', comp[1]])
+    call_process(['pkill', '-f', comp[1]])
 
 
 def start_ns():
@@ -103,7 +104,7 @@ def stop_ns(p):
     call_process(['killall', 'omniNames'])
 
 
-def wait_for_comp(comp, state='Inactive', tries=40, res=0.01):
+def wait_for_comp(comp, state='Inactive', tries=40, res=0.1):
     while tries > 0:
         stdout, stderr, ret = call_process(['./rtls', '-l',
             os.path.join('/localhost/local.host_cxt', comp)])

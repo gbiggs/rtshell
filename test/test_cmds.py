@@ -97,7 +97,7 @@ def stop_comp(comp):
 
 
 def start_ns():
-    call_process(['pkill', '-f', 'rtm-naming'])
+    call_process(['pkill', '-KILL', '-f', 'rtm-naming'])
     # Check if omniNames is running
     pid = find_omninames()
     if pid:

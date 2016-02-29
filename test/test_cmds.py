@@ -160,7 +160,7 @@ def add_obj_strs(args, obj1=None, obj2=None):
     return args
 
 
-def test_notacomp(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+def _test_notacomp(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
         obj1=obj1, obj2=obj2) + extra_opts)
     tester.assertEqual(stdout, '')
@@ -170,7 +170,7 @@ def test_notacomp(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(ret, 1)
 
 
-def test_notacomp2(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+def _test_notacomp2(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
         obj1=obj1, obj2=obj2) + extra_opts)
     tester.assertEqual(stdout, '')
@@ -180,7 +180,7 @@ def test_notacomp2(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(ret, 1)
 
 
-def test_noobject(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+def _test_noobject(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
         obj1=obj1, obj2=obj2) + extra_opts)
     tester.assertEqual(stdout, '')
@@ -190,7 +190,7 @@ def test_noobject(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(ret, 1)
 
 
-def test_noobject2(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+def _test_noobject2(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
         obj1=obj1, obj2=obj2) + extra_opts)
     tester.assertEqual(stdout, '')
@@ -200,7 +200,7 @@ def test_noobject2(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(ret, 1)
 
 
-def test_zombie(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+def _test_zombie(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
         obj1=obj1, obj2=obj2) + extra_opts)
     tester.assertEqual(stdout, '')
@@ -210,7 +210,7 @@ def test_zombie(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(ret, 1)
 
 
-def test_portnotfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+def _test_portnotfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
         obj1=obj1, obj2=obj2) + extra_opts)
     tester.assertEqual(stdout, '')
@@ -220,7 +220,7 @@ def test_portnotfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(ret, 1)
 
 
-def test_port2notfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+def _test_port2notfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
         obj1=obj1, obj2=obj2) + extra_opts)
     tester.assertEqual(stdout, '')
@@ -230,7 +230,7 @@ def test_port2notfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(ret, 1)
 
 
-def test_notaport(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+def _test_notaport(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
         obj1=obj1, obj2=obj2) + extra_opts)
     tester.assertEqual(stdout, '')
@@ -240,7 +240,7 @@ def test_notaport(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(ret, 1)
 
 
-def test_notaport2(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+def _test_notaport2(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
         obj1=obj1, obj2=obj2) + extra_opts)
     tester.assertEqual(stdout, '')
@@ -250,7 +250,7 @@ def test_notaport2(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(ret, 1)
 
 
-def test_sourceportnotfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+def _test_sourceportnotfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
         obj1=obj1, obj2=obj2) + extra_opts)
     tester.assertEqual(stdout, '')
@@ -259,7 +259,7 @@ def test_sourceportnotfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     tester.assertEqual(ret, 1)
 
 
-def test_destportnotfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
+def _test_destportnotfound(tester, cmd, obj1=None, obj2=None, extra_opts=[]):
     stdout, stderr, ret = call_process(add_obj_strs(['./{0}'.format(cmd)],
         obj1=obj1, obj2=obj2) + extra_opts)
     tester.assertEqual(stdout, '')
@@ -304,22 +304,22 @@ class rtactTests(unittest.TestCase):
         self.assertEqual(ret, 1)
 
     def test_manager(self):
-        test_notacomp(self, './rtact', obj1='manager.mgr')
+        _test_notacomp(self, './rtact', obj1='manager.mgr')
 
     def test_port(self):
-        test_notacomp(self, './rtact', obj1='Std0.rtc:in')
+        _test_notacomp(self, './rtact', obj1='Std0.rtc:in')
 
     def test_trailing_slash(self):
-        test_notacomp(self, './rtact', obj1='Std0.rtc/')
+        _test_notacomp(self, './rtact', obj1='Std0.rtc/')
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/Std0.rtc'])
         self.assertEqual(stdout.split()[1], 'Inactive')
 
     def test_no_object(self):
-        test_noobject(self, './rtact', obj1='NotAComp0.rtc')
+        _test_noobject(self, './rtact', obj1='NotAComp0.rtc')
 
     def test_zombie_object(self):
-        test_zombie(self, './rtact', obj1='Zombie0.rtc')
+        _test_zombie(self, './rtact', obj1='Zombie0.rtc')
 
     def test_no_arg(self):
         stdout, stderr, ret = call_process('./rtact')
@@ -383,10 +383,10 @@ class rtcatTests(unittest.TestCase):
         self.assertEqual(ret, 1)
 
     def test_no_object(self):
-        test_noobject(self, './rtcat', obj1='NotAComp0.rtc')
+        _test_noobject(self, './rtcat', obj1='NotAComp0.rtc')
 
     def test_no_object_port(self):
-        test_noobject(self, './rtcat', obj1='NotAComp0.rtc:notaport')
+        _test_noobject(self, './rtcat', obj1='NotAComp0.rtc:notaport')
 
     def test_no_arg(self):
         stdout, stderr, ret = call_process('./rtcat')
@@ -427,19 +427,19 @@ class rtcatTests(unittest.TestCase):
         self.assertEqual(ret, 0)
 
     def test_port_not_rtc(self):
-        test_notacomp(self, './rtcat', obj1='manager.mgr:in')
+        _test_notacomp(self, './rtcat', obj1='manager.mgr:in')
 
     def test_port_trailing_slash(self):
-        test_noobject(self, './rtcat', obj1='Std0.rtc:in/')
+        _test_noobject(self, './rtcat', obj1='Std0.rtc:in/')
 
     def test_bad_port(self):
-        test_portnotfound(self, './rtcat', obj1='Std0.rtc:out')
+        _test_portnotfound(self, './rtcat', obj1='Std0.rtc:out')
 
     def test_rtc_trailing_slash(self):
-        test_noobject(self, './rtcat', obj1='Std0.rtc/')
+        _test_noobject(self, './rtcat', obj1='Std0.rtc/')
 
     def test_zombie_object(self):
-        test_zombie(self, './rtcat', obj1='Zombie0.rtc')
+        _test_zombie(self, './rtcat', obj1='Zombie0.rtc')
 
 
 def rtcat_suite():
@@ -803,9 +803,9 @@ class rtconTests(unittest.TestCase):
         self.assert_('conn_id' in stdout)
 
     def test_no_source_port(self):
-        test_sourceportnotfound(self, './rtcon', obj1='Std0.rtc',
+        _test_sourceportnotfound(self, './rtcon', obj1='Std0.rtc',
                 obj2='Output0.rtc:out')
-        test_sourceportnotfound(self, './rtcon', obj1='Output0.rtc',
+        _test_sourceportnotfound(self, './rtcon', obj1='Output0.rtc',
                 obj2='Std0.rtc:in')
 
     def test_not_enough_targets(self):
@@ -822,34 +822,34 @@ class rtconTests(unittest.TestCase):
         self.assertEqual(ret, 1)
 
     def test_no_dest_port(self):
-        test_destportnotfound(self, './rtcon', obj1='Std0.rtc:in',
+        _test_destportnotfound(self, './rtcon', obj1='Std0.rtc:in',
                 obj2='Output0.rtc')
-        test_destportnotfound(self, './rtcon', obj1='Output0.rtc:out',
+        _test_destportnotfound(self, './rtcon', obj1='Output0.rtc:out',
                 obj2='Std0.rtc')
 
     def test_bad_source_port(self):
-        test_portnotfound(self, './rtcon', obj1='Std0.rtc:noport',
+        _test_portnotfound(self, './rtcon', obj1='Std0.rtc:noport',
                 obj2='Output0.rtc:out')
-        test_portnotfound(self, './rtcon', obj1='Output0.rtc:noport',
+        _test_portnotfound(self, './rtcon', obj1='Output0.rtc:noport',
                 obj2='Std0.rtc:in')
 
     def test_bad_source_rtc(self):
-        test_noobject(self, './rtcon', obj1='NotAComp0.rtc:in',
+        _test_noobject(self, './rtcon', obj1='NotAComp0.rtc:in',
                 obj2='Output0.rtc:out')
-        test_noobject(self, './rtcon',
+        _test_noobject(self, './rtcon',
                 obj1='NotAComp0.rtc:out',
                 obj2='Std0.rtc:in')
 
     def test_bad_dest_port(self):
-        test_port2notfound(self, './rtcon', obj1='Std0.rtc:in',
+        _test_port2notfound(self, './rtcon', obj1='Std0.rtc:in',
                 obj2='Output0.rtc:noport')
-        test_port2notfound(self, './rtcon', obj1='Output0.rtc:out',
+        _test_port2notfound(self, './rtcon', obj1='Output0.rtc:out',
                 obj2='Std0.rtc:noport')
 
     def test_bad_dest_rtc(self):
-        test_noobject2(self, './rtcon', obj1='Std0.rtc:in',
+        _test_noobject2(self, './rtcon', obj1='Std0.rtc:in',
                 obj2='NotAComp0.rtc:out')
-        test_noobject2(self, './rtcon', obj1='Output0.rtc:out',
+        _test_noobject2(self, './rtcon', obj1='Output0.rtc:out',
                 obj2='NotAComp0.rtc:in')
 
     def test_bad_polarity(self):
@@ -877,12 +877,12 @@ class rtconTests(unittest.TestCase):
         self.assertEqual(ret, 1)
 
     def test_manager(self):
-        test_sourceportnotfound(self, './rtcon', obj1='manager.mgr',
+        _test_sourceportnotfound(self, './rtcon', obj1='manager.mgr',
             obj2='Output0.rtc:out')
-        test_destportnotfound(self, './rtcon', obj1='Std0.rtc:in', obj2='manager.mgr')
-        test_notacomp(self, './rtcon', obj1='manager.mgr:port',
+        _test_destportnotfound(self, './rtcon', obj1='Std0.rtc:in', obj2='manager.mgr')
+        _test_notacomp(self, './rtcon', obj1='manager.mgr:port',
             obj2='Output0.rtc:out')
-        test_notacomp2(self, './rtcon', obj1='Std0.rtc:in',
+        _test_notacomp2(self, './rtcon', obj1='Std0.rtc:in',
                 obj2='manager.mgr:port')
 
 
@@ -1075,23 +1075,23 @@ class rtconfTests(unittest.TestCase):
         self.assertEqual(ret, 1)
 
     def test_context(self):
-        test_noobject(self, './rtconf', obj1='')
+        _test_noobject(self, './rtconf', obj1='')
 
     def test_manager(self):
-        test_noobject(self, './rtconf', obj1='manager.rtc',
+        _test_noobject(self, './rtconf', obj1='manager.rtc',
                 extra_opts=['list'])
 
     def test_port(self):
-        test_notacomp(self, './rtconf', obj1='Std0.rtc:in')
+        _test_notacomp(self, './rtconf', obj1='Std0.rtc:in')
 
     def test_trailing_slash(self):
-        test_noobject(self, './rtconf', obj1='Std0.rtc/')
+        _test_noobject(self, './rtconf', obj1='Std0.rtc/')
 
     def test_bad_comp(self):
-        test_noobject(self, './rtconf', obj1='NotAComp0.rtc')
+        _test_noobject(self, './rtconf', obj1='NotAComp0.rtc')
 
     def test_zombie(self):
-        test_zombie(self, './rtconf', obj1='Zombie0.rtc')
+        _test_zombie(self, './rtconf', obj1='Zombie0.rtc')
 
 
 def rtconf_suite():
@@ -1378,22 +1378,22 @@ class rtdeactTests(unittest.TestCase):
 
 
     def test_manager(self):
-        test_notacomp(self, './rtdeact', obj1='manager.mgr')
+        _test_notacomp(self, './rtdeact', obj1='manager.mgr')
 
     def test_port(self):
-        test_notacomp(self, './rtdeact', obj1='Std0.rtc:in')
+        _test_notacomp(self, './rtdeact', obj1='Std0.rtc:in')
 
     def test_trailing_slash(self):
-        test_notacomp(self, './rtdeact', obj1='Std0.rtc/')
+        _test_notacomp(self, './rtdeact', obj1='Std0.rtc/')
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/Std0.rtc'])
         self.assertEqual(stdout.split()[1], 'Active')
 
     def test_no_object(self):
-        test_noobject(self, './rtdeact', obj1='NotAComp0.rtc')
+        _test_noobject(self, './rtdeact', obj1='NotAComp0.rtc')
 
     def test_zombie_object(self):
-        test_zombie(self, './rtdeact', obj1='Zombie0.rtc')
+        _test_zombie(self, './rtdeact', obj1='Zombie0.rtc')
 
     def test_no_arg(self):
         stdout, stderr, ret = call_process('./rtdeact')
@@ -1708,56 +1708,56 @@ class rtdisTests(unittest.TestCase):
         self.assert_('/localhost/local.host_cxt/Err0.rtc:in' in stdout)
 
     def test_no_source_port(self):
-        test_notaport(self, 'rtdis', obj1='Std0.rtc',
+        _test_notaport(self, 'rtdis', obj1='Std0.rtc',
                 obj2='Output0.rtc:out')
-        test_notaport(self, 'rtdis', obj1='Output0.rtc',
+        _test_notaport(self, 'rtdis', obj1='Output0.rtc',
                 obj2='Std0.rtc:in')
 
     def test_no_dest_port(self):
-        test_notaport2(self, 'rtdis', obj1='Std0.rtc:in',
+        _test_notaport2(self, 'rtdis', obj1='Std0.rtc:in',
                 obj2='Output0.rtc')
-        test_notaport2(self, 'rtdis', obj1='Output0.rtc:out',
+        _test_notaport2(self, 'rtdis', obj1='Output0.rtc:out',
                 obj2='Std0.rtc')
 
     def test_bad_source_port(self):
-        test_portnotfound(self, 'rtdis', obj1='Std0.rtc:noport',
+        _test_portnotfound(self, 'rtdis', obj1='Std0.rtc:noport',
                 obj2='Output0.rtc:out')
-        test_portnotfound(self, 'rtdis', obj1='Output0.rtc:noport',
+        _test_portnotfound(self, 'rtdis', obj1='Output0.rtc:noport',
                 obj2='Std0.rtc:in')
 
     def test_bad_source_rtc(self):
-        test_notaport(self, 'rtdis', obj1='',
+        _test_notaport(self, 'rtdis', obj1='',
                 obj2='Output0.rtc:out')
-        test_notaport(self, 'rtdis', obj1='Std0.rtc/:in',
+        _test_notaport(self, 'rtdis', obj1='Std0.rtc/:in',
                 obj2='Output0.rtc:out')
-        test_noobject(self, 'rtdis', obj1='NotAComp0.rtc:in',
+        _test_noobject(self, 'rtdis', obj1='NotAComp0.rtc:in',
                 obj2='Output0.rtc:out')
-        test_noobject(self, 'rtdis',
+        _test_noobject(self, 'rtdis',
                 obj1='NotAComp0.rtc:out',
                 obj2='Std0.rtc:in')
 
     def test_bad_dest_port(self):
-        test_port2notfound(self, 'rtdis', obj1='Std0.rtc:in',
+        _test_port2notfound(self, 'rtdis', obj1='Std0.rtc:in',
                 obj2='Output0.rtc:noport')
-        test_port2notfound(self, 'rtdis', obj1='Output0.rtc:out',
+        _test_port2notfound(self, 'rtdis', obj1='Output0.rtc:out',
                 obj2='Std0.rtc:noport')
 
     def test_bad_dest_rtc(self):
-        test_notaport2(self, 'rtdis', obj1='Std0.rtc:in',
+        _test_notaport2(self, 'rtdis', obj1='Std0.rtc:in',
                 obj2='Output0.rtc/:out')
-        test_noobject2(self, 'rtdis', obj1='Std0.rtc:in',
+        _test_noobject2(self, 'rtdis', obj1='Std0.rtc:in',
                 obj2='NotAComp0.rtc:out')
-        test_noobject2(self, 'rtdis', obj1='Output0.rtc:out',
+        _test_noobject2(self, 'rtdis', obj1='Output0.rtc:out',
                 obj2='NotAComp0.rtc:in')
 
     def test_context(self):
-        test_notaport(self, 'rtdis', obj1=':port', obj2='Output0.rtc:out')
-        test_notaport2(self, 'rtdis', obj1='Std0.rtc:in', obj2=':port')
+        _test_notaport(self, 'rtdis', obj1=':port', obj2='Output0.rtc:out')
+        _test_notaport2(self, 'rtdis', obj1='Std0.rtc:in', obj2=':port')
 
     def test_manager(self):
-        test_notacomp(self, 'rtdis', obj1='manager.mgr:port',
+        _test_notacomp(self, 'rtdis', obj1='manager.mgr:port',
             obj2='Output0.rtc:out')
-        test_notacomp2(self, 'rtdis', obj1='Std0.rtc:in', obj2='manager.mgr:port')
+        _test_notacomp2(self, 'rtdis', obj1='Std0.rtc:in', obj2='manager.mgr:port')
 
 
 def rtdis_suite():
@@ -1850,19 +1850,19 @@ class rtdocTests(unittest.TestCase):
         self.assertEqual(ret, 0)
 
     def test_manager(self):
-        test_notacomp(self, './rtdoc', obj1='manager.mgr')
+        _test_notacomp(self, './rtdoc', obj1='manager.mgr')
 
     def test_port(self):
-        test_notacomp(self, './rtdoc', obj1='Std0.rtc:in')
+        _test_notacomp(self, './rtdoc', obj1='Std0.rtc:in')
 
     def test_trailing_slash(self):
-        test_notacomp(self, './rtdoc', obj1='Std0.rtc/')
+        _test_notacomp(self, './rtdoc', obj1='Std0.rtc/')
 
     def test_no_object(self):
-        test_noobject(self, './rtdoc', obj1='NotAComp0.rtc')
+        _test_noobject(self, './rtdoc', obj1='NotAComp0.rtc')
 
     def test_zombie_object(self):
-        test_zombie(self, './rtdoc', obj1='Zombie0.rtc')
+        _test_zombie(self, './rtdoc', obj1='Zombie0.rtc')
 
     def test_no_arg(self):
         stdout, stderr, ret = call_process('./rtdoc')
@@ -1934,25 +1934,25 @@ class rtexitTests(unittest.TestCase):
         self.assertEqual(ret, 1)
 
     def test_context(self):
-        test_notacomp(self, 'rtexit', '')
+        _test_notacomp(self, 'rtexit', '')
 
     def test_manager(self):
-        test_notacomp(self, 'rtexit', obj1='manager.mgr')
+        _test_notacomp(self, 'rtexit', obj1='manager.mgr')
 
     def test_port(self):
-        test_notacomp(self, 'rtexit', obj1='Std0.rtc:in')
+        _test_notacomp(self, 'rtexit', obj1='Std0.rtc:in')
 
     def test_trailing_slash(self):
-        test_notacomp(self, 'rtexit', obj1='Std0.rtc/')
+        _test_notacomp(self, 'rtexit', obj1='Std0.rtc/')
         stdout, stderr, ret = call_process(['./rtls',
             '/localhost/local.host_cxt/Std0.rtc'])
         self.assertEqual(stdout, 'Std0.rtc')
 
     def test_no_object(self):
-        test_noobject(self, 'rtexit', obj1='NotAComp0.rtc')
+        _test_noobject(self, 'rtexit', obj1='NotAComp0.rtc')
 
     def test_zombie_object(self):
-        test_zombie(self, 'rtexit', obj1='Zombie0.rtc')
+        _test_zombie(self, 'rtexit', obj1='Zombie0.rtc')
 
 
 def rtexit_suite():
@@ -3095,22 +3095,22 @@ class rtresetTests(unittest.TestCase):
 
 
     def test_manager(self):
-        test_notacomp(self, './rtreset', obj1='manager.mgr')
+        _test_notacomp(self, './rtreset', obj1='manager.mgr')
 
     def test_port(self):
-        test_notacomp(self, './rtreset', obj1='Err0.rtc:in')
+        _test_notacomp(self, './rtreset', obj1='Err0.rtc:in')
 
     def test_trailing_slash(self):
-        test_notacomp(self, './rtreset', obj1='Err0.rtc/')
+        _test_notacomp(self, './rtreset', obj1='Err0.rtc/')
         stdout, stderr, ret = call_process(['./rtcat',
             '/localhost/local.host_cxt/Err0.rtc'])
         self.assertEqual(stdout.split()[1], 'Error')
 
     def test_no_object(self):
-        test_noobject(self, './rtreset', obj1='NotAComp0.rtc')
+        _test_noobject(self, './rtreset', obj1='NotAComp0.rtc')
 
     def test_zombie_object(self):
-        test_zombie(self, './rtreset', obj1='Zombie0.rtc')
+        _test_zombie(self, './rtreset', obj1='Zombie0.rtc')
 
     def test_no_arg(self):
         stdout, stderr, ret = call_process('./rtreset')

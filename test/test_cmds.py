@@ -71,7 +71,7 @@ def start_process(args):
 def find_omninames():
     # If on Windows, ...
     # Else use ps
-    procs, stderr, ret_code = call_process(['ps', '-aux'])
+    procs, stderr, ret_code = call_process(['ps', 'aux'])
     for p in procs.split('\n'):
         if 'omniNames' in p:
             return p.split()[0]
@@ -97,6 +97,7 @@ def stop_comp(comp):
 
 
 def start_ns():
+    call_process(['pkill', '-f', 'rtm-naming'])
     # Check if omniNames is running
     pid = find_omninames()
     if pid:

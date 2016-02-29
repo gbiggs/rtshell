@@ -40,17 +40,26 @@ def load_file(fn):
     with open(fn, 'r') as f:
         return f.read()
 
-def call_process(args):
+def call_process(args, stdin=None):
     if type(args) == str:
         args = [args]
     if args[0].find('./') == 0:
         args = ['python', '-m', args[0].replace('././', './').replace('./', 'rtshell.')] + args[1:]
     print 'running command: ' + ' '.join(args)
-    p = subprocess.Popen(args, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-    output = p.communicate()
+    if not stdin:
+        p = subprocess.Popen(args, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        output = p.communicate()
+    else:
+        p = subprocess.Popen(args, stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        output = p.communicate(stdin)
     output = (output[0].strip().replace('.py:', ':'), output[1].strip().replace('.py:', ':'))
     return_code = p.returncode
+    print 'stdout: ' + output[0]
+    print 'stderr: ' + output[1]
+    print 'returncode: %i' % (return_code)
     return output[0], output[1], return_code
 
 
@@ -2127,13 +2136,13 @@ class rtinjectTests(unittest.TestCase):
             os.remove('./test/c2_rcvd')
 
     def test_stdin(self):
-        p = subprocess.Popen(['./rtinject',
-            '/localhost/local.host_cxt/Std0.rtc:in'], stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate('RTC.TimedLong({time}, 42)')
+        stdout, stderr, ret = call_process([
+            './rtinject',
+            '/localhost/local.host_cxt/Std0.rtc:in'],
+            stdin='RTC.TimedLong({time}, 42)')
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
-        self.assertEqual(p.returncode, 0)
+        self.assertEqual(ret, 0)
         self.assertEqual(self._get_comp_output('std'), '42\n')
 
     def test_option(self):
@@ -2964,11 +2973,9 @@ def rtmgr_suite():
 class rtstodotTests(unittest.TestCase):
     def test_stdin(self):
         sys = load_file('./test/sys.rtsys')
-        p = subprocess.Popen('./rtstodot', stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate(sys)
+        stdout, stderr, ret = call_process(['./rtstodot'], stdin=sys)
         self.assertEqual(stderr, '')
-        self.assertEqual(p.returncode, 0)
+        self.assertEqual(ret, 0)
         sample = load_file('./test/sys.dot')
         self.assertEqual(sample, stdout)
 

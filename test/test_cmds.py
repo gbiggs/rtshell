@@ -44,7 +44,7 @@ def call_process(args, stdin=None):
     if type(args) == str:
         args = [args]
     if args[0].find('./') == 0:
-        args = ['python', '-m', args[0].replace('././', './').replace('./', 'rtshell.')] + args[1:]
+        args = ['coverage', 'run', '-m', args[0].replace('././', './').replace('./', 'rtshell.')] + args[1:]
     print 'running command: ' + ' '.join(args)
     if not stdin:
         p = subprocess.Popen(args, stdout=subprocess.PIPE,

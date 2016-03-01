@@ -8,5 +8,7 @@ install:
 script:
   - sudo /etc/init.d/omniorb4-nameserver stop
   - nosetests -v --rednose --with-doctest --with-coverage --cover-package=rtshell --cover-erase test/*.py
+  - coverage combine
+  - coverage report
 after_success:
   coveralls

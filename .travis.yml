@@ -1,10 +1,17 @@
 language: cpp
 sudo: true
+env:
+  matrix:
+    - DEPS_MASTER=true
+    - DEPS_MASTER=false
 install:
   - sudo add-apt-repository -y ppa:hrg/daily
   - sudo apt-get update -qq
   - sudo apt-get install -qq -y python-pip python-dev openrtm-aist openrtm-aist-python python-omniorb omniidl-python omniorb-nameserver omniorb-idl omniidl
-  - sudo pip install pyyaml docutils rtsprofile rtctree nose rednose coverage coveralls
+  - sudo pip install pyyaml docutils nose rednose coverage coveralls
+  - if ! $DEPS_MASTER; then sudo pip install rtsprofile rtctree; fi
+  - if $DEPS_MASTER; then sudo pip install -U git+https://github.com/gbiggs/rtsprofile.git; fi
+  - if $DEPS_MASTER; then sudo pip install -U git+https://github.com/gbiggs/rtctree.git; fi
 script:
   - sudo /etc/init.d/omniorb4-nameserver stop
   - nosetests -v --rednose --with-doctest --with-coverage --cover-package=rtshell --cover-erase test/*.py

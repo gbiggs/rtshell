@@ -151,3 +151,9 @@ Print the data being sent by one or more output ports.'''
         return 1
     return 0
 
+
+if __name__ == '__main__':
+    import sys
+    sys.exit(main())
+
+

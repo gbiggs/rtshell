@@ -472,5 +472,10 @@ Display information about a manager or component.'''
     return 0
 
 
+if __name__ == '__main__':
+    import sys
+    sys.exit(main())
+
+
 # vim: tw=79
 

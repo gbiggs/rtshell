@@ -279,5 +279,11 @@ Recreate an RT system using an RTSProfile.'''
         return 1
     return 0
 
+
+if __name__ == '__main__':
+    import sys
+    sys.exit(main())
+
+
 # vim: tw=79
 

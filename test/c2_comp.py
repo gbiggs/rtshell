@@ -1,24 +1,28 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-
 import imp
-import inspect
-import sys
-from traceback import print_exc
-from time import time
-from optparse import OptionParser, OptionError
-
 import OpenRTM_aist
+import os
+import os.path
 import RTC
+import sys
+import traceback
 
 
-class C1(OpenRTM_aist.DataFlowComponentBase):
+import MyData, MyData__POA
+
+
+class C2(OpenRTM_aist.DataFlowComponentBase):
     def __init__(self, mgr):
         OpenRTM_aist.DataFlowComponentBase.__init__(self, mgr)
+        self._df = './test/c2_rcvd'
 
     def onInitialize(self):
         try:
+            if os.path.exists(self._df):
+                os.remove(self._df)
+
             f, p, d = imp.find_module('MyData')
             self._m = imp.load_module('MyData', f, p, d)
             if f:
@@ -28,23 +32,24 @@ class C1(OpenRTM_aist.DataFlowComponentBase):
             if f:
                 f.close()
             self._data_type = self._m.Bleg
-            self._out_data = self._data_type(0, 0)
-            self._outport = OpenRTM_aist.OutPort('output', self._out_data,
+            self._in_data = self._data_type(0, 0)
+            self._inport = OpenRTM_aist.InPort('input', self._in_data,
                     OpenRTM_aist.RingBuffer(8))
-            self.registerOutPort('output', self._outport)
-            self._count = 0
+            self.registerInPort('input', self._inport)
         except:
-            print_exc()
+            traceback.print_exc()
             return RTC.RTC_ERROR
         return RTC.RTC_OK
 
     def onExecute(self, ec_id):
         try:
-            val = eval('self._m.Bleg(1, {0})'.format(self._count))
-            self._outport.write(val)
-            self._count += 1
+            if self._inport.isNew():
+                d = self._inport.read()
+                with open(self._df, 'a+') as f:
+                    f.write('{0}\n'.format(d))
+                print(d)
         except:
-            print_exc()
+            traceback.print_exc()
             return RTC.RTC_ERROR
         return RTC.RTC_OK
 
@@ -54,14 +59,14 @@ def comp_fact(opts, port, mods):
         const = eval_const(opts.const, mods)
         if not const:
             return None
-        return C1(mgr, const, port, opts.verbosity)
+        return C2(mgr, const, port, opts.verbosity)
     return fact_fun
 
 
 def init(mgr):
-    spec = ['implementation_id',    'C1',
-        'type_name',                'C1',
-        'description',              'Custom data type output component.',
+    spec = ['implementation_id',    'C2',
+        'type_name',                'C2',
+        'description',              'Custom data input component',
         'version',                  '1.0',
         'vendor',                   'Geoffrey Biggs, AIST',
         'category',                 'DataProducer',
@@ -71,14 +76,18 @@ def init(mgr):
         'lang_type',                'SCRIPT',
         '']
     profile = OpenRTM_aist.Properties(defaults_str=spec)
-    mgr.registerFactory(profile, C1,
+    mgr.registerFactory(profile, C2,
             OpenRTM_aist.Delete)
-    comp = mgr.createComponent("C1")
+
+    
+def initcreate(mgr):
+    init(mgr)
+    comp = mgr.createComponent("C2")
 
 
 def main():
     mgr = OpenRTM_aist.Manager.init(len(sys.argv), sys.argv)
-    mgr.setModuleInitProc(init)
+    mgr.setModuleInitProc(initcreate)
     mgr.activateManager()
     mgr.runManager()
     return 0

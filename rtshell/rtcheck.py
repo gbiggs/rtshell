@@ -227,5 +227,10 @@ Check that the running RT System conforms to an RTSProfile.'''
     return 0
 
 
+if __name__ == '__main__':
+    import sys
+    sys.exit(main())
+
+
 # vim: tw=79
 

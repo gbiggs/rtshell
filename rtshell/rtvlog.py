@@ -129,5 +129,10 @@ View a component logs.'''
     return 0
 
 
+if __name__ == '__main__':
+    import sys
+    sys.exit(main())
+
+
 # vim: tw=79
 

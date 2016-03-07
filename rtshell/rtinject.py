@@ -189,3 +189,9 @@ Write a constant value to one or more ports.'''
         return 1
     return 0
 
+
+if __name__ == '__main__':
+    import sys
+    sys.exit(main())
+
+

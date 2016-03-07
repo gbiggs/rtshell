@@ -41,3 +41,9 @@ class Reader(gen_comp.GenComp):
                 print(p.format())
         return RTC.RTC_OK, execed
 
+
+if __name__ == '__main__':
+    main()
+
+
+

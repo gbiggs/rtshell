@@ -35,11 +35,34 @@ import rtshell
 
 
 def connect_ports(paths, options, tree=None):
+    '''connect_ports
+
+    This should raise exception:
+
+    >>> connect_ports([
+    ...   ('Std0.rtc', '/localhost/local.host_cxt/Std0.rtc'),
+    ...   ('Output0.rtc:out', '/localhost/local.host_cxt/Output0.rtc:out')
+    ... ], {})
+    Traceback (most recent call last):
+    ...
+    NoSourcePortError: No source port specified.
+
+    >>> connect_ports([
+    ...   ('Std0.rtc:in', '/localhost/local.host_cxt/Std0.rtc:in'),
+    ...   ('Output0.rtc', '/localhost/local.host_cxt/Output0.rtc')
+    ... ], {})
+    Traceback (most recent call last):
+    ...
+    NoDestPortError: No destination port specified.
+    '''
     cmd_paths, fps = list(zip(*paths))
     pathports = [rtctree.path.parse_path(fp) for fp in fps]
     for ii, p in enumerate(pathports):
         if not p[1]:
-            raise rts_exceptions.NotAPortError(cmd_paths[ii])
+            if ii == 0:
+                raise rts_exceptions.NoSourcePortError(cmd_paths[ii])
+            else:
+                raise rts_exceptions.NoDestPortError(cmd_paths[ii])
         if not p[0][-1]:
             raise rts_exceptions.NotAPortError(cmd_paths[ii])
     paths, ports = list(zip(*pathports))
@@ -122,6 +145,11 @@ Connect two or more ports.'''
                 file=sys.stderr)
         return 1
     return 0
+
+
+if __name__ == '__main__':
+    import sys
+    sys.exit(main())
 
 
 # vim: tw=79

@@ -302,5 +302,10 @@ Record a running RT System in an RTSProfile specification.'''
     return 0
 
 
+if __name__ == '__main__':
+    import sys
+    sys.exit(main())
+
+
 # vim: tw=79
 

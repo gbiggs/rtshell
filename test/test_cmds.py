@@ -40,12 +40,16 @@ def load_file(fn):
     with open(fn, 'r') as f:
         return f.read()
 
-def call_process(args, stdin=None):
+def preprocess_args(args):
     if type(args) == str:
         args = [args]
     if args[0].find('./') == 0:
         args = ['coverage', 'run', '--parallel-mode', '--source=rtshell',
                 '-m', args[0].replace('././', './').replace('./', 'rtshell.')] + args[1:]
+    return args
+        
+def call_process(args, stdin=None):
+    args = preprocess_args(args)
     print 'running command: ' + ' '.join(args)
     if not stdin:
         p = subprocess.Popen(args, stdout=subprocess.PIPE,
@@ -65,6 +69,7 @@ def call_process(args, stdin=None):
 
 
 def start_process(args):
+    args = preprocess_args(args)
     return subprocess.Popen(args, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
 

@@ -1130,6 +1130,8 @@ class rtcryoTests(unittest.TestCase):
         stop_ns(self._ns)
 
     def _check_rtsys_xml(self, rtsys):
+        print 'check rtsys xml:'
+        print rtsys
         self.assert_(rtsys.startswith('<?xml'))
         # Components
         self.assert_('rts:instanceName="Std0"' in rtsys)
@@ -1155,6 +1157,8 @@ class rtcryoTests(unittest.TestCase):
         rtsprofile.rts_profile.RtsProfile(xml_spec=rtsys)
 
     def _check_rtsys_yaml(self, rtsys):
+        print 'check rtsys yaml:'
+        print rtsys
         self.assert_(rtsys.startswith('rtsProfile:'))
         # Components
         self.assert_('instanceName: Std0' in rtsys)
@@ -2619,7 +2623,7 @@ class rtlsTests(unittest.TestCase):
         stdout, stderr, ret = call_process(['./rtls', '-l',
             'localhost/local.host_cxt'])
         self.assert_('Inactive  1/0  1/0  0/0  0/0  Std0.rtc' in stdout)
-        self.assert_('Inactive  2/0  1/0  1/0  0/0  C10.rtc' in stdout)
+        self.assert_('Inactive  1/0  1/0  1/0  0/0  C10.rtc' in stdout)
         self.assert_('-         -    -    -    -    manager.mgr' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
@@ -2639,7 +2643,7 @@ class rtlsTests(unittest.TestCase):
         self.assertEqual(ret, 0)
 
     def test_ls_recurse(self):
-        stdout, stderr, ret = call_process(['./rtls', '-R'])
+        stdout, stderr, ret = call_process(['./rtls', '-R', '/localhost'])
         self.assert_('/localhost' in stdout)
         self.assert_('/localhost/local.host_cxt' in stdout)
         self.assert_('Std0.rtc' in stdout)
@@ -2651,7 +2655,7 @@ class rtlsTests(unittest.TestCase):
         self.assertEqual(ret, 0)
 
     def test_ls_recurse_long(self):
-        stdout, stderr, ret = call_process(['./rtls', '-lR'])
+        stdout, stderr, ret = call_process(['./rtls', '-lR', '/localhost'])
         self.assert_('/localhost' in stdout)
         self.assert_('/localhost/local.host_cxt' in stdout)
         self.assert_('Inactive  1/0  1/0  0/0  0/0  Std0.rtc' in stdout)

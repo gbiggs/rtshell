@@ -2988,7 +2988,7 @@ class rtstodotTests(unittest.TestCase):
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         sample = load_file('./test/sys.dot')
-        self.assertEqual(sample, stdout)
+        self.assertEqual(sample.rstrip(), stdout)
 
     def test_file(self):
         stdout, stderr, ret = call_process(['./rtstodot', './test/sys.rtsys'])

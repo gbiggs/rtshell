@@ -2628,7 +2628,7 @@ class rtlsTests(unittest.TestCase):
         stdout, stderr, ret = call_process(['./rtls', '-l',
             'localhost/local.host_cxt'])
         self.assert_('Inactive  1/0  1/0  0/0  0/0  Std0.rtc' in stdout)
-        self.assert_('Inactive  1/0  1/0  1/0  0/0  C10.rtc' in stdout)
+        self.assert_('Inactive  1/0  0/0  1/0  0/0  C10.rtc' in stdout)
         self.assert_('-         -    -    -    -    manager.mgr' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
@@ -2648,7 +2648,7 @@ class rtlsTests(unittest.TestCase):
         self.assertEqual(ret, 0)
 
     def test_ls_recurse(self):
-        stdout, stderr, ret = call_process(['./rtls', '-R', '/localhost'])
+        stdout, stderr, ret = call_process(['./rtls', '-R'])
         self.assert_('/localhost' in stdout)
         self.assert_('/localhost/local.host_cxt' in stdout)
         self.assert_('Std0.rtc' in stdout)
@@ -2660,11 +2660,11 @@ class rtlsTests(unittest.TestCase):
         self.assertEqual(ret, 0)
 
     def test_ls_recurse_long(self):
-        stdout, stderr, ret = call_process(['./rtls', '-lR', '/localhost'])
+        stdout, stderr, ret = call_process(['./rtls', '-lR'])
         self.assert_('/localhost' in stdout)
         self.assert_('/localhost/local.host_cxt' in stdout)
         self.assert_('Inactive  1/0  1/0  0/0  0/0  Std0.rtc' in stdout)
-        self.assert_('Inactive  2/0  1/0  1/0  0/0  C10.rtc' in stdout)
+        self.assert_('Inactive  1/0  0/0  1/0  0/0  C10.rtc' in stdout)
         self.assert_('/localhost/local.host_cxt/manager.mgr' in stdout)
         self.assert_('-         -    -    -    -    manager.mgr' in stdout)
         self.assert_('-         -    -    -    -    *Zombie0.rtc' in stdout)

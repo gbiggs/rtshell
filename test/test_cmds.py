@@ -1189,7 +1189,7 @@ class rtcryoTests(unittest.TestCase):
         rtsprofile.rts_profile.RtsProfile(yaml_spec=rtsys)
 
     def test_freeze_to_stdout_xml(self):
-        stdout, stderr, ret = call_process(['./rtcryo', '-x'])
+        stdout, stderr, ret = call_process(['./rtcryo', '-x', 'localhost'])
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         self._check_rtsys_xml(stdout)
@@ -1197,7 +1197,7 @@ class rtcryoTests(unittest.TestCase):
     def test_freeze_to_file_xml(self):
         f, fn = tempfile.mkstemp(prefix='rtshell_test_')
         os.close(f)
-        stdout, stderr, ret = call_process(['./rtcryo', '-x', '-o', fn])
+        stdout, stderr, ret = call_process(['./rtcryo', '-x', '-o', fn, 'localhost'])
         rtsys = load_file(fn)
         os.remove(fn)
         self.assertEqual(stdout, '')
@@ -1206,7 +1206,7 @@ class rtcryoTests(unittest.TestCase):
         self._check_rtsys_xml(rtsys)
 
     def test_freeze_to_stdout_yaml(self):
-        stdout, stderr, ret = call_process(['./rtcryo', '-y'])
+        stdout, stderr, ret = call_process(['./rtcryo', '-y', 'localhost'])
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         self._check_rtsys_yaml(stdout)
@@ -1214,7 +1214,7 @@ class rtcryoTests(unittest.TestCase):
     def test_freeze_to_file_yaml(self):
         f, fn = tempfile.mkstemp(prefix='rtshell_test_')
         os.close(f)
-        stdout, stderr, ret = call_process(['./rtcryo', '-y', '-o', fn])
+        stdout, stderr, ret = call_process(['./rtcryo', '-y', '-o', fn, 'localhost'])
         rtsys = load_file(fn)
         os.remove(fn)
         self.assertEqual(stdout, '')

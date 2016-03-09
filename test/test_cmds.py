@@ -826,17 +826,10 @@ class rtconTests(unittest.TestCase):
         _test_sourceportnotfound(self, './rtcon', obj1='Output0.rtc',
                 obj2='Std0.rtc:in')
 
-    def test_not_enough_targets(self):
-        stdout, stderr, ret = call_process(['./rtcon', 'Std0.rtc:in'])
+    def test_no_target(self):
+        stdout, stderr, ret = call_process(['./rtcon'])
         self.assertEqual(stdout, '')
-        self.assert_('Usage:' in stderr)
-        self.assertEqual(ret, 1)
-
-    def test_too_many_targets(self):
-        stdout, stderr, ret = call_process(['./rtcon', 'Std0.rtc:in',
-            'Output0.rtc:out', 'Err0.rtc:in'])
-        self.assertEqual(stdout, '')
-        self.assert_('Usage:' in stderr)
+        self.assertEqual(stderr, 'rtcon: No ports specified.')
         self.assertEqual(ret, 1)
 
     def test_no_dest_port(self):

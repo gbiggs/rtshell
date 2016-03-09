@@ -106,7 +106,7 @@ class BuildDocumentation(Command):
         self.check_timestamps_in_dir(lang, base_dir, check_dir)
 
 
-    def compile_docs(self, s, d, cmd, ext):
+    def compile_docs(self, s, d, comp_cmd, ext):
         if os.path.exists(d):
             # Remove the destination to clear out any existing junk
             shutil.rmtree(d)
@@ -118,21 +118,33 @@ class BuildDocumentation(Command):
                 continue
             dest = os.path.join(d, os.path.splitext(f)[0] + ext)
             log.debug('Compiling {} to {}'.format(src, dest))
+            cmd = [comp_cmd, src, dest]
             try:
-                p = subprocess.Popen([cmd, src, dest], stdout=subprocess.PIPE,
+                if sys.platform == 'win32':
+                    cmd.insert(0, 'python')
+                p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE)
                 stdout, stderr = p.communicate()
+                if p.returncode != 0:
+                    raise errors.DistutilsFileError(
+                        'Failed to compile {} to {}.\nStdout:\n{}\n---\n'
+                        'Stderr:\n{}'.format(src, dest, stdout, stderr))
             except OSError as e:
                 if e.errno == 2:
                     # The non-.py version of the command was not found; try it
                     # with the .py extension (for platforms like Gentoo)
-                    p = subprocess.Popen([cmd + '.py', src, dest],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    cmd[0] = cmd[0] + '.py'
+                    if sys.platform == 'win32':
+                        cmd.insert(0, 'python')
+                    p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE)
                     stdout, stderr = p.communicate()
-            if p.returncode != 0:
-                raise errors.DistutilsFileError(
-                    'Failed to compile {} to {}.\nStdout:\n{}\n---\n'
-                    'Stderr:\n{}'.format(src, dest, stdout, stderr))
+                    if p.returncode != 0:
+                        raise errors.DistutilsFileError(
+                            'Failed to compile {} to {}.\nStdout:\n{}\n---\n'
+                            'Stderr:\n{}'.format(src, dest, stdout, stderr))
+                else:
+                    raise
 
     def compile_tex(self, s, d):
         if os.path.exists(d):
@@ -166,18 +178,27 @@ class BuildDocumentation(Command):
 
     def compile_man(self, lang):
         log.info('Compiling manpage documentation for language {}'.format(lang))
+        cmd = 'rst2man'
+        if sys.platform == 'win32':
+            cmd = os.path.join(sys.prefix, 'Scripts', cmd + '.py')
         self.compile_docs(self.source_dir(lang),
-                os.path.join(self.dest_dir('man', lang), 'man1'), 'rst2man', '.1')
+                os.path.join(self.dest_dir('man', lang), 'man1'), cmd, '.1')
 
     def compile_html(self, lang):
         log.info('Compiling HTML documentation for language {}'.format(lang))
+        cmd = 'rst2html'
+        if sys.platform == 'win32':
+            cmd = os.path.join(sys.prefix, 'Scripts', cmd + '.py')
         self.compile_docs(self.source_dir(lang),
-                self.dest_dir('html', lang), 'rst2html', '.html')
+                self.dest_dir('html', lang), cmd, '.html')
 
     def compile_pdf(self, lang):
         log.info('Compiling PDF documentation for language {}'.format(lang))
+        cmd = 'rst2latex'
+        if sys.platform == 'win32':
+            cmd = os.path.join(sys.prefix, 'Scripts', cmd + '.py')
         tex_dir = self.dest_dir('latex', lang)
-        self.compile_docs(self.source_dir(lang), tex_dir, 'rst2latex', '.tex')
+        self.compile_docs(self.source_dir(lang), tex_dir, cmd, '.tex')
         self.compile_tex(tex_dir, self.dest_dir('pdf', lang))
         self.clean_tex()
 

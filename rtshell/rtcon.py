@@ -134,12 +134,6 @@ Connect two or more ports.'''
         print('{0}: No ports specified.'.format(os.path.basename(sys.argv[0])),
                 file=sys.stderr)
         return 1
-
-    if len(args) < 2:
-        # No destination port specified
-        parser.print_usage(file=sys.stderr)
-        return 1
-    
     paths = [(p, path.cmd_path_to_full_path(p)) for p in args]
 
     try:

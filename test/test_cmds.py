@@ -3025,21 +3025,21 @@ class rtprintTests(unittest.TestCase):
         time.sleep(3)
         p.terminate()
         stdout, stderr = p.communicate()
-        self.assert_(re.match(r'\[0\.0+\]\s\d+\n', stdout) is not None)
+        self.assert_('rtctree.rtc.RTC.TimedLong' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(p.returncode, -15)
 
     def test_print_count_limit(self):
         stdout, stderr, ret = call_process(['./rtprint',
             '/localhost/local.host_cxt/Output0.rtc:out', '-n', '2'])
-        self.assert_(re.match(r'\[0\.0+\]\s\d+\n\[0\.0+\]\s\d+$', stdout) is not None)
+        self.assertEqual(stdout.count('rtctree.rtc.RTC.TimedLong'), 2)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
     def test_print_time_limit(self):
         stdout, stderr, ret = call_process(['./rtprint',
             '/localhost/local.host_cxt/Output0.rtc:out', '-t', '1'])
-        self.assert_(re.match(r'\[0\.0+\]\s\d+\n', stdout) is not None)
+        self.assert_('rtctree.rtc.RTC.TimedLong' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 

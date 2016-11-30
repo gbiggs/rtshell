@@ -90,7 +90,7 @@ def print_logs(paths, options, tree=None):
             raise rts_exceptions.NotAComponentError(p[0])
 
         rtc.dynamic = True
-        if 'ALL' in options.filters:
+        if len(options.filters) == 0 or 'ALL' in options.filters:
             for (k,v) in filtermap.items():
                 rtc.add_callback(v[0], v[1])
         else:
@@ -123,8 +123,8 @@ Watch a component event.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-f', '--filter', dest='filters', action='append',
-            type='string', default='ALL',
-            help='Event source filters. [Default: %default]')
+            type='string', default=[],
+            help='Event source filters. [Default: ALL]')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
             help='Output verbose information. [Default: %default]')

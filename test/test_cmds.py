@@ -26,6 +26,7 @@ import rtctree
 import rtctree.tree
 import rtsprofile.rts_profile
 import subprocess
+import threading
 import sys
 import tempfile
 import time
@@ -47,18 +48,28 @@ def preprocess_args(args):
         args = ['coverage', 'run', '--parallel-mode', '--source=rtshell',
                 '-m', args[0].replace('././', './').replace('./', 'rtshell.')] + args[1:]
     return args
-        
-def call_process(args, stdin=None):
+
+def timekeeper(timeout, p):
+    time.sleep(timeout)
+    p.terminate()
+
+def call_process(args, stdin=None, timeout=-1):
     args = preprocess_args(args)
     print 'running command: ' + ' '.join(args)
     if not stdin:
         p = subprocess.Popen(args, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
+        if timeout > 0:
+            t = threading.Thread(target=timekeeper, name="timekeeper", args=(timeout, p))
+            t.start()
         output = p.communicate()
     else:
         p = subprocess.Popen(args, stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
+        if timeout > 0:
+            t = threading.Thread(target=timekeeper, name="timekeeper", args=(timeout, p))
+            t.start()
         output = p.communicate(stdin)
     output = (output[0].strip().replace('.py:', ':'), output[1].strip().replace('.py:', ':'))
     return_code = p.returncode
@@ -3533,10 +3544,10 @@ class rtwatchTests(unittest.TestCase):
     def test_hearbeat(self):
         stdout, stderr, ret = call_process(['./rtwatch',
             '-f', 'HEARTBEAT',
-            '/localhost/local.host_cxt/ConsoleIn0.rtc'])
+            '/localhost/local.host_cxt/ConsoleIn0.rtc'], timeout=5)
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
-        self.assertEqual(ret, 0)
+        self.assertEqual(ret, -15)
 
 
 def rtwatch_suite():

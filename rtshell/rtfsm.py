@@ -58,22 +58,22 @@ def manage_fsm(tgt_raw_path, tgt_full_path, command, argument, options, tree=Non
     if command == 'getstate':
         print(fsm.get_current_state())
     elif command == 'geteventprofiles':
-        struct = fsm.get_fsm_structure()
+        (ret, struct) = fsm.get_fsm_structure()
         ps = []
         for p in struct.event_profiles:
             ps.append(p.name + ':' + p.data_type)
         print(','.join(ps))
     elif command == 'getstructure':
-        struct = fsm.get_fsm_structure()
+        (ret, struct) = fsm.get_fsm_structure()
         print(struct.structure)
     elif command == 'seteventprofiles':
-        struct = fsm.get_fsm_structure()
+        (ret, struct) = fsm.get_fsm_structure()
         struct.event_profiles = argument
-        fms.set_fsm_structure(struct)
+        fsm.set_fsm_structure(struct)
     elif command == 'setstructure':
-        struct = fsm.get_fsm_structure()
+        (ret, struct) = fsm.get_fsm_structure()
         struct.structure = argument
-        fms.set_fsm_structure(struct)
+        fsm.set_fsm_structure(struct)
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <component path> [getstate|get[set]eventprofiles|get[set]structure]
@@ -107,7 +107,7 @@ Configure FSM behavior of the component.'''
                 'specified.'.format(sys.argv[0], command), file=sys.stderr)
             return 1
         argument = []
-        for p in argv[2].split(','):
+        for p in args[2].split(','):
             argument.append(p.split(':'))
     elif command == 'setstructure':
         if len(args) != 3:

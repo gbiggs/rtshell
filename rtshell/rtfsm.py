@@ -43,16 +43,15 @@ def manage_fsm(tgt_raw_path, tgt_full_path, command, argument, options, tree=Non
         raise rts_exceptions.NotAComponentError(tgt_raw_path)
 
     if not tree:
-        parsed = [path[2]]
-        tree = rtctree.tree.RTCTree(paths=parsed, filter=parsed)
+        tree = rtctree.tree.RTCTree(paths=path, filter=[path])
 
-    if not tree.has_path(path[2]):
-        raise rts_exceptions.NoSuchObjectError(path[0])
-    rtc = tree.get_node(path[2])
+    if not tree.has_path(path):
+        raise rts_exceptions.NoSuchObjectError(path)
+    rtc = tree.get_node(path)
     if rtc.is_zombie:
-        raise rts_exceptions.ZombieObjectError(path[0])
+        raise rts_exceptions.ZombieObjectError(path)
     if not rtc.is_component:
-        raise rts_exceptions.NotAComponentError(path[0])
+        raise rts_exceptions.NotAComponentError(path)
 
     fsm = rtc.get_extended_fsm_service()
 

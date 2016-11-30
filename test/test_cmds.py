@@ -3508,6 +3508,93 @@ def rtteardown_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtteardownTests)
 
 
+class rtwatchTests(unittest.TestCase):
+    def setUp(self):
+        self._ns = start_ns()
+        fname = './test/run-fsm4rtc.sh'
+        print 'running command: ' + fname
+        p = subprocess.Popen([fname], stdout=subprocess.PIPE)
+        self._std = (p, fname)
+        wait_for_comp('ConsoleIn0.rtc')
+        self._output = launch_comp('output_comp')
+        wait_for_comp('Output0.rtc')
+
+    def tearDown(self):
+        stop_comp(self._std)
+        stop_comp(self._output)
+        stop_ns(self._ns)
+
+    def _connect_comps(self):
+        args = ['./rtcon',
+            '/localhost/local.host_cxt/ConsoleIn0.rtc:in',
+            '/localhost/local.host_cxt/Output0.rtc:out']
+        stdout, stderr, ret = call_process(args)
+
+    def test_hearbeat(self):
+        stdout, stderr, ret = call_process(['./rtwatch',
+            '-f', 'HEARTBEAT',
+            '/localhost/local.host_cxt/ConsoleIn0.rtc'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+
+def rtwatch_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtwatchTests)
+
+
+class rtfsmTests(unittest.TestCase):
+    def setUp(self):
+        self._ns = start_ns()
+        fname = './test/run-fsm4rtc.sh'
+        print 'running command: ' + fname
+        p = subprocess.Popen([fname], stdout=subprocess.PIPE)
+        self._std = (p, fname)
+        wait_for_comp('ConsoleIn0.rtc')
+
+    def tearDown(self):
+        stop_comp(self._std)
+        stop_ns(self._ns)
+
+    def test_geteventprofiles(self):
+        stdout, stderr, ret = call_process(['./rtfsm',
+            '/localhost/local.host_cxt/ConsoleIn0.rtc',
+            'geteventprofiles'])
+        self.assertEqual(stdout, 'toggle:TimedShort')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_seteventprofiles(self):
+        stdout, stderr, ret = call_process(['./rtfsm',
+            '/localhost/local.host_cxt/ConsoleIn0.rtc',
+            'seteventprofiles',
+            'toggle:TimedShort,toggle2:TimedString'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_getstructure(self):
+        stdout, stderr, ret = call_process(['./rtfsm',
+            '/localhost/local.host_cxt/ConsoleIn0.rtc',
+            'getstructure'])
+        self.assertEqual(stdout.find('<scxml'), 0)
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_setstructure(self):
+        stdout, stderr, ret = call_process(['./rtfsm',
+            '/localhost/local.host_cxt/ConsoleIn0.rtc',
+            'setstructure',
+            './test/fsm.scxml'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+
+def rtfsm_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtfsmTests)
+
+
 def suite():
     return unittest.TestSuite([rtact_suite(), rtdeact_suite(), rtreset_suite(),
         rtcat_suite(), rtcheck_suite(), rtcomp_suite(), rtcon_suite(),
@@ -3515,7 +3602,8 @@ def suite():
         rtdis_suite(), rtdoc_suite(), rtexit_suite(), rtfind_suite(),
         rtinject_suite(), rtlog_suite(), rtls_suite(), rtmgr_suite(),
         rtprint_suite(), rtresurrect_suite(), rtstart_suite(),
-        rtstodot_suite(), rtstop_suite(), rtteardown_suite()])
+        rtstodot_suite(), rtstop_suite(), rtteardown_suite(),
+        rtwatch_suite(), rtfsm_suite()])
 
 
 if __name__ == '__main__':

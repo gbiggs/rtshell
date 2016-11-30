@@ -27,6 +27,7 @@ import rtctree.exceptions
 import rtctree.path
 import rtctree.tree
 import rtctree.utils
+import rtctree.rtc.RTC
 import sys
 import traceback
 
@@ -68,7 +69,10 @@ def manage_fsm(tgt_raw_path, tgt_full_path, command, argument, options, tree=Non
         print(struct.structure)
     elif command == 'seteventprofiles':
         (ret, struct) = fsm.get_fsm_structure()
-        struct.event_profiles = argument
+        struct.event_profiles = []
+        for a in argument:
+            p = rtctree.rtc.RTC.FsmEventProfile(a[0], a[1])
+            struct.event_profiles.append(p)
         fsm.set_fsm_structure(struct)
     elif command == 'setstructure':
         (ret, struct) = fsm.get_fsm_structure()

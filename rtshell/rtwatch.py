@@ -35,26 +35,26 @@ from rtshell import path
 from rtshell import rts_exceptions
 import rtshell
 
-def rtc_status_cb(handle, status):
-    print('[{0}] {1} {2}'.format(time.time(), handle, status))
+def rtc_status_cb(event, args, args2):
+    print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
 
-def component_profile_cb(items):
-    print('[{0}] {1}'.format(time.time(), ','.join(items)))
+def component_profile_cb(event, args, args2):
+    print('[{0}] {1}'.format(time.time(), ','.join(args[0])))
 
-def ec_event_cb(handle, status):
-    print('[{0}] {1} {2}'.format(time.time(), handle, status))
+def ec_event_cb(event, args, args2):
+    print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
 
-def port_event_cb(port_name, event):
-    print('[{0}] {1} {2}'.format(time.time(), port_name, event))
+def port_event_cb(event, args, args2):
+    print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
 
-def config_event_cb(config_set_name, event):
-    print('[{0}] {1} {2}'.format(time.time(), config_set_name, event))
+def config_event_cb(event, args, args2):
+    print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
 
-def heartbeat_cb(kind, time):
-    print('[{0}] {1}'.format(time, kind))
+def heartbeat_cb(event, args, args2):
+    print('[{0}] {1}'.format(args[1], args[0]))
 
-def fsm_event_cb(kind, hint):
-    print('[{0}] {1} {2}'.format(time.time(), kind, hint))
+def fsm_event_cb(event, args, args2):
+    print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
 
 filtermap = {
     'RTC_STATUS': ('rtc_status', rtc_status_cb),

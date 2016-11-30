@@ -118,7 +118,7 @@ Configure FSM behavior of the component.'''
             print('{0}: No argument to {1} command '\
                 'specified.'.format(sys.argv[0], command), file=sys.stderr)
             return 1
-        with open(args[2], mode = 'r', encoding = 'utf-8') as fh:
+        with open(args[2], 'r') as fh:
             argument = fh.read()
         if not argument:
             print('{0}: Unable to read file {1} specified to {2} command.'\

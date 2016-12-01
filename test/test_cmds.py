@@ -53,7 +53,7 @@ def timekeeper(timeout, p):
     time.sleep(timeout)
     p.terminate()
 
-def call_process(args, stdin=None, timeout=-1):
+def call_process(args, stdin=None, communicate=True, timeout=-1):
     args = preprocess_args(args)
     print 'running command: ' + ' '.join(args)
     if not stdin:
@@ -62,6 +62,8 @@ def call_process(args, stdin=None, timeout=-1):
         if timeout > 0:
             t = threading.Thread(target=timekeeper, name="timekeeper", args=(timeout, p))
             t.start()
+        if communicate == False:
+            return p
         output = p.communicate()
     else:
         p = subprocess.Popen(args, stdin=subprocess.PIPE,
@@ -70,6 +72,8 @@ def call_process(args, stdin=None, timeout=-1):
         if timeout > 0:
             t = threading.Thread(target=timekeeper, name="timekeeper", args=(timeout, p))
             t.start()
+        if communicate == False:
+            return p
         output = p.communicate(stdin)
     output = (output[0].strip().replace('.py:', ':'), output[1].strip().replace('.py:', ':'))
     return_code = p.returncode
@@ -3526,7 +3530,7 @@ class rtwatchTests(unittest.TestCase):
         print 'running command: ' + fname
         p = subprocess.Popen([fname], stdout=subprocess.PIPE)
         self._std = (p, fname)
-        wait_for_comp('ConsoleIn0.rtc')
+        wait_for_comp('ConsoleOut0.rtc')
         self._output = launch_comp('output_comp')
         wait_for_comp('Output0.rtc')
 
@@ -3535,19 +3539,66 @@ class rtwatchTests(unittest.TestCase):
         stop_comp(self._output)
         stop_ns(self._ns)
 
-    def _connect_comps(self):
-        args = ['./rtcon',
-            '/localhost/local.host_cxt/ConsoleIn0.rtc:in',
-            '/localhost/local.host_cxt/Output0.rtc:out']
-        stdout, stderr, ret = call_process(args)
-
-    def test_hearbeat(self):
+    def test_waitloop(self):
         stdout, stderr, ret = call_process(['./rtwatch',
-            '-f', 'HEARTBEAT',
-            '/localhost/local.host_cxt/ConsoleIn0.rtc'], timeout=5)
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'], timeout=5)
         self.assertEqual(stdout, '')
         self.assertEqual(stderr, '')
         self.assertEqual(ret, -15)
+
+    def test_heartbeat(self):
+        stdout, stderr, ret = call_process(['./rtwatch',
+            '-n', '4',
+            '-f', 'HEARTBEAT',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'])
+        self.assertNotEqual(stdout.find('RTC_HEARTBEAT'), -1)
+        self.assertNotEqual(stdout.find('EC_HEARTBEAT'), -1)
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_rtcstatus(self):
+        p = call_process(['./rtwatch',
+            '-n', '2',
+            '-f', 'RTC_STATUS',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'], communicate=False)
+        time.sleep(3)
+        call_process(['./rtact',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'])
+        time.sleep(1)
+        call_process(['./rtdeact',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'])
+        output = p.communicate()
+        ret = p.returncode
+        print 'stdout: ' + output[0]
+        print 'stderr: ' + output[1]
+        print 'returncode: %i' % (ret)
+        self.assertNotEqual(output[0].find('ACTIVE'), -1)
+        self.assertNotEqual(output[0].find('INACTIVE'), -1)
+        self.assertEqual(output[1], '')
+        self.assertEqual(ret, 0)
+
+    def test_portevent(self):
+        p = call_process(['./rtwatch',
+            '-n', '2',
+            '-f', 'PORT_EVENT',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'], communicate=False)
+        time.sleep(3)
+        call_process(['./rtcon',
+            '/localhost/local.host_cxt/Output0.rtc:out',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc:in'])
+        time.sleep(1)
+        call_process(['./rtdis',
+            '/localhost/local.host_cxt/Output0.rtc:out',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc:in'])
+        output = p.communicate()
+        ret = p.returncode
+        print 'stdout: ' + output[0]
+        print 'stderr: ' + output[1]
+        print 'returncode: %i' % (ret)
+        self.assertNotEqual(output[0].find('PORT_CONNECT'), -1)
+        self.assertNotEqual(output[0].find('PORT_DISCONNECT'), -1)
+        self.assertEqual(output[1], '')
+        self.assertEqual(ret, 0)
 
 
 def rtwatch_suite():

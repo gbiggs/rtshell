@@ -30,31 +30,92 @@ import RTC
 import sys
 import traceback
 import time
+import atexit
 
 from rtshell import path
 from rtshell import rts_exceptions
 import rtshell
 
+counter = 0
+
 def rtc_status_cb(event, args, args2):
-    print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
+    global counter
+    sevent = args[1]
+    if sevent == rtctree.component.Component.INACTIVE:
+        sevent = 'INACTIVE'
+    elif sevent == rtctree.component.Component.ACTIVE:
+        sevent = 'ACTIVE'
+    elif sevent == rtctree.component.Component.ERROR:
+        sevent = 'ERROR'
+    elif sevent == rtctree.component.Component.UNKNOWN:
+        sevent = 'UNKNOWN'
+    elif sevent == rtctree.component.Component.CREATED:
+        sevent = 'CREATED'
+    print('[{0}] {1} {2}'.format(time.time(), args[0], sevent))
+    counter += 1
 
 def component_profile_cb(event, args, args2):
+    global counter
     print('[{0}] {1}'.format(time.time(), ','.join(args[0])))
+    counter += 1
 
 def ec_event_cb(event, args, args2):
-    print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
+    global counter
+    eevent = args[1]
+    if eevent == rtctree.component.Component.EC_ATTACHED:
+        eevent = 'EC_ATTACHED'
+    elif eevent == rtctree.component.Component.EC_DETACHED:
+        eevent = 'EC_DETACHED'
+    elif eevent == rtctree.component.Component.EC_RATE_CHANGED:
+        eevent = 'EC_RATE_CHANGED'
+    elif eevent == rtctree.component.Component.EC_STARTUP:
+        eevent = 'EC_STARTUP'
+    elif eevent == rtctree.component.Component.EC_SHUTDOWN:
+        eevent = 'EC_SHUTDOWN'
+    print('[{0}] {1} {2}'.format(time.time(), args[0], eevent))
+    counter += 1
 
 def port_event_cb(event, args, args2):
-    print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
+    global counter
+    pevent = args[1]
+    if pevent == rtctree.component.Component.PORT_ADD:
+        pevent = 'PORT_ADD'
+    elif pevent == rtctree.component.Component.PORT_REMOVE:
+        pevent = 'PORT_REMOVE'
+    elif pevent == rtctree.component.Component.PORT_CONNECT:
+        pevent = 'PORT_CONNECT'
+    elif pevent == rtctree.component.Component.PORT_DISCONNECT:
+        pevent = 'PORT_DISCONNECT'
+    print('[{0}] {1} {2}'.format(time.time(), args[0], pevent))
+    counter += 1
 
 def config_event_cb(event, args, args2):
-    print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
+    global counter
+    cevent = args[1]
+    if cevent == rtctree.component.Component.CFG_UPDATE_SET:
+        cevent = 'CFG_UPDATE_SET'
+    elif cevent == rtctree.component.Component.CFG_UPDATE_PARAM:
+        cevent = 'CFG_UPDATE_PARAM'
+    elif cevent == rtctree.component.Component.CFG_SET_SET:
+        cevent = 'CFG_SET_SET'
+    elif cevent == rtctree.component.Component.CFG_ADD_SET:
+        cevent = 'CFG_ADD_SET'
+    elif cevent == rtctree.component.Component.CFG_REMOVE_SET:
+        cevent = 'CFG_REMOVE_SET'
+    elif cevent == rtctree.component.Component.CFG_ACTIVATE_SET:
+        cevent = 'CFG_ACTIVATE_SET'
+    print('[{0}] {1} {2}'.format(time.time(), args[0], cevent))
+    counter += 1
 
 def heartbeat_cb(event, args, args2):
+    global counter
     print('[{0}] {1}'.format(args[1], args[0]))
+    counter += 1
 
 def fsm_event_cb(event, args, args2):
+    global counter
     print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
+    counter += 1
 
 filtermap = {
     'RTC_STATUS': ('rtc_status', rtc_status_cb),
@@ -66,7 +127,13 @@ filtermap = {
     'HEARTBEAT': ('heartbeat', heartbeat_cb),
 }
 
+def clean_events(rtcs):
+    # Remove all the event hooks that were added
+    for i in rtcs:
+        i.dynamic = False
+
 def print_logs(paths, options, tree=None):
+    global counter
     for p in paths:
         path, port = rtctree.path.parse_path(p[1])
         if port:
@@ -103,25 +170,22 @@ def print_logs(paths, options, tree=None):
         rtcs.append(rtc)
 
     # Wait for a keyboard interrupt
-    try:
-        while True:
-            if sys.version_info[0] == 3:
-                input()
-            else:
-                raw_input('')
-    except KeyboardInterrupt:
-        pass
-
-    # Remove all the event hooks that were added
-    for i in rtcs:
-        i.dynamic = False
-
+    counter = 0
+    atexit.register(clean_events, rtcs)
+    while True:
+        if options.number > 0 and counter >= options.number:
+            break
+        time.sleep(0.5)
+    clean_events(rtcs)
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <path 1> [path 2...]
 Watch a component event.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
+    parser.add_option('-n', '--number', dest='number', action='store',
+            type='int', default=-1,
+            help='Number of event to capture. [Default: %default]')
     parser.add_option('-f', '--filter', dest='filters', action='append',
             type='string', default=[],
             help='Event source filters. [Default: ALL]')

@@ -59,23 +59,23 @@ def manage_fsm(tgt_raw_path, tgt_full_path, command, argument, options, tree=Non
     if command == 'getstate':
         print(fsm.get_current_state())
     elif command == 'geteventprofiles':
-        (ret, struct) = fsm.get_fsm_structure()
+        ret, struct = fsm.get_fsm_structure()
         ps = []
         for p in struct.event_profiles:
             ps.append(p.name + ':' + p.data_type)
         print(','.join(ps))
     elif command == 'getstructure':
-        (ret, struct) = fsm.get_fsm_structure()
+        ret, struct = fsm.get_fsm_structure()
         print(struct.structure)
     elif command == 'seteventprofiles':
-        (ret, struct) = fsm.get_fsm_structure()
+        ret, struct = fsm.get_fsm_structure()
         struct.event_profiles = []
         for a in argument:
             p = rtctree.rtc.RTC.FsmEventProfile(a[0], a[1])
             struct.event_profiles.append(p)
         fsm.set_fsm_structure(struct)
     elif command == 'setstructure':
-        (ret, struct) = fsm.get_fsm_structure()
+        ret, struct = fsm.get_fsm_structure()
         struct.structure = argument
         fsm.set_fsm_structure(struct)
 

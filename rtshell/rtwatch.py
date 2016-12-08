@@ -188,12 +188,14 @@ def main(argv=None, tree=None):
 Watch a component event.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
+    filterkind = filtermap.keys()
+    filterkind.insert(0, 'ALL')
     parser.add_option('-n', '--number', dest='number', action='store',
             type='int', default=-1,
             help='Number of event to capture. [Default: %default]')
     parser.add_option('-f', '--filter', dest='filters', action='append',
-            type='string', default=[],
-            help='Event source filters. [Default: ALL]')
+            type='choice', choices=filterkind, default=[],
+            help='Event source filters. Select from {0}. [Default: ALL]'.format(', '.join(filterkind)))
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
             help='Output verbose information. [Default: %default]')

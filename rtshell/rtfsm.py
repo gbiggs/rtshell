@@ -63,7 +63,7 @@ def manage_fsm(tgt_raw_path, tgt_full_path, command, argument, options, tree=Non
         ps = []
         for p in struct.event_profiles:
             ps.append(p.name + ':' + p.data_type)
-        print(','.join(ps))
+        print(', '.join(ps))
     elif command == 'getstructure':
         ret, struct = fsm.get_fsm_structure()
         print(struct.structure)

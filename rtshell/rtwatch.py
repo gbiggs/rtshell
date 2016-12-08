@@ -82,7 +82,7 @@ def rtc_status_cb(event, args, args2):
 
 def component_profile_cb(event, args, args2):
     global counter
-    print('[{0}] {1}'.format(time.time(), ','.join(args[0])))
+    print('[{0}] {1}'.format(time.time(), ', '.join(args[0])))
     counter += 1
 
 def ec_event_cb(event, args, args2):

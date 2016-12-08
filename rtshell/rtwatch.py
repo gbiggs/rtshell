@@ -192,7 +192,7 @@ Watch a component event.'''
     filterkind.insert(0, 'ALL')
     parser.add_option('-n', '--number', dest='number', action='store',
             type='int', default=-1,
-            help='Number of event to capture. [Default: %default]')
+            help='Number of events to capture. [Default: %default]')
     parser.add_option('-f', '--filter', dest='filters', action='append',
             type='choice', choices=filterkind, default=[],
             help='Event source filters. Select from {0}. [Default: ALL]'.format(', '.join(filterkind)))

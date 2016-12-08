@@ -34,23 +34,49 @@ import atexit
 
 from rtshell import path
 from rtshell import rts_exceptions
+from rtctree.component import Component
 import rtshell
+
+STATUS_CODE_MAP = {
+    Component.INACTIVE: 'INACTIVE',
+    Component.ACTIVE: 'ACTIVE',
+    Component.ERROR: 'ERROR',
+    Component.UNKNOWN: 'UNKNOWN',
+    Component.CREATED: 'CREATED'
+}
+
+EC_EVENT_CODE_MAP = {
+    Component.EC_ATTACHED: 'EC_ATTACHED',
+    Component.EC_DETACHED: 'EC_DETACHED',
+    Component.EC_RATE_CHANGED: 'EC_RATE_CHANGED',
+    Component.EC_STARTUP: 'EC_STARTUP',
+    Component.EC_SHUTDOWN: 'EC_SHUTDOWN'
+}
+
+PORT_EVENT_CODE_MAP = {
+    Component.PORT_ADD: 'PORT_ADD',
+    Component.PORT_REMOVE: 'PORT_REMOVE',
+    Component.PORT_CONNECT: 'PORT_CONNECT',
+    Component.PORT_DISCONNECT: 'PORT_DISCONNECT'
+}
+
+CONFIG_EVENT_CODE_MAP = {
+    Component.CFG_UPDATE_SET: 'CFG_UPDATE_SET',
+    Component.CFG_UPDATE_PARAM: 'CFG_UPDATE_PARAM',
+    Component.CFG_SET_SET: 'CFG_SET_SET',
+    Component.CFG_ADD_SET: 'CFG_ADD_SET',
+    Component.CFG_REMOVE_SET: 'CFG_REMOVE_SET',
+    Component.CFG_ACTIVATE_SET: 'CFG_ACTIVATE_SET'
+}
 
 counter = 0
 
 def rtc_status_cb(event, args, args2):
     global counter
-    sevent = args[1]
-    if sevent == rtctree.component.Component.INACTIVE:
-        sevent = 'INACTIVE'
-    elif sevent == rtctree.component.Component.ACTIVE:
-        sevent = 'ACTIVE'
-    elif sevent == rtctree.component.Component.ERROR:
-        sevent = 'ERROR'
-    elif sevent == rtctree.component.Component.UNKNOWN:
-        sevent = 'UNKNOWN'
-    elif sevent == rtctree.component.Component.CREATED:
-        sevent = 'CREATED'
+    try:
+        sevent = STATUS_CODE_MAP[args[1]]
+    except KeyError:
+        sevent = 'UNKNOWN(CODE:{0})'.format(args[1])
     print('[{0}] {1} {2}'.format(time.time(), args[0], sevent))
     counter += 1
 
@@ -61,49 +87,28 @@ def component_profile_cb(event, args, args2):
 
 def ec_event_cb(event, args, args2):
     global counter
-    eevent = args[1]
-    if eevent == rtctree.component.Component.EC_ATTACHED:
-        eevent = 'EC_ATTACHED'
-    elif eevent == rtctree.component.Component.EC_DETACHED:
-        eevent = 'EC_DETACHED'
-    elif eevent == rtctree.component.Component.EC_RATE_CHANGED:
-        eevent = 'EC_RATE_CHANGED'
-    elif eevent == rtctree.component.Component.EC_STARTUP:
-        eevent = 'EC_STARTUP'
-    elif eevent == rtctree.component.Component.EC_SHUTDOWN:
-        eevent = 'EC_SHUTDOWN'
+    try:
+        eevent = EC_EVENT_CODE_MAP[args[1]]
+    except KeyError:
+        eevent = 'UNKNOWN(CODE:{0})'.format(args[1])
     print('[{0}] {1} {2}'.format(time.time(), args[0], eevent))
     counter += 1
 
 def port_event_cb(event, args, args2):
     global counter
-    pevent = args[1]
-    if pevent == rtctree.component.Component.PORT_ADD:
-        pevent = 'PORT_ADD'
-    elif pevent == rtctree.component.Component.PORT_REMOVE:
-        pevent = 'PORT_REMOVE'
-    elif pevent == rtctree.component.Component.PORT_CONNECT:
-        pevent = 'PORT_CONNECT'
-    elif pevent == rtctree.component.Component.PORT_DISCONNECT:
-        pevent = 'PORT_DISCONNECT'
+    try:
+        pevent = EC_EVENT_CODE_MAP[args[1]]
+    except KeyError:
+        pevent = 'UNKNOWN(CODE:{0})'.format(args[1])
     print('[{0}] {1} {2}'.format(time.time(), args[0], pevent))
     counter += 1
 
 def config_event_cb(event, args, args2):
     global counter
-    cevent = args[1]
-    if cevent == rtctree.component.Component.CFG_UPDATE_SET:
-        cevent = 'CFG_UPDATE_SET'
-    elif cevent == rtctree.component.Component.CFG_UPDATE_PARAM:
-        cevent = 'CFG_UPDATE_PARAM'
-    elif cevent == rtctree.component.Component.CFG_SET_SET:
-        cevent = 'CFG_SET_SET'
-    elif cevent == rtctree.component.Component.CFG_ADD_SET:
-        cevent = 'CFG_ADD_SET'
-    elif cevent == rtctree.component.Component.CFG_REMOVE_SET:
-        cevent = 'CFG_REMOVE_SET'
-    elif cevent == rtctree.component.Component.CFG_ACTIVATE_SET:
-        cevent = 'CFG_ACTIVATE_SET'
+    try:
+        cevent = CONFIG_EVENT_CODE_MAP[args[1]]
+    except KeyError:
+        cevent = 'UNKNOWN(CODE:{0})'.format(args[1])
     print('[{0}] {1} {2}'.format(time.time(), args[0], cevent))
     counter += 1
 

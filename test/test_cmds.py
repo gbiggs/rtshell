@@ -3612,7 +3612,7 @@ class rtfsmTests(unittest.TestCase):
         print 'running command: ' + fname
         p = subprocess.Popen([fname], stdout=subprocess.PIPE)
         self._std = (p, fname)
-        wait_for_comp('ConsoleIn0.rtc')
+        wait_for_comp('ConsoleOut0.rtc')
 
     def tearDown(self):
         stop_comp(self._std)
@@ -3620,7 +3620,7 @@ class rtfsmTests(unittest.TestCase):
 
     def test_geteventprofiles(self):
         stdout, stderr, ret = call_process(['./rtfsm',
-            '/localhost/local.host_cxt/ConsoleIn0.rtc',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc',
             'geteventprofiles'])
         self.assertEqual(stdout, 'toggle:TimedShort')
         self.assertEqual(stderr, '')
@@ -3628,7 +3628,7 @@ class rtfsmTests(unittest.TestCase):
 
     def test_seteventprofiles(self):
         stdout, stderr, ret = call_process(['./rtfsm',
-            '/localhost/local.host_cxt/ConsoleIn0.rtc',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc',
             'seteventprofiles',
             'toggle:TimedShort,toggle2:TimedString'])
         self.assertEqual(stdout, '')
@@ -3637,7 +3637,7 @@ class rtfsmTests(unittest.TestCase):
 
     def test_getstructure(self):
         stdout, stderr, ret = call_process(['./rtfsm',
-            '/localhost/local.host_cxt/ConsoleIn0.rtc',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc',
             'getstructure'])
         self.assertEqual(stdout.find('<scxml'), 0)
         self.assertEqual(stderr, '')
@@ -3645,7 +3645,7 @@ class rtfsmTests(unittest.TestCase):
 
     def test_setstructure(self):
         stdout, stderr, ret = call_process(['./rtfsm',
-            '/localhost/local.host_cxt/ConsoleIn0.rtc',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc',
             'setstructure',
             './test/fsm.scxml'])
         self.assertEqual(stdout, '')

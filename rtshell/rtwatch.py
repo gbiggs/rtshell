@@ -31,6 +31,7 @@ import sys
 import traceback
 import time
 import atexit
+from threading import Event
 
 from rtshell import path
 from rtshell import rts_exceptions
@@ -70,57 +71,65 @@ CONFIG_EVENT_CODE_MAP = {
 }
 
 counter = 0
+event = Event()
 
-def rtc_status_cb(event, args, args2):
-    global counter
+def rtc_status_cb(eventkind, args, args2):
+    global counter, event
     try:
         sevent = STATUS_CODE_MAP[args[1]]
     except KeyError:
         sevent = 'UNKNOWN(CODE:{0})'.format(args[1])
     print('[{0}] {1} {2}'.format(time.time(), args[0], sevent))
     counter += 1
+    event.set()
 
-def component_profile_cb(event, args, args2):
-    global counter
+def component_profile_cb(eventkind, args, args2):
+    global counter, event
     print('[{0}] {1}'.format(time.time(), ', '.join(args[0])))
     counter += 1
+    event.set()
 
-def ec_event_cb(event, args, args2):
-    global counter
+def ec_event_cb(eventkind, args, args2):
+    global counter, event
     try:
         eevent = EC_EVENT_CODE_MAP[args[1]]
     except KeyError:
         eevent = 'UNKNOWN(CODE:{0})'.format(args[1])
     print('[{0}] {1} {2}'.format(time.time(), args[0], eevent))
     counter += 1
+    event.set()
 
-def port_event_cb(event, args, args2):
-    global counter
+def port_event_cb(eventkind, args, args2):
+    global counter, event
     try:
         pevent = EC_EVENT_CODE_MAP[args[1]]
     except KeyError:
         pevent = 'UNKNOWN(CODE:{0})'.format(args[1])
     print('[{0}] {1} {2}'.format(time.time(), args[0], pevent))
     counter += 1
+    event.set()
 
-def config_event_cb(event, args, args2):
-    global counter
+def config_event_cb(eventkind, args, args2):
+    global counter, event
     try:
         cevent = CONFIG_EVENT_CODE_MAP[args[1]]
     except KeyError:
         cevent = 'UNKNOWN(CODE:{0})'.format(args[1])
     print('[{0}] {1} {2}'.format(time.time(), args[0], cevent))
     counter += 1
+    event.set()
 
-def heartbeat_cb(event, args, args2):
-    global counter
+def heartbeat_cb(eventkind, args, args2):
+    global counter, event
     print('[{0}] {1}'.format(args[1], args[0]))
     counter += 1
+    event.set()
 
-def fsm_event_cb(event, args, args2):
-    global counter
+def fsm_event_cb(eventkind, args, args2):
+    global counter, event
     print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
     counter += 1
+    event.set()
 
 filtermap = {
     'RTC_STATUS': ('rtc_status', rtc_status_cb),
@@ -138,7 +147,7 @@ def clean_events(rtcs):
         i.dynamic = False
 
 def print_logs(paths, options, tree=None):
-    global counter
+    global counter, event
     for p in paths:
         path, port = rtctree.path.parse_path(p[1])
         if port:
@@ -180,7 +189,11 @@ def print_logs(paths, options, tree=None):
     while True:
         if options.number > 0 and counter >= options.number:
             break
-        time.sleep(0.5)
+        try:
+            event.wait()
+        except KeyboardInterrupt:
+            break
+        event.clear()
     clean_events(rtcs)
 
 def main(argv=None, tree=None):

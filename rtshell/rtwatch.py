@@ -102,7 +102,7 @@ def ec_event_cb(eventkind, args, args2):
 def port_event_cb(eventkind, args, args2):
     global counter, event
     try:
-        pevent = EC_EVENT_CODE_MAP[args[1]]
+        pevent = PORT_EVENT_CODE_MAP[args[1]]
     except KeyError:
         pevent = 'UNKNOWN(CODE:{0})'.format(args[1])
     print('[{0}] {1} {2}'.format(time.time(), args[0], pevent))

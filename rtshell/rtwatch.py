@@ -20,7 +20,7 @@ Implementation of the command to watch component events.
 
 from __future__ import print_function
 
-import optparse
+import argparse
 import os
 import os.path
 import rtctree.exceptions
@@ -197,36 +197,27 @@ def print_logs(paths, options, tree=None):
     clean_events(rtcs)
 
 def main(argv=None, tree=None):
-    usage = '''Usage: %prog [options] <path 1> [path 2...]
-Watch a component event.'''
-    version = rtshell.RTSH_VERSION
-    parser = optparse.OptionParser(usage=usage, version=version)
+    parser = argparse.ArgumentParser(prog='rtwatch', description='Watch a component event.')
     filterkind = filtermap.keys()
     filterkind.insert(0, 'ALL')
-    parser.add_option('-n', '--number', dest='number', action='store',
-            type='int', default=-1,
-            help='Number of events to capture. [Default: %default]')
-    parser.add_option('-f', '--filter', dest='filters', action='append',
-            type='choice', choices=filterkind, default=[],
-            help='Event source filters. Select from {0}. [Default: ALL]'.format(', '.join(filterkind)))
-    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+    parser.add_argument('-n', '--number', dest='number', action='store',
+            type=int, default=-1,
+            help='Number of events to capture. [Default: %(default)s]')
+    parser.add_argument('-f', '--filter', dest='filters', action='append',
+            type=str, choices=filterkind, default=[],
+            help='Event source filters. [Default: ALL]')
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
-            help='Output verbose information. [Default: %default]')
+            help='Output verbose information. [Default: %(default)s]')
+    parser.add_argument('path', metavar='path', type=str, nargs='+',
+            help='Path to component.')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
-    try:
-        options, args = parser.parse_args()
-    except optparse.OptionError as e:
-        print('OptionError:', e, file=sys.stderr)
-        return 1
 
-    if not args:
-        # If no paths given then can't do anything.
-        print('{0}: No component specified.'.format(
-                os.path.basename(sys.argv[0])), file=sys.stderr)
-        return 1
-    paths = [[p, path.cmd_path_to_full_path(p)] for p in args]
+    options = parser.parse_args()
+
+    paths = [[p, path.cmd_path_to_full_path(p)] for p in options.path]
 
     try:
         print_logs(paths, options, tree)

@@ -21,7 +21,7 @@ Implementation of the fsm configuration command.
 from __future__ import print_function
 
 
-import optparse
+import argparse
 import os
 import rtctree.exceptions
 import rtctree.path
@@ -105,53 +105,54 @@ def manage_fsm(tgt_raw_path, tgt_full_path, command, argument, options, tree=Non
         raise Exception('unknown command: {0}'.format(command))
 
 def main(argv=None, tree=None):
+    cmdkind = FSM_CMDS.keys()
     usage = '''Usage: %prog [options] <component path> [getstate|get[set]eventprofiles|get[set]structure]
 Configure FSM behavior of the component.'''
-    version = rtshell.RTSH_VERSION
-    parser = optparse.OptionParser(usage=usage, version=version)
-    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+    parser = argparse.ArgumentParser(prog='rtfsm', description='Configure FSM behavior of the component.')
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
             default=False,
-            help='Output verbose information. [Default: %default]')
+            help='Output verbose information. [Default: %(default)s]')
+    parser.add_argument('path', metavar='path', type=str, nargs=1,
+            help='Path to component.')
+    parser.add_argument('command', metavar='command', type=str, nargs=1,
+            choices=cmdkind,
+            help='Select from {0}.'.format(', '.join(cmdkind)))
+    parser.add_argument('argument', metavar='argument', type=str, nargs='?',
+            help=
+            'Command "seteventprofiles" takes profiles as the argument (e.g. "toggle:TimedShort,toggle2:TimedString"). ' +
+            'Command "setstructure" takes scxml file as the argument.')
 
     if argv:
         sys.argv = [sys.argv[0]] + argv
-    try:
-        options, args = parser.parse_args()
-    except optparse.OptionError as e:
-        print('OptionError:', e, file=sys.stderr)
-        return 1
 
-    if len(args) < 2:
-        print('{0}: No target component and command '\
-            'specified.'.format(sys.argv[0]), file=sys.stderr)
-        return 1
+    options = parser.parse_args()
 
-    full_path = path.cmd_path_to_full_path(args[0])
+    full_path = path.cmd_path_to_full_path(options.path[0])
     
-    command = args[1]
+    command = options.command[0]
     argument = None
     if command == 'seteventprofiles':
-        if len(args) != 3:
+        if len(options.argument) == 0:
             print('{0}: No argument to {1} command '\
                 'specified.'.format(sys.argv[0], command), file=sys.stderr)
             return 1
         argument = []
-        for p in args[2].split(','):
+        for p in options.argument[0].split(','):
             argument.append(p.split(':'))
     elif command == 'setstructure':
-        if len(args) != 3:
+        if len(options.argument) == 0:
             print('{0}: No argument to {1} command '\
                 'specified.'.format(sys.argv[0], command), file=sys.stderr)
             return 1
-        with open(args[2], 'r') as fh:
+        with open(options.argument[0], 'r') as fh:
             argument = fh.read()
         if not argument:
             print('{0}: Unable to read file {1} specified to {2} command.'\
-                .format(sys.argv[0], args[2], command), file=sys.stderr)
+                .format(sys.argv[0], options.argument[0], command), file=sys.stderr)
             return 1
             
     try:
-        result = manage_fsm(args[0], full_path, command, argument, options, tree=tree)
+        result = manage_fsm(options.path[0], full_path, command, argument, options, tree=tree)
         print('\n'.join(result))
     except Exception as e:
         if options.verbose:

@@ -132,19 +132,19 @@ Configure FSM behavior of the component.'''
     command = options.command[0]
     argument = None
     if command == 'seteventprofiles':
-        if len(options.argument) == 0:
+        if options.argument is None:
             print('{0}: No argument to {1} command '\
                 'specified.'.format(sys.argv[0], command), file=sys.stderr)
             return 1
         argument = []
-        for p in options.argument[0].split(','):
+        for p in options.argument.split(','):
             argument.append(p.split(':'))
     elif command == 'setstructure':
-        if len(options.argument) == 0:
+        if options.argument is None:
             print('{0}: No argument to {1} command '\
                 'specified.'.format(sys.argv[0], command), file=sys.stderr)
             return 1
-        with open(options.argument[0], 'r') as fh:
+        with open(options.argument, 'r') as fh:
             argument = fh.read()
         if not argument:
             print('{0}: Unable to read file {1} specified to {2} command.'\
@@ -153,7 +153,8 @@ Configure FSM behavior of the component.'''
             
     try:
         result = manage_fsm(options.path[0], full_path, command, argument, options, tree=tree)
-        print('\n'.join(result))
+        if result:
+            print('\n'.join(result))
     except Exception as e:
         if options.verbose:
             traceback.print_exc()

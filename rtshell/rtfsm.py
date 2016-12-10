@@ -35,6 +35,48 @@ from rtshell import path
 from rtshell import rts_exceptions
 import rtshell
 
+def getstate(fsm, arg):
+    result = []
+    result.append(fsm.get_current_state())
+    return result
+
+def geteventprofiles(fsm, arg):
+    result = []
+    ret, struct = fsm.get_fsm_structure()
+    ps = []
+    for p in struct.event_profiles:
+        ps.append(p.name + ':' + p.data_type)
+    result.append(', '.join(ps))
+    return result
+
+def getstructure(fsm, arg):
+    result =[]
+    ret, struct = fsm.get_fsm_structure()
+    result.append(struct.structure)
+    return result
+
+def seteventprofiles(fsm, arg):
+    ret, struct = fsm.get_fsm_structure()
+    struct.event_profiles = []
+    for a in arg:
+        p = rtctree.rtc.RTC.FsmEventProfile(a[0], a[1])
+        struct.event_profiles.append(p)
+    fsm.set_fsm_structure(struct)
+    return None
+
+def setstructure(fsm, arg):
+    ret, struct = fsm.get_fsm_structure()
+    struct.structure = arg
+    fsm.set_fsm_structure(struct)
+    return None
+
+FSM_CMDS = {
+    'getstate': getstate,
+    'geteventprofiles': geteventprofiles,
+    'getstructure': getstructure,
+    'seteventprofiles': seteventprofiles,
+    'setstructure': setstructure,
+}
 
 def manage_fsm(tgt_raw_path, tgt_full_path, command, argument, options, tree=None):
     path, port = rtctree.path.parse_path(tgt_full_path)
@@ -56,28 +98,11 @@ def manage_fsm(tgt_raw_path, tgt_full_path, command, argument, options, tree=Non
 
     fsm = rtc.get_extended_fsm_service()
 
-    if command == 'getstate':
-        print(fsm.get_current_state())
-    elif command == 'geteventprofiles':
-        ret, struct = fsm.get_fsm_structure()
-        ps = []
-        for p in struct.event_profiles:
-            ps.append(p.name + ':' + p.data_type)
-        print(', '.join(ps))
-    elif command == 'getstructure':
-        ret, struct = fsm.get_fsm_structure()
-        print(struct.structure)
-    elif command == 'seteventprofiles':
-        ret, struct = fsm.get_fsm_structure()
-        struct.event_profiles = []
-        for a in argument:
-            p = rtctree.rtc.RTC.FsmEventProfile(a[0], a[1])
-            struct.event_profiles.append(p)
-        fsm.set_fsm_structure(struct)
-    elif command == 'setstructure':
-        ret, struct = fsm.get_fsm_structure()
-        struct.structure = argument
-        fsm.set_fsm_structure(struct)
+    try:
+        cmdfunc = FSM_CMDS[command]
+        return cmdfunc(fsm, argument)
+    except KeyError:
+        raise Exception('unknown command: {0}'.format(command))
 
 def main(argv=None, tree=None):
     usage = '''Usage: %prog [options] <component path> [getstate|get[set]eventprofiles|get[set]structure]
@@ -126,7 +151,8 @@ Configure FSM behavior of the component.'''
             return 1
             
     try:
-        manage_fsm(args[0], full_path, command, argument, options, tree=tree)
+        result = manage_fsm(args[0], full_path, command, argument, options, tree=tree)
+        print('\n'.join(result))
     except Exception as e:
         if options.verbose:
             traceback.print_exc()

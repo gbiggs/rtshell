@@ -71,10 +71,10 @@ CONFIG_EVENT_CODE_MAP = {
 }
 
 counter = 0
-event = Event()
 
 def rtc_status_cb(eventkind, args, args2):
-    global counter, event
+    global counter
+    event = args2[0]
     try:
         sevent = STATUS_CODE_MAP[args[1]]
     except KeyError:
@@ -84,13 +84,15 @@ def rtc_status_cb(eventkind, args, args2):
     event.set()
 
 def component_profile_cb(eventkind, args, args2):
-    global counter, event
+    global counter
+    event = args2[0]
     print('[{0}] {1}'.format(time.time(), ', '.join(args[0])))
     counter += 1
     event.set()
 
 def ec_event_cb(eventkind, args, args2):
-    global counter, event
+    global counter
+    event = args2[0]
     try:
         eevent = EC_EVENT_CODE_MAP[args[1]]
     except KeyError:
@@ -100,7 +102,8 @@ def ec_event_cb(eventkind, args, args2):
     event.set()
 
 def port_event_cb(eventkind, args, args2):
-    global counter, event
+    global counter
+    event = args2[0]
     try:
         pevent = PORT_EVENT_CODE_MAP[args[1]]
     except KeyError:
@@ -110,7 +113,8 @@ def port_event_cb(eventkind, args, args2):
     event.set()
 
 def config_event_cb(eventkind, args, args2):
-    global counter, event
+    global counter
+    event = args2[0]
     try:
         cevent = CONFIG_EVENT_CODE_MAP[args[1]]
     except KeyError:
@@ -120,13 +124,15 @@ def config_event_cb(eventkind, args, args2):
     event.set()
 
 def heartbeat_cb(eventkind, args, args2):
-    global counter, event
+    global counter
+    event = args2[0]
     print('[{0}] {1}'.format(args[1], args[0]))
     counter += 1
     event.set()
 
 def fsm_event_cb(eventkind, args, args2):
-    global counter, event
+    global counter
+    event = args2[0]
     print('[{0}] {1} {2}'.format(time.time(), args[0], args[1]))
     counter += 1
     event.set()
@@ -147,7 +153,7 @@ def clean_events(rtcs):
         i.dynamic = False
 
 def print_logs(paths, options, tree=None):
-    global counter, event
+    global counter
     for p in paths:
         path, port = rtctree.path.parse_path(p[1])
         if port:
@@ -161,6 +167,7 @@ def print_logs(paths, options, tree=None):
         tree = rtctree.tree.RTCTree(paths=parsed, filter=parsed)
 
     rtcs = []
+    event = Event()
     for p in paths:
         if not tree.has_path(p[2]):
             raise rts_exceptions.NoSuchObjectError(p[0])
@@ -173,12 +180,12 @@ def print_logs(paths, options, tree=None):
         rtc.dynamic = True
         if len(options.filters) == 0 or 'ALL' in options.filters:
             for (k,v) in filtermap.items():
-                rtc.add_callback(v[0], v[1])
+                rtc.add_callback(v[0], v[1], [event])
         else:
             for f in options.filters:
                 try:
                     v = filtermap[f]
-                    rtc.add_callback(v[0], v[1])
+                    rtc.add_callback(v[0], v[1], [event])
                 except KeyError:
                     print('Unknown filter: {0}'.format(f))
         rtcs.append(rtc)

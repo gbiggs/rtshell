@@ -37,7 +37,7 @@ def port_name(s):
 
 
 def escape(s):
-    return s.replace('.', '_dot_').replace('/', '_slash_')
+    return s.replace('.', '_dot_').replace('/', '_slash_').replace('(', '_lpar_').replace(')', '_rpar_')
 
 
 def get_ports(rtsp):

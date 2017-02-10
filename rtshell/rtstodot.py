@@ -43,16 +43,11 @@ def escape(s):
 def get_ports(rtsp):
     in_ports = []
     out_ports = []
-    for dp in rtsp.data_port_connectors:
-        in_ports.append((dp.source_data_port.instance_name,
-            port_name(dp.source_data_port.port_name)))
-        out_ports.append((dp.target_data_port.instance_name,
-            port_name(dp.target_data_port.port_name)))
-    for sp in rtsp.service_port_connectors:
-        out_ports.append((dp.source_data_port.instance_name,
-            port_name(dp.source_data_port.port_name)))
-        in_ports.append((dp.target_data_port.instance_name,
-            port_name(dp.target_data_port.port_name)))
+    for p in rtsp.service_port_connectors+rtsp.data_port_connectors:
+        out_ports.append((p.source_data_port.instance_name,
+            port_name(p.source_data_port.port_name)))
+        in_ports.append((p.target_data_port.instance_name,
+            port_name(p.target_data_port.port_name)))
     return in_ports, out_ports
 
 

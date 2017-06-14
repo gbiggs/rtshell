@@ -26,6 +26,7 @@ import rtctree
 import rtctree.tree
 import rtsprofile.rts_profile
 import subprocess
+import threading
 import sys
 import tempfile
 import time
@@ -40,21 +41,39 @@ def load_file(fn):
     with open(fn, 'r') as f:
         return f.read()
 
-def call_process(args, stdin=None):
+def preprocess_args(args):
     if type(args) == str:
         args = [args]
     if args[0].find('./') == 0:
         args = ['coverage', 'run', '--parallel-mode', '--source=rtshell',
                 '-m', args[0].replace('././', './').replace('./', 'rtshell.')] + args[1:]
+    return args
+
+def timekeeper(timeout, p):
+    time.sleep(timeout)
+    p.terminate()
+
+def call_process(args, stdin=None, communicate=True, timeout=-1):
+    args = preprocess_args(args)
     print 'running command: ' + ' '.join(args)
     if not stdin:
         p = subprocess.Popen(args, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
+        if timeout > 0:
+            t = threading.Thread(target=timekeeper, name="timekeeper", args=(timeout, p))
+            t.start()
+        if communicate == False:
+            return p
         output = p.communicate()
     else:
         p = subprocess.Popen(args, stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
+        if timeout > 0:
+            t = threading.Thread(target=timekeeper, name="timekeeper", args=(timeout, p))
+            t.start()
+        if communicate == False:
+            return p
         output = p.communicate(stdin)
     output = (output[0].strip().replace('.py:', ':'), output[1].strip().replace('.py:', ':'))
     return_code = p.returncode
@@ -65,6 +84,7 @@ def call_process(args, stdin=None):
 
 
 def start_process(args):
+    args = preprocess_args(args)
     return subprocess.Popen(args, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
 
@@ -821,17 +841,10 @@ class rtconTests(unittest.TestCase):
         _test_sourceportnotfound(self, './rtcon', obj1='Output0.rtc',
                 obj2='Std0.rtc:in')
 
-    def test_not_enough_targets(self):
-        stdout, stderr, ret = call_process(['./rtcon', 'Std0.rtc:in'])
+    def test_no_target(self):
+        stdout, stderr, ret = call_process(['./rtcon'])
         self.assertEqual(stdout, '')
-        self.assert_('Usage:' in stderr)
-        self.assertEqual(ret, 1)
-
-    def test_too_many_targets(self):
-        stdout, stderr, ret = call_process(['./rtcon', 'Std0.rtc:in',
-            'Output0.rtc:out', 'Err0.rtc:in'])
-        self.assertEqual(stdout, '')
-        self.assert_('Usage:' in stderr)
+        self.assertEqual(stderr, 'rtcon: No ports specified.')
         self.assertEqual(ret, 1)
 
     def test_no_dest_port(self):
@@ -1130,6 +1143,8 @@ class rtcryoTests(unittest.TestCase):
         stop_ns(self._ns)
 
     def _check_rtsys_xml(self, rtsys):
+        print 'check rtsys xml:'
+        print rtsys
         self.assert_(rtsys.startswith('<?xml'))
         # Components
         self.assert_('rts:instanceName="Std0"' in rtsys)
@@ -1155,6 +1170,8 @@ class rtcryoTests(unittest.TestCase):
         rtsprofile.rts_profile.RtsProfile(xml_spec=rtsys)
 
     def _check_rtsys_yaml(self, rtsys):
+        print 'check rtsys yaml:'
+        print rtsys
         self.assert_(rtsys.startswith('rtsProfile:'))
         # Components
         self.assert_('instanceName: Std0' in rtsys)
@@ -1180,7 +1197,7 @@ class rtcryoTests(unittest.TestCase):
         rtsprofile.rts_profile.RtsProfile(yaml_spec=rtsys)
 
     def test_freeze_to_stdout_xml(self):
-        stdout, stderr, ret = call_process(['./rtcryo', '-x'])
+        stdout, stderr, ret = call_process(['./rtcryo', '-x', 'localhost'])
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         self._check_rtsys_xml(stdout)
@@ -1188,7 +1205,7 @@ class rtcryoTests(unittest.TestCase):
     def test_freeze_to_file_xml(self):
         f, fn = tempfile.mkstemp(prefix='rtshell_test_')
         os.close(f)
-        stdout, stderr, ret = call_process(['./rtcryo', '-x', '-o', fn])
+        stdout, stderr, ret = call_process(['./rtcryo', '-x', '-o', fn, 'localhost'])
         rtsys = load_file(fn)
         os.remove(fn)
         self.assertEqual(stdout, '')
@@ -1197,7 +1214,7 @@ class rtcryoTests(unittest.TestCase):
         self._check_rtsys_xml(rtsys)
 
     def test_freeze_to_stdout_yaml(self):
-        stdout, stderr, ret = call_process(['./rtcryo', '-y'])
+        stdout, stderr, ret = call_process(['./rtcryo', '-y', 'localhost'])
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         self._check_rtsys_yaml(stdout)
@@ -1205,7 +1222,7 @@ class rtcryoTests(unittest.TestCase):
     def test_freeze_to_file_yaml(self):
         f, fn = tempfile.mkstemp(prefix='rtshell_test_')
         os.close(f)
-        stdout, stderr, ret = call_process(['./rtcryo', '-y', '-o', fn])
+        stdout, stderr, ret = call_process(['./rtcryo', '-y', '-o', fn, 'localhost'])
         rtsys = load_file(fn)
         os.remove(fn)
         self.assertEqual(stdout, '')
@@ -2619,7 +2636,7 @@ class rtlsTests(unittest.TestCase):
         stdout, stderr, ret = call_process(['./rtls', '-l',
             'localhost/local.host_cxt'])
         self.assert_('Inactive  1/0  1/0  0/0  0/0  Std0.rtc' in stdout)
-        self.assert_('Inactive  2/0  1/0  1/0  0/0  C10.rtc' in stdout)
+        self.assert_('Inactive  1/0  0/0  1/0  0/0  C10.rtc' in stdout)
         self.assert_('-         -    -    -    -    manager.mgr' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
@@ -2655,7 +2672,7 @@ class rtlsTests(unittest.TestCase):
         self.assert_('/localhost' in stdout)
         self.assert_('/localhost/local.host_cxt' in stdout)
         self.assert_('Inactive  1/0  1/0  0/0  0/0  Std0.rtc' in stdout)
-        self.assert_('Inactive  2/0  1/0  1/0  0/0  C10.rtc' in stdout)
+        self.assert_('Inactive  1/0  0/0  1/0  0/0  C10.rtc' in stdout)
         self.assert_('/localhost/local.host_cxt/manager.mgr' in stdout)
         self.assert_('-         -    -    -    -    manager.mgr' in stdout)
         self.assert_('-         -    -    -    -    *Zombie0.rtc' in stdout)
@@ -2979,7 +2996,7 @@ class rtstodotTests(unittest.TestCase):
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
         sample = load_file('./test/sys.dot')
-        self.assertEqual(sample, stdout)
+        self.assertEqual(sample.rstrip(), stdout)
 
     def test_file(self):
         stdout, stderr, ret = call_process(['./rtstodot', './test/sys.rtsys'])
@@ -3016,21 +3033,21 @@ class rtprintTests(unittest.TestCase):
         time.sleep(3)
         p.terminate()
         stdout, stderr = p.communicate()
-        self.assert_(re.match(r'\[0\.0+\]\s\d+\n', stdout) is not None)
+        self.assert_('rtctree.rtc.RTC.TimedLong' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(p.returncode, -15)
 
     def test_print_count_limit(self):
         stdout, stderr, ret = call_process(['./rtprint',
             '/localhost/local.host_cxt/Output0.rtc:out', '-n', '2'])
-        self.assert_(re.match(r'\[0\.0+\]\s\d+\n\[0\.0+\]\s\d+$', stdout) is not None)
+        self.assertEqual(stdout.count('rtctree.rtc.RTC.TimedLong'), 2)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
     def test_print_time_limit(self):
         stdout, stderr, ret = call_process(['./rtprint',
             '/localhost/local.host_cxt/Output0.rtc:out', '-t', '1'])
-        self.assert_(re.match(r'\[0\.0+\]\s\d+\n', stdout) is not None)
+        self.assert_('rtctree.rtc.RTC.TimedLong' in stdout)
         self.assertEqual(stderr, '')
         self.assertEqual(ret, 0)
 
@@ -3506,6 +3523,140 @@ def rtteardown_suite():
     return unittest.TestLoader().loadTestsFromTestCase(rtteardownTests)
 
 
+class rtwatchTests(unittest.TestCase):
+    def setUp(self):
+        self._ns = start_ns()
+        fname = './test/run-fsm4rtc.sh'
+        print 'running command: ' + fname
+        p = subprocess.Popen([fname], stdout=subprocess.PIPE)
+        self._std = (p, fname)
+        wait_for_comp('ConsoleOut0.rtc')
+        self._output = launch_comp('output_comp')
+        wait_for_comp('Output0.rtc')
+
+    def tearDown(self):
+        stop_comp(self._std)
+        stop_comp(self._output)
+        stop_ns(self._ns)
+
+    def test_waitloop(self):
+        stdout, stderr, ret = call_process(['./rtwatch',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'], timeout=5)
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, -15)
+
+    def test_heartbeat(self):
+        stdout, stderr, ret = call_process(['./rtwatch',
+            '-n', '4',
+            '-f', 'HEARTBEAT',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'])
+        self.assertNotEqual(stdout.find('RTC_HEARTBEAT'), -1)
+        self.assertNotEqual(stdout.find('EC_HEARTBEAT'), -1)
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_rtcstatus(self):
+        p = call_process(['./rtwatch',
+            '-n', '2',
+            '-f', 'RTC_STATUS',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'], communicate=False)
+        time.sleep(3)
+        call_process(['./rtact',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'])
+        time.sleep(1)
+        call_process(['./rtdeact',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'])
+        output = p.communicate()
+        ret = p.returncode
+        print 'stdout: ' + output[0]
+        print 'stderr: ' + output[1]
+        print 'returncode: %i' % (ret)
+        self.assertNotEqual(output[0].find('ACTIVE'), -1)
+        self.assertNotEqual(output[0].find('INACTIVE'), -1)
+        self.assertEqual(output[1], '')
+        self.assertEqual(ret, 0)
+
+    def test_portevent(self):
+        p = call_process(['./rtwatch',
+            '-n', '2',
+            '-f', 'PORT_EVENT',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc'], communicate=False)
+        time.sleep(3)
+        call_process(['./rtcon',
+            '/localhost/local.host_cxt/Output0.rtc:out',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc:in'])
+        time.sleep(1)
+        call_process(['./rtdis',
+            '/localhost/local.host_cxt/Output0.rtc:out',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc:in'])
+        output = p.communicate()
+        ret = p.returncode
+        print 'stdout: ' + output[0]
+        print 'stderr: ' + output[1]
+        print 'returncode: %i' % (ret)
+        self.assertNotEqual(output[0].find('PORT_CONNECT'), -1)
+        self.assertNotEqual(output[0].find('PORT_DISCONNECT'), -1)
+        self.assertEqual(output[1], '')
+        self.assertEqual(ret, 0)
+
+
+def rtwatch_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtwatchTests)
+
+
+class rtfsmTests(unittest.TestCase):
+    def setUp(self):
+        self._ns = start_ns()
+        fname = './test/run-fsm4rtc.sh'
+        print 'running command: ' + fname
+        p = subprocess.Popen([fname], stdout=subprocess.PIPE)
+        self._std = (p, fname)
+        wait_for_comp('ConsoleOut0.rtc')
+
+    def tearDown(self):
+        stop_comp(self._std)
+        stop_ns(self._ns)
+
+    def test_geteventprofiles(self):
+        stdout, stderr, ret = call_process(['./rtfsm',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc',
+            'geteventprofiles'])
+        self.assertEqual(stdout, 'toggle:TimedShort')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_seteventprofiles(self):
+        stdout, stderr, ret = call_process(['./rtfsm',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc',
+            'seteventprofiles',
+            'toggle:TimedShort,toggle2:TimedString'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_getstructure(self):
+        stdout, stderr, ret = call_process(['./rtfsm',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc',
+            'getstructure'])
+        self.assertEqual(stdout.find('<scxml'), 0)
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+    def test_setstructure(self):
+        stdout, stderr, ret = call_process(['./rtfsm',
+            '/localhost/local.host_cxt/ConsoleOut0.rtc',
+            'setstructure',
+            './test/fsm.scxml'])
+        self.assertEqual(stdout, '')
+        self.assertEqual(stderr, '')
+        self.assertEqual(ret, 0)
+
+
+def rtfsm_suite():
+    return unittest.TestLoader().loadTestsFromTestCase(rtfsmTests)
+
+
 def suite():
     return unittest.TestSuite([rtact_suite(), rtdeact_suite(), rtreset_suite(),
         rtcat_suite(), rtcheck_suite(), rtcomp_suite(), rtcon_suite(),
@@ -3513,7 +3664,8 @@ def suite():
         rtdis_suite(), rtdoc_suite(), rtexit_suite(), rtfind_suite(),
         rtinject_suite(), rtlog_suite(), rtls_suite(), rtmgr_suite(),
         rtprint_suite(), rtresurrect_suite(), rtstart_suite(),
-        rtstodot_suite(), rtstop_suite(), rtteardown_suite()])
+        rtstodot_suite(), rtstop_suite(), rtteardown_suite(),
+        rtwatch_suite(), rtfsm_suite()])
 
 
 if __name__ == '__main__':

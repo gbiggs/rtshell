@@ -1,6 +1,8 @@
 language: cpp
 sudo: true
 env:
+  global:
+    RTCTREE_NAMESERVERS='localhost'
   matrix:
     - DEPS_MASTER=true
     - DEPS_MASTER=false

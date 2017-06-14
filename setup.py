@@ -449,6 +449,8 @@ setuptools.setup(name='rtshell',
             'rtstop = rtshell.rtstop:main',
             'rtteardown = rtshell.rtteardown:main',
             'rtvlog = rtshell.rtvlog:main',
+            'rtwatch = rtshell.rtwatch:main',
+            'rtfsm = rtshell.rtfsm:main',
             ],
         }
     )

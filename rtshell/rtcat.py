@@ -27,7 +27,6 @@ import rtctree.exceptions
 import rtctree.tree
 import rtctree.path
 import rtctree.utils
-import SDOPackage
 import sys
 import traceback
 

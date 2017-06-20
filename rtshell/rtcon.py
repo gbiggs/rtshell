@@ -85,6 +85,18 @@ def connect_ports(paths, options, tree=None):
         port_objs.append(port_obj)
 
     conn_name = options.name if options.name else None
+
+    if options.no_duplicates:
+        for p in port_objs:
+            if p.get_connection_by_name(conn_name):
+                raise rts_exceptions.DuplicateConnectionNameError(conn_name,
+                                                                  p.name)
+            if options.id:
+                if p.get_connection_by_id(options.id):
+                    raise rts_exceptions.DuplicateConnectionIDError(options.id)
+        if port_objs[0].get_connections_by_dests(port_objs[1:]):
+            raise rts_exceptions.DuplicateConnectionError(cmd_paths)
+
     port_objs[0].connect(port_objs[1:], name=conn_name, id=options.id,
             props=options.properties)
 
@@ -106,6 +118,8 @@ def main(argv=None, tree=None):
 Connect two or more ports.'''
     version = rtshell.RTSH_VERSION
     parser = optparse.OptionParser(usage=usage, version=version)
+    parser.add_option('-d', '--no-duplicates', dest='no_dups',
+            action='store_true', help='Prevent duplicate connections')
     parser.add_option('-i', '--id', dest='id', action='store', type='string',
             default='', help='ID of the connection. [Default: %default]')
     parser.add_option('-n', '--name', dest='name', action='store',
@@ -153,4 +167,3 @@ if __name__ == '__main__':
 
 
 # vim: tw=79
-

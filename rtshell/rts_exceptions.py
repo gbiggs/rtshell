@@ -400,6 +400,37 @@ class ConnectionIDNotFoundError(RtShellError):
                     self._id)
 
 
+class DuplicateConnectionError(RtShellError):
+    '''An identical connection already exists.'''
+    def __init__(self, ports):
+        self._ports = ports
+
+    def __str__(self):
+        return 'An identical connection already exists between ports {}'.format(
+            self._ports)
+
+
+class DuplicateConnectionIDError(RtShellError):
+    '''A connection with that ID already exists.'''
+    def __init__(self, conn_id):
+        self._conn_id = conn_id
+
+    def __str__(self):
+        return 'A connection with ID {} already exists between the ' \
+                'specified ports'.format(self._conn_id)
+
+
+class DuplicateConnectionNameError(RtShellError):
+    '''A connection with that name already exists.'''
+    def __init__(self, conn_name, port_name):
+        self._conn_name = conn_name
+        self._port_name = port_name
+
+    def __str__(self):
+        return 'A connection with name {} already exists from the ' \
+                'specified port {}'.format(self._conn_name, self._port_name)
+
+
 class BadPortTypeError(RtShellError):
     '''The port type is not defined.'''
     def __init__(self, rtc, port):

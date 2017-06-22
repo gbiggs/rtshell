@@ -136,6 +136,14 @@ $ ./test/test_cmds.py ~/share/OpenRTM-aist/examples/rtcs/ rtactTests
 Changelog
 =========
 
+4.2
+---
+
+- Add "-d" option to rtcon to check for duplicate connections
+- Add support for FSM4RTC, with rtwatch and rtfsm commands (@yosuke)
+- Add doctests (@yosuke)
+- Fix direction of rtstodot graphs (@haudren)
+
 4.1
 ---
 

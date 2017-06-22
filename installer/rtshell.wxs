@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
-  <Product Name="RTShell 4.1"
+  <Product Name="RTShell 4.2"
     Manufacturer="AIST"
     Id="A999A734-5509-11E5-89AA-D4BED9A6AE6D"
     UpgradeCode="BC9FBF12-5509-11E5-89AA-D4BED9A6AE6D"
     Language="1033"
     Codepage="1252"
-    Version="4.1.0">
+    Version="4.2.0">
     <!--Language="1041" Codepage="932" for Japanese-->
     <Package Id="*"
       Keywords="Installer"
-      Description="RTShell 4.1 installer"
+      Description="RTShell 4.2 installer"
       Comments="RTShell is a product of the National Institute for Advanced Industrial Science and Technology, Japan"
       Manufacturer="AIST"
       InstallerVersion="400"

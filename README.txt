@@ -163,6 +163,14 @@ To create a redistributable wheel package, run the following command:
 Changelog
 =========
 
+4.2
+---
+
+- Add "-d" option to rtcon to check for duplicate connections
+- Add support for FSM4RTC, with rtwatch and rtfsm commands (@yosuke)
+- Add doctests (@yosuke)
+- Fix direction of rtstodot graphs (@haudren)
+
 4.1
 ---
 

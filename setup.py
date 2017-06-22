@@ -394,7 +394,7 @@ install.sub_commands.insert(2, ('install_scripts', None))
 
 
 setuptools.setup(name='rtshell',
-    version='4.1.0',
+    version='4.2.0',
     description='Shell commands for managing RT Components and RT Systems.',
     author='Geoffrey Biggs and contributors',
     author_email='geoffrey.biggs@aist.go.jp',

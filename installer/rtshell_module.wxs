@@ -4,11 +4,11 @@
   <Module Id="RTShell41"
     Language="1033"
     Codepage="1252"
-    Version="4.1.0">
+    Version="4.2.0">
     <!--Language="1041" Codepage="932" for Japanese-->
     <Package Id="33717363-5E00-48C0-9BD8-8B694262D7C0"
       Keywords="Installer"
-      Description="RTShell 4.1 installer"
+      Description="RTShell 4.2 installer"
       Comments="RTShell is a product of the National Institute for Advanced Industrial Science and Technology, Japan"
       Manufacturer="AIST"
       InstallerVersion="400"
@@ -30,7 +30,7 @@
                 </Directory>
               </Directory>
             </Directory>
-            <Directory Id="RTShellInfo" Name="rtshell-4.1.0.dist-info">
+            <Directory Id="RTShellInfo" Name="rtshell-4.2.0.dist-info">
             </Directory>
           </Directory>
         </Directory>
@@ -170,12 +170,12 @@
     </DirectoryRef>
     <DirectoryRef Id="RTShellInfo">
       <Component Id="RTShellInfo" Guid="375256E1-9272-47D6-8D86-3A2FE86B77C9">
-        <File Id="RTShellDESCRIPTION.rst" Source="C:\Python27\Lib\site-packages\rtshell-4.1.0.dist-info\DESCRIPTION.rst" KeyPath="yes"/>
-        <File Id="RTShellMETADATA" Source="C:\Python27\Lib\site-packages\rtshell-4.1.0.dist-info\METADATA"/>
-        <File Id="RTShellmetadata.json" Source="C:\Python27\Lib\site-packages\rtshell-4.1.0.dist-info\metadata.json"/>
-        <File Id="RTShellRECORD" Source="C:\Python27\Lib\site-packages\rtshell-4.1.0.dist-info\RECORD"/>
-        <File Id="RTShelltop_level.txt" Source="C:\Python27\Lib\site-packages\rtshell-4.1.0.dist-info\top_level.txt"/>
-        <File Id="RTShellWHEEL" Source="C:\Python27\Lib\site-packages\rtshell-4.1.0.dist-info\WHEEL"/>
+        <File Id="RTShellDESCRIPTION.rst" Source="C:\Python27\Lib\site-packages\rtshell-4.2.0.dist-info\DESCRIPTION.rst" KeyPath="yes"/>
+        <File Id="RTShellMETADATA" Source="C:\Python27\Lib\site-packages\rtshell-4.2.0.dist-info\METADATA"/>
+        <File Id="RTShellmetadata.json" Source="C:\Python27\Lib\site-packages\rtshell-4.2.0.dist-info\metadata.json"/>
+        <File Id="RTShellRECORD" Source="C:\Python27\Lib\site-packages\rtshell-4.2.0.dist-info\RECORD"/>
+        <File Id="RTShelltop_level.txt" Source="C:\Python27\Lib\site-packages\rtshell-4.2.0.dist-info\top_level.txt"/>
+        <File Id="RTShellWHEEL" Source="C:\Python27\Lib\site-packages\rtshell-4.2.0.dist-info\WHEEL"/>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="PythonScripts">
@@ -230,7 +230,7 @@
     </DirectoryRef>
 
     <!-- Dependencies -->
-    <Dependency RequiredId="RTCTree41.000485BE_A31F_4D6B_B3D1_337589CEA03D" RequiredLanguage="0" RequiredVersion="4.1.0"/>
+    <Dependency RequiredId="RTCTree41.000485BE_A31F_4D6B_B3D1_337589CEA03D" RequiredLanguage="0" RequiredVersion="4.2.0"/>
     <Dependency RequiredId="RTSProfile41.54F6C036_634B_4478_8EE6_D5C217C5E0F2" RequiredLanguage="0" RequiredVersion="4.1.0"/>
   </Module>
 </Wix>

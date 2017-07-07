@@ -86,7 +86,7 @@ def connect_ports(paths, options, tree=None):
 
     conn_name = options.name if options.name else None
 
-    if options.no_duplicates:
+    if options.no_dups:
         for p in port_objs:
             if p.get_connection_by_name(conn_name):
                 raise rts_exceptions.DuplicateConnectionNameError(conn_name,

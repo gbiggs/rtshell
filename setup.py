@@ -2,9 +2,7 @@
 # -*- Python -*-
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
-
-'''rtshell
+"""rtshell
 
 Copyright (C) 2009-2015
     Geoffrey Biggs
@@ -20,7 +18,7 @@ File: setup.py
 
 rtshell install script.
 
-'''
+"""
 
 # $Source$
 
@@ -56,7 +54,7 @@ class BuildDocumentation(Command):
             ('build-dir=', 'd', 'directory to build in'),
             ]
     boolean_options = ['no-man', 'no-html', 'pdf', 'no-english',
-            'no-japanese']
+                       'no-japanese']
 
     def initialize_options(self):
         self.no_man = False
@@ -86,14 +84,13 @@ class BuildDocumentation(Command):
             rhs_f = os.path.join(rhs, f)
             if not os.path.isfile(rhs_f):
                 log.warn('Documentation file {} missing for language '
-                    '{1}.'.format(f, lang))
+                         '{1}.'.format(f, lang))
                 continue
             lhs_time = os.path.getmtime(lhs_f)
             rhs_time = os.path.getmtime(rhs_f)
             if lhs_time > rhs_time:
                 log.warn('Documentation file {} for language {} is out of '
-                    'date.'.format(f, lang))
-
+                         'date.'.format(f, lang))
 
     def check_timestamps(self, lang):
         # Base documentation files
@@ -104,7 +101,6 @@ class BuildDocumentation(Command):
         base_dir = os.path.join(os.getcwd(), 'doc', 'common', 'en')
         check_dir = os.path.join(os.getcwd(), 'doc', 'common', lang)
         self.check_timestamps_in_dir(lang, base_dir, check_dir)
-
 
     def compile_docs(self, s, d, comp_cmd, ext):
         if os.path.exists(d):
@@ -123,7 +119,7 @@ class BuildDocumentation(Command):
                 if sys.platform == 'win32':
                     cmd.insert(0, 'python')
                 p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
+                                     stderr=subprocess.PIPE)
                 stdout, stderr = p.communicate()
                 if p.returncode != 0:
                     raise errors.DistutilsFileError(
@@ -151,13 +147,13 @@ class BuildDocumentation(Command):
             # Remove the destination to clear out any existing junk
             shutil.rmtree(d)
         self.mkpath(d)
-        tex_files = [os.path.join(s, f) for f in os.listdir(s) \
-                if os.path.splitext(f)[1] == '.tex']
+        tex_files = [os.path.join(s, f) for f in os.listdir(s)
+                     if os.path.splitext(f)[1] == '.tex']
         for src in tex_files:
             dest = os.path.join(d, os.path.splitext(os.path.basename(src))[0] + '.pdf')
             log.debug('Compiling {} to {}'.format(src, dest))
             p = subprocess.Popen(['rubber', '-d', '--into', d, src],
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = p.communicate()
             if p.returncode != 0:
                 raise errors.DistutilsFileError(
@@ -165,13 +161,13 @@ class BuildDocumentation(Command):
                     'Stderr:\n{}'.format(src, dest, stdout, stderr))
         # Clear up the auxiliary files
         log.debug('Cleaning temporary files from {}'.format(d))
-        for f in [f for f in os.listdir(d) if os.path.splitext(f)[1] \
-                in ['.aux', '.log', '.out']]:
+        for f in [f for f in os.listdir(d) if os.path.splitext(f)[1]
+                  in ['.aux', '.log', '.out']]:
             os.remove(os.path.join(d, f))
 
     def clean_tex(self):
         for l in ['en', 'ja']:
-            tex_dir=self.dest_dir('latex', l)
+            tex_dir = self.dest_dir('latex', l)
             if os.path.exists(tex_dir):
                 log.debug('Removing latex directory {}'.format(tex_dir))
                 shutil.rmtree(tex_dir)
@@ -182,7 +178,7 @@ class BuildDocumentation(Command):
         if sys.platform == 'win32':
             cmd = os.path.join(sys.prefix, 'Scripts', cmd + '.py')
         self.compile_docs(self.source_dir(lang),
-                os.path.join(self.dest_dir('man', lang), 'man1'), cmd, '.1')
+                          os.path.join(self.dest_dir('man', lang), 'man1'), cmd, '.1')
 
     def compile_html(self, lang):
         log.info('Compiling HTML documentation for language {}'.format(lang))
@@ -190,7 +186,7 @@ class BuildDocumentation(Command):
         if sys.platform == 'win32':
             cmd = os.path.join(sys.prefix, 'Scripts', cmd + '.py')
         self.compile_docs(self.source_dir(lang),
-                self.dest_dir('html', lang), cmd, '.html')
+                          self.dest_dir('html', lang), cmd, '.html')
 
     def compile_pdf(self, lang):
         log.info('Compiling PDF documentation for language {}'.format(lang))
@@ -257,7 +253,7 @@ class InstallDocumentation(Command):
     def finalize_options(self):
         self.set_undefined_options('build', ('build_base', 'build_dir'))
         self.set_undefined_options('install', ('force', 'force'),
-                ('skip_build', 'skip_build'))
+                                   ('skip_build', 'skip_build'))
         # Documentation gets installed into the module's data directory.
         # This is <install_lib>/rtshell/data
         # This is necessary to ensure consistent and correct placement of the
@@ -299,16 +295,13 @@ class BuildShellSupport(Command):
         if sys.platform == 'darwin':
             bash_comp = bash_comp.replace('@COMPOPT_NOSPACE@', ':')
             bash_comp = bash_comp.replace('@COMPOPT_FILENAMES@', ':')
-            bash_comp = bash_comp.replace('@COMPLETE_NOSPACE@',
-                    COMPLETE_NOSPACE)
+            bash_comp = bash_comp.replace('@COMPLETE_NOSPACE@', COMPLETE_NOSPACE)
         else:
             bash_comp = bash_comp.replace('@COMPOPT_NOSPACE@', COMPOPT_NOSPACE)
-            bash_comp = bash_comp.replace('@COMPOPT_FILENAMES@',
-                    COMPOPT_FILENAME)
+            bash_comp = bash_comp.replace('@COMPOPT_FILENAMES@', COMPOPT_FILENAME)
             bash_comp = bash_comp.replace('@COMPLETE_NOSPACE@', '')
         bash_completion_dir = os.path.join(self.build_dir, scripts_build_dir)
-        bash_completion_path = os.path.join(bash_completion_dir,
-                'bash_completion')
+        bash_completion_path = os.path.join(bash_completion_dir, 'bash_completion')
         if not os.path.isdir(bash_completion_dir):
             self.mkpath(bash_completion_dir)
         with open(bash_completion_path, 'w') as f:
@@ -316,11 +309,11 @@ class BuildShellSupport(Command):
 
     def copy_shell_support(self):
         shutil.copy(os.path.join('data', 'shell_support'),
-                os.path.join(self.build_dir, scripts_build_dir))
+                    os.path.join(self.build_dir, scripts_build_dir))
 
     def copy_batch_files(self):
         shutil.copy(os.path.join('data', 'rtcwd.bat'),
-                os.path.join(self.build_dir, scripts_build_dir))
+                    os.path.join(self.build_dir, scripts_build_dir))
 
     def run(self):
         # Configure the shell support scripts
@@ -348,7 +341,7 @@ class InstallShellSupport(Command):
     def finalize_options(self):
         self.set_undefined_options('build', ('build_base', 'build_dir'))
         self.set_undefined_options('install', ('force', 'force'),
-                ('skip_build', 'skip_build'))
+                                   ('skip_build', 'skip_build'))
         # Shell scripts get installed into the module's data directory.
         # This is <install_lib>/rtshell/data
         # This is necessary to ensure consistent and correct placement of the
@@ -369,7 +362,6 @@ class InstallShellSupport(Command):
         return self.outfiles or []
 
 
-
 class CustomInstall(install):
     def run(self):
         install.run(self)
@@ -388,71 +380,70 @@ install.sub_commands.append(('install_documentation', None))
 # To get around this bug, the below lines remove the has_scripts predicate used
 # to determine if the install_scripts sub-command should be run, ensuring that
 # it is always run.
-install.sub_commands = [c for c in install.sub_commands \
-        if c[0] != 'install_scripts']
+install.sub_commands = [c for c in install.sub_commands
+                        if c[0] != 'install_scripts']
 install.sub_commands.insert(2, ('install_scripts', None))
 
 
 setuptools.setup(name='rtshell',
-    version='4.2.1',
-    description='Shell commands for managing RT Components and RT Systems.',
-    author='Geoffrey Biggs and contributors',
-    author_email='geoffrey.biggs@aist.go.jp',
-    url='http://github.com/gbiggs/rtshell',
-    license='LGPL3',
-    long_description='Shell commands for managing RT-Middleware.',
-    classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
-        'Natural Language :: English',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2.7',
-        'Topic :: Software Development',
-        'Topic :: Utilities'
-        ],
-    packages=setuptools.find_packages(),
-    install_requires=['rtctree>=4', 'rtsprofile>=4'],
-    cmdclass={'build_shell_support': BuildShellSupport,
-        'install_shell_support': InstallShellSupport,
-        'build_documentation': BuildDocumentation,
-        'install_documentation': InstallDocumentation,
-        'install': CustomInstall,
-        },
-    entry_points = {
-        'console_scripts': [
-            'rtshell_post_install = rtshell.post_install:main',
-            'rtact = rtshell.rtact:main',
-            'rtcat = rtshell.rtcat:main',
-            'rtcheck = rtshell.rtcheck:main',
-            'rtcomp = rtshell.rtcomp:main',
-            'rtcon = rtshell.rtcon:main',
-            'rtconf = rtshell.rtconf:main',
-            'rtcryo = rtshell.rtcryo:main',
-            'rtdeact = rtshell.rtdeact:main',
-            'rtdel = rtshell.rtdel:main',
-            'rtdis = rtshell.rtdis:main',
-            'rtdoc = rtshell.rtdoc:main',
-            'rtexit = rtshell.rtexit:main',
-            'rtfind = rtshell.rtfind:main',
-            'rtinject = rtshell.rtinject:main',
-            'rtlog = rtshell.rtlog:main',
-            'rtls = rtshell.rtls:main',
-            'rtmgr = rtshell.rtmgr:main',
-            'rtprint = rtshell.rtprint:main',
-            'rtpwd = rtshell.rtpwd:main',
-            'rtreset = rtshell.rtreset:main',
-            'rtresurrect = rtshell.rtresurrect:main',
-            'rtstart = rtshell.rtstart:main',
-            'rtstodot = rtshell.rtstodot:main',
-            'rtstop = rtshell.rtstop:main',
-            'rtteardown = rtshell.rtteardown:main',
-            'rtvlog = rtshell.rtvlog:main',
-            'rtwatch = rtshell.rtwatch:main',
-            'rtfsm = rtshell.rtfsm:main',
-            ],
-        }
-    )
+                 version='4.2.1',
+                 description='Shell commands for managing RT Components and RT Systems.',
+                 author='Geoffrey Biggs and contributors',
+                 author_email='geoffrey.biggs@aist.go.jp',
+                 url='http://github.com/gbiggs/rtshell',
+                 license='LGPL3',
+                 long_description='Shell commands for managing RT-Middleware.',
+                 classifiers=[
+                     'Development Status :: 5 - Production/Stable',
+                     'Environment :: Console',
+                     'Intended Audience :: Developers',
+                     'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+                     'Natural Language :: English',
+                     'Operating System :: OS Independent',
+                     'Programming Language :: Python :: 2.7',
+                     'Topic :: Software Development',
+                     'Topic :: Utilities'
+                     ],
+                 packages=setuptools.find_packages(),
+                 install_requires=['rtctree>=4', 'rtsprofile>=4'],
+                 cmdclass={'build_shell_support': BuildShellSupport,
+                           'install_shell_support': InstallShellSupport,
+                           'build_documentation': BuildDocumentation,
+                           'install_documentation': InstallDocumentation,
+                           'install': CustomInstall,
+                           },
+                 entry_points = {'console_scripts':[
+                         'rtshell_post_install = rtshell.post_install:main',
+                         'rtact = rtshell.rtact:main',
+                         'rtcat = rtshell.rtcat:main',
+                         'rtcheck = rtshell.rtcheck:main',
+                         'rtcomp = rtshell.rtcomp:main',
+                         'rtcon = rtshell.rtcon:main',
+                         'rtconf = rtshell.rtconf:main',
+                         'rtcryo = rtshell.rtcryo:main',
+                         'rtdeact = rtshell.rtdeact:main',
+                         'rtdel = rtshell.rtdel:main',
+                         'rtdis = rtshell.rtdis:main',
+                         'rtdoc = rtshell.rtdoc:main',
+                         'rtexit = rtshell.rtexit:main',
+                         'rtfind = rtshell.rtfind:main',
+                         'rtinject = rtshell.rtinject:main',
+                         'rtlog = rtshell.rtlog:main',
+                         'rtls = rtshell.rtls:main',
+                         'rtmgr = rtshell.rtmgr:main',
+                         'rtprint = rtshell.rtprint:main',
+                         'rtpwd = rtshell.rtpwd:main',
+                         'rtreset = rtshell.rtreset:main',
+                         'rtresurrect = rtshell.rtresurrect:main',
+                         'rtstart = rtshell.rtstart:main',
+                         'rtstodot = rtshell.rtstodot:main',
+                         'rtstop = rtshell.rtstop:main',
+                         'rtteardown = rtshell.rtteardown:main',
+                         'rtvlog = rtshell.rtvlog:main',
+                         'rtwatch = rtshell.rtwatch:main',
+                         'rtfsm = rtshell.rtfsm:main',
+                         ],
+                     }
+                 )
 
 #  vim: set expandtab tabstop=8 shiftwidth=4 softtabstop=4 textwidth=79
